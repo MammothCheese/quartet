@@ -1,0 +1,7 @@
+{
+  "what": "A four-track groovebox that plays like a four-piece band: lead, pads, bass and drums. 40 sounds and 10 drum kits, ten patterns per instrument, step and live recording, five effects pedals, an arpeggiator and a song sequencer where each instrument follows its own arrangement.",
+  "author": "MammothCheese",
+  "kinds": ["groove"],
+  "image": "docs/card.png",
+  "color": "#FFB824"
+}
