@@ -35,7 +35,7 @@ artifact of the latest run under [Actions](../../actions)). Then either:
 - **`tools/fm1_install.py`** over USB-MIDI: `pip install mido python-rtmidi`, then
   `python tools/fm1_install.py quartet-X.Y.fwsc` (`--info` shows what the FM-1 runs now).
 
-The FM-1 then reports itself as `FM-1_944` (QUARTET, every release).
+The FM-1 then reports itself as `FM-1_988` (QUARTET, every release).
 
 **Going back**: restore your M-Flasher backup, or install M-VAVE's official `FM-1.fwsc`. QUARTET keeps its songs in
 the parts of the flash the stock firmware uses for its presets, so without a backup the stock presets may need

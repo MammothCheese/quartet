@@ -56,14 +56,14 @@ SDK_SHA256 = {
 
 BOARD = "fm1"                       # fm1 (default) or smk37: BOARD env or --board
 BOARD_PREFIX = {"fm1": "FM-1_96", "smk37": "SMK-37 Pro_99"}   # identity: prefix + minor (0: a dev build); the FM-1: FIXED_ID
-FIXED_ID = {"fm1": "FM-1_944"}      # QUARTET's identity on the FM-1, the same for every build and release (FM-1_96N were
+FIXED_ID = {"fm1": "FM-1_988"}      # QUARTET's identity on the FM-1, the same for every build and release (FM-1_96N and 944 were
                                     # taken on the Firmware Hub). Short FM-1_9NN: installers resume an interrupted install
 BOARD_DEFS = {"fm1": [], "smk37": ["-DBOARD_SMK37=1"]}
 MODELS = {"pro": "SMK-37 Pro", "elite": "SMK-37 Elite", "mke": "MKE-P37"}   # smk37: one keyboard, three names
 DATA_FAMILY = "QUARTET"             # the SMK store's owner tag (store.h): 1..7 of A-Z 0-9 (SMK-37 builds only)
 SCREEN_NAME = "QUARTET"              # the update loader's screen (FM-1, ldr_screen.c): the name and its colour (RGB565)
 SCREEN_COLOUR = 0xB47F              # lilac, #B48CFF
-PRODUCT = "FM-1_944"                # QUARTET (Dinghy is 99N) (OUR_LOADER in the installer wants FM-1_9NN)
+PRODUCT = "FM-1_988"                # QUARTET (Dinghy is 99N) (OUR_LOADER in the installer wants FM-1_9NN)
 VERSION = None                      # APP_VER for release builds
 
 
@@ -300,7 +300,7 @@ def mmio_check():
 def main():
     global PRODUCT, VERSION, BOARD, APP_SLOT
     ap = argparse.ArgumentParser()
-    ap.add_argument("--release", metavar="X.Y", help="release build: version string X.Y (the FM-1's identity stays FM-1_944)")
+    ap.add_argument("--release", metavar="X.Y", help="release build: version string X.Y (the FM-1's identity stays FM-1_988)")
     ap.add_argument("--board", choices=sorted(BOARD_PREFIX), default=None,
                     help="target board: fm1 (default) or smk37 (default: $BOARD, else fm1)")
     ap.add_argument("--model", choices=sorted(MODELS), default=None,
