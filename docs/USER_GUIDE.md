@@ -61,6 +61,8 @@ On the home screen, turn **SELECT** to choose a sound (in the step recorder it m
 | 9 | Square Lead | Drone | Reese | Lo-Fi |
 | 10 | Chiptune | Sweep | Wobble | Industrial |
 
+The drum kits are synthesised, except the **LM-1**, which plays samples of a real Linn LM-1; on it the CLAP and PERC keys are its **low and high toms** (TL / TH on the drum grid). PERC is a different instrument per kit: a conga on CR-78, a shaker on Mini Pops and 606, a high tom on 808 and a low tom on Lo-Fi.
+
 For optional deeper editing of lead, pads and bass, **hold ARP and turn SELECT** to switch pages:
 
 | Page | KNOB1 | KNOB2 | KNOB3 | KNOB4 |

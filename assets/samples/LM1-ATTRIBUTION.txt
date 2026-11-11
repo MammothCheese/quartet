@@ -1,0 +1,23 @@
+QUARTET's LM-1 kit plays samples from:
+
+  "Linn LM1 (LM-1) Drum Set" by rossf
+  https://freesound.org/people/rossf/packs/4919/
+  License: Sampling+ 1.0, http://creativecommons.org/licenses/sampling+/1.0/
+
+The six sounds used, as QUARTET's LM-1 rows:
+  KICK    LM1 Kick.wav       https://freesound.org/s/75842/
+  SNARE   LM1 Snare.wav      https://freesound.org/s/75843/
+  HAT     LM1 Hat Cl.wav     https://freesound.org/s/75840/
+  OPEN    LM1 Hat Open.wav   https://freesound.org/s/75841/
+  TOM L   LM1 Tom Lo.wav     https://freesound.org/s/75846/   (the CLAP row)
+  TOM H   LM1 Tom Hi.wav     https://freesound.org/s/75845/   (the PERC row)
+
+What was done to them (tools/samples2c.py): the silent tail of each trimmed (below -60 dB of its peak, a 5 ms fade),
+then stored as 8-bit mu-law at 44.1 kHz in firmware/gen/lm1_samples.h. QUARTET plays them at the speed and volume
+the kit's settings give.
+
+QUARTET is free software and is shared without charge. The sounds are not part of QUARTET's GPL: they stay under
+Sampling+ 1.0, which lets you share whole copies only for noncommercial purposes, credit the author, and not use them
+to advertise anything but what you make with them. If you use these sounds outside QUARTET, take them from the
+source above and follow its terms. rossf recorded them from a Linn LM-1; Linn Electronics' rights in the original
+machine's sounds are not covered by this licence.

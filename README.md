@@ -13,8 +13,9 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
 - **Step recorder and live recorder**: write notes step by step, or play them in while the music runs; live notes
   are placed on the beat.
 - **10 sounds per instrument**: piano, brass, Hammond, theremin, strings, choir, handpan, acid bass, Reese, wobble and more, from a 2-oscillator synth with a resonant filter, envelope and LFO. Every sound can be tweaked.
-- **10 drum kits**: Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi and Industrial (synthesised, no
-  samples).
+- **10 drum kits**: Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi and Industrial: synthesised, with toms,
+  congas, shakers and more on PERC, and the LM-1 played from samples of a real Linn LM-1 (rossf, Sampling+ 1.0: see
+  [LICENSING.md](LICENSING.md)).
 - **Five pedals** per track, drawn as stompboxes: reverb, delay, distortion, chorus, phaser.
 - **Arpeggiator** (rate, octaves, direction), for the keys and for the recorded patterns.
 - **Mixer** with mutes.

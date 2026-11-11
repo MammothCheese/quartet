@@ -377,7 +377,9 @@ static const uint8_t SEQ_ORDER[NTRK] = {T_LEAD, T_PAD, T_BASS, T_DRUMS};   /* th
 /* on the mixer only: the buttons that mute LEAD, PAD, BASS, DRUMS (lit = playing) */
 static const uint8_t MUTE_BTN[NTRK] = {BTN_SAVE, BTN_ARP, BTN_SEQ, BTN_PLAY};
 static const char *const MUTE_BTN_NAME[NTRK] = {"SAVE", "ARP", "SEQ", "PLAY"};
-static const char *const DR_NAME[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "CLAP", "PERC"};
+static const char *const DR_NAME_ALL[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "CLAP", "PERC"};
+static const char *const DR_NAME_LM1[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "TOM L", "TOM H"};   /* (the LM-1's samples) */
+#define DR_NAME (set.dkit % NKIT == KIT_LM1 ? DR_NAME_LM1 : DR_NAME_ALL)   /* each drum's name, with this kit */
 enum { PG_MAIN, PG_OSC, PG_ENV, PG_LFO, NPAGE,  /* the sound pages (ARP held + SELECT, outside edit mode) */
        PG_FX = NPAGE,                           /* then the effect pages PG_FX + E_REV .. (the top buttons) */
        PG_PROJ = PG_FX + NFX,                   /* the save page (SAVE) */
@@ -697,7 +699,9 @@ static void draw_home(uint32_t sel, uint32_t run)
 /* the drums: a row a drum (its short name in a tile, the chosen drum lit), a column a step of the page shown (= a white key) */
 static void draw_grid(uint32_t pt, uint32_t drum, uint32_t page, uint32_t play, uint32_t len)   /* play: the step playing, or none */
 {
-    static const char *const DR_SHORT[NDR] = {"BD", "SD", "HH", "OH", "CP", "PC"};
+    static const char *const DR_SHORT_ALL[NDR] = {"BD", "SD", "HH", "OH", "CP", "PC"};
+    static const char *const DR_SHORT_LM1[NDR] = {"BD", "SD", "HH", "OH", "TL", "TH"};   /* (the LM-1: its two toms) */
+    const char *const *DR_SHORT = set.dkit % NKIT == KIT_LM1 ? DR_SHORT_LM1 : DR_SHORT_ALL;
     uint32_t d, s;
     uint16_t col = trk_c(T_DRUMS, 100), col2 = trk_c(T_DRUMS, 62), dim = trk_c(T_DRUMS, 22);
     cv_begin(240, H_VIEW, C_BLACK);
