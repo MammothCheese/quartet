@@ -355,10 +355,10 @@ static int quiet(void)                          /* nothing sounds, not even a re
 static const uint8_t TRK_RGB[NTRK][3] = {{255, 184, 36}, {36, 198, 240}, {178, 124, 255}, {92, 226, 104}};   /* LEAD gold, BASS cyan, PAD violet, DRUMS green */
 static const uint8_t MUTE_RGB[3] = {238, 56, 46};
 #define C_MUTE RGB(238, 56, 46)
-#define C_PANEL RGB(24, 24, 31)                 /* the panels */
-#define C_PANEL2 RGB(40, 40, 52)                /* the chosen row */
+#define C_PANEL RGB(20, 20, 24)                 /* the panels */
+#define C_PANEL2 RGB(36, 36, 42)                /* the chosen row */
 #define C_TXT RGB(228, 228, 236)                /* values */
-#define C_SUB RGB(138, 138, 156)                /* labels */
+#define C_SUB RGB(160, 160, 170)                /* labels */
 #define C_DIMC RGB(66, 66, 80)                  /* off, unused */
 #define C_BOTTXT RGB(196, 196, 210)             /* the bottom bar's text */
 #define C_LCD RGB(10, 10, 13)                   /* the little value screens */
@@ -485,12 +485,12 @@ static void head_track(uint32_t trk, const char *name, int chips)
     bx = nx + 6;
     if (trk_mute >> trk & 1u && nx + 50 < lim + 4) {
         cv_rrect(nx + 6, 11, 42, 16, 3, C_MUTE);
-        cv_text_bg(nx + 11, 11, &FONT_S, "MUTE", C_BLACK, C_MUTE);
+        cv_text_bg(nx + 6 + (42 - text_w(&FONT_S, "MUTE")) / 2, 11, &FONT_S, "MUTE", C_BLACK, C_MUTE);
         bx += 48;
     }
     if (chips && live_mode && bx + 42 <= lim) {   /* the live recording page: REC (red) while it records */
         cv_rrect(bx, 11, 42, 16, 3, live_rec ? C_MUTE : C_KEYCAP);
-        cv_text_bg(bx + (live_rec ? 9 : 5), 11, &FONT_S, live_rec ? "REC" : "LIVE", live_rec ? C_BLACK : C_TXT, live_rec ? C_MUTE : C_KEYCAP);
+        cv_text_bg(bx + (42 - text_w(&FONT_S, live_rec ? "REC" : "LIVE")) / 2, 11, &FONT_S, live_rec ? "REC" : "LIVE", live_rec ? C_BLACK : C_TXT, live_rec ? C_MUTE : C_KEYCAP);
         bx += 48;
     }
     if (chips && set.sseq_on) {                 /* SUPER SEQ plays the patterns: SUPER SEQ ON (or SUPER, if short of room) */
@@ -892,7 +892,7 @@ static void draw_mixer(void)
                 cv_rect(cx - 10, 134 - (int32_t)i * 4, 20, 3, i >= n ? RGB(34, 34, 44) : muted ? C_MUTE : i >= 8u ? RGB(255, 170, 56) : col);
             cv_rrect(cx - 25, 142, 50, 18, 4, C_KEYCAP);
             disc(cx - 16, 151, 3, muted ? RGB(96, 26, 22) : col);
-            cv_text_bg(cx - 9, 143, &FONT_S, MUTE_BTN_NAME[r], RGB(214, 214, 226), C_KEYCAP);
+            cv_text_bg(cx + 6 - text_w(&FONT_S, MUTE_BTN_NAME[r]) / 2, 143, &FONT_S, MUTE_BTN_NAME[r], RGB(214, 214, 226), C_KEYCAP);   /* (centred right of the dot) */
         }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));

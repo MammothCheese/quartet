@@ -1,6 +1,11 @@
-Terminus Font (ter-u16n.bdf)
-Copyright (C) 2020 Dimitar Toshkov Zhekov
-Source: https://github.com/retro-vault/font-vault (source/fonts/terminus)
+Liberation Sans Bold, version 2.1.5 (LiberationSans-Bold.ttf)
+Digitized data copyright (c) 2010 Google Corporation.
+Copyright (c) 2012 Red Hat, Inc.
+Source: https://github.com/liberationfonts/liberation-fonts
+
+QUARTET's lettering (firmware/gen/felucca_font.h) is made from this font by tools/ttf2font.py:
+drawn at two pixel sizes, squeezed to 82 % width, thickened sideways and kept as
+16-level bitmaps. It is a modified version and is not called "Liberation".
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

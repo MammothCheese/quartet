@@ -20,7 +20,7 @@ complete source under the same licence too.
 
 | What | Licence | Where |
 | --- | --- | --- |
-| Terminus font 8x16 (ter-u16n), rendered into `firmware/gen/felucca_font.h` | SIL OFL 1.1 | `assets/fonts/Terminus-LICENSE.txt` |
+| The lettering in `firmware/gen/felucca_font.h`: made from Liberation Sans Bold 2.1.5 (Red Hat; Google digitized data) by `tools/ttf2font.py`, squeezed narrow | SIL OFL 1.1 | `assets/fonts/LiberationSans-LICENSE.txt` |
 | The LM-1 kit's sounds, "Linn LM1 (LM-1) Drum Set" by rossf (Freesound pack 4919), six of them trimmed and stored 8-bit mu-law in `firmware/gen/lm1_samples.h` (by `tools/samples2c.py`). Not under the GPL: noncommercial sharing of whole copies, with credit | Sampling+ 1.0 | `assets/samples/LM1-ATTRIBUTION.txt`, <https://freesound.org/people/rossf/packs/4919/> |
 | JieLi AC79 SDK: `uboot.boot`, `cfg_tool.bin`, `eq_cfg_hw.bin` are read from your SDK checkout at build time and placed in the package; no SDK files are in this tree | Apache-2.0 | <https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK> |
 
