@@ -18,6 +18,8 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
   [LICENSING.md](LICENSING.md)).
 - **Five pedals** per track, drawn as stompboxes: reverb, delay, distortion, chorus, phaser.
 - **Arpeggiator** (rate, octaves, direction), for the keys and for the recorded patterns.
+- **Score view**: the pattern written as sheet music, two bars at a time, at real pitch (8va / 8vb) or centred on the
+  treble staff, on a dark or paper look.
 - **Mixer** with mutes.
 - **SUPER SEQ**: chain each track's patterns into songs (10 songs, 8 boxes per track).
 - **4 save slots** for the whole groovebox, and your current work is kept by itself across power-offs.

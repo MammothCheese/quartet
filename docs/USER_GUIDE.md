@@ -44,6 +44,21 @@ Press **SEQ** again from the step recorder to open **LIVE** (SEQ blinks). **Tap 
 
 Notes are **added** to the current pattern and quantised to 16th-note steps; lengths are rounded to steps. Lead and pads allow up to four notes per step, bass one. Drums use the first six white keys. On this screen **KNOB1** changes length, **KNOB2** moves the melodic cursor and **KNOB3** changes page; **KNOB4** is unused.
 
+## Score view
+
+**Tap REC on the home screen** to see the selected instrument's pattern written as **sheet music**, two bars at a time (one bar per staff). The note playing turns white (on the dark look). Tap **REC** again or press **HOME** to go back. **ALGORITHM** still changes instrument and **PRESETS** the pattern; holding REC here clears nothing.
+
+![Score view](score.png)
+
+| Control | Score view |
+|---|---|
+| **KNOB1** | **PG**: which two bars (patterns of 48–64 steps have two pages; three clicks per page). While playing, the page follows the music, three seconds after you last moved it |
+| **KNOB2** | **STEP**: marks a step with a small dotted line under the staff |
+| **KNOB3** | **TRUE**: real pitch, on the treble clef (bass on the bass clef). A bar too high or low for the staff is drawn one or two octaves nearer under **8va / 15ma** (or **8vb / 15mb**). **CENTRE**: everything on the treble clef; the whole pattern is moved by octaves so most notes sit in the middle of the staff, and a note still too far off is drawn nearer with a small **arrow per octave** (▲ higher, ▼ lower) |
+| **KNOB4** | **DARK** or **PAPER** (dark notes on cream) |
+
+Black keys are written as flats; the time is 4/4. A 16-step pattern shows **AS BAR 1** (the repeat sign) on its second staff. Drums use a drum staff: hats and clap as **x** with stems up, kick, snare and percussion below, a small **o** over an open hat. To fit the small screen, notes are spaced by their length rather than one column per step; a note held past the bar line is cut there with a short tie.
+
 ## Sounds and sound editing
 
 On the home screen, turn **SELECT** to choose a sound (in the step recorder it moves the cursor instead). Selecting another sound loads its preset settings, replacing your tweaks.
@@ -132,14 +147,14 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 |---|---|---|---|
 | **ALGORITHM** | Select instrument (2 clicks) | Select instrument | SUPER SEQ: select row; LIVE: select instrument |
 | **PRESETS** | Select pattern A–J (2 clicks) | Select pattern | SUPER SEQ: select song |
-| **SELECT** | Select sound/kit (2 clicks) | Melodic step cursor | Pedal, arpeggiator, mixer, save: back home (and changes the sound if turned onto another); SUPER SEQ: nothing |
-| **KNOB1–4** | Tempo + sound settings | Length / cursor / page / swing | LIVE: length / cursor / page / —; otherwise labelled settings |
+| **SELECT** | Select sound/kit (2 clicks) | Melodic step cursor | Pedal, arpeggiator, mixer, save: back home (and changes the sound if turned onto another); SUPER SEQ, score: nothing |
+| **KNOB1–4** | Tempo + sound settings | Length / cursor / page / swing | LIVE: length / cursor / page / —; score: page / step / TRUE-CENTRE / DARK-PAPER; otherwise labelled settings |
 | **Keys** | Play notes; drums: first six white keys | Melodic notes; drums: black keys choose voice, white keys toggle hits | LIVE: play and record |
 | **OCT− / OCT+** | Change octave | Drum step page | Octave where applicable |
 | **PLAY** | Start/stop from step one | Start/stop | LIVE: start/stop (stopping ends recording); mixer: mute drums; save: load |
 | **SEQ** | Open step recorder | Open LIVE | LIVE: step recorder; mixer: mute bass; pedal/save: sequencer |
 | **HOME** | Open SUPER SEQ | Return home | Return home / exit editing; SUPER SEQ: home |
-| **REC** | Hold: CLEAR ALL?; press again to confirm | Tap: rest; hold: clear pattern | LIVE: record on/off or hold clear; save: save; pedal, arpeggiator, mixer, SUPER SEQ: hold clears the selected instrument's current pattern straight away (no question) |
+| **REC** | Tap: score view; hold: CLEAR ALL?, press again to confirm | Tap: rest; hold: clear pattern | LIVE: record on/off or hold clear; save: save; score: tap back home; pedal, arpeggiator, mixer, SUPER SEQ: hold clears the selected instrument's current pattern straight away (no question) |
 | **ARP** | Tap: arpeggiator; hold: on/off | Tap: tie | Mixer: mute pads |
 | **FX / SEL / ENV / LFO / EDIT** | Tap: pedal screen; hold: pedal on/off | Same | Pedal screen: KNOB1 on/off, KNOB2–4 adjust the effect |
 | **GLO** | Open mixer | Open mixer | Close mixer |
