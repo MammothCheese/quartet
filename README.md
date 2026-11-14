@@ -77,3 +77,5 @@ SMK-37 layer of M. Geisler (genkigenki) and the loader idea of [Skiff](https://g
 
 GPL-3.0-only, like everything it is built on: you may use, change and share it, and whoever gets a firmware built
 from it gets its source too. Who made what, and the third-party parts: [LICENSING.md](LICENSING.md).
+
+You can also try Quartet in the browser, no flashing needed, in the free community [FM-1 Emulator](https://fm1-emulator.atst.tools/).
