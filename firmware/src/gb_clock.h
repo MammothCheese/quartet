@@ -151,7 +151,7 @@ static void track_step(uint32_t t) { if (t == T_DRUMS) drums_step(); else synth_
 static const uint8_t *broken_k(uint32_t t)      /* the track's BROKEN CLOCK knobs, if it has one on */
 {
     uint32_t e;
-    for (e = 0; e < NFX; e++) if (set.fx[t].on >> e & 1u && set.ped[t][e] % NPD == PD_BROKEN) return set.pk[t][e];
+    for (e = 0; e < NPED_SLOTS; e++) if (set.fx[t].on >> e & 1u && set.ped[t][e] % NPD == PD_BROKEN) return set.pk[t][e];
     return 0;
 }
 static void steps_fire(void)                    /* a new step: each track plays it, now or (broken) a little later */
@@ -191,13 +191,13 @@ static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
         broken_tick();
         if (tick % TPS == TPS / 2u && rep_len == REP_HALF) { drums_step(); synth_step(); }   /* (a 1/32 repeat) */
     }
-    arp_tick();                                 /* (playing: on the patterns' own ticks; after the step, so it arpeggiates
+    arp_tick(tick);                             /* (playing: on the patterns' own ticks; after the step, so it arpeggiates
                                                    the step's notes from their first tick) */
 }
 
 static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN frames */
 {
-    static uint32_t go_done, was_run, pos_q8, tick, free_q8;
+    static uint32_t go_done, was_run, pos_q8, tick, free_q8, free_tick;
     uint32_t len_q8 = clk_tick_q8, run = clk_run, t, i = 0, k;
     for (t = 0; t < NTRK; t++) for (k = 0; k < n; k++) tb[t][k] = 0;   /* each track's own buffer (gb_fx.h) */
     if (!run) {                                 /* stopped: a pattern chosen starts at once (SUPER SEQ: the first box) */
@@ -217,7 +217,7 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
     if (!run) {                                 /* stopped: the arpeggiator still ticks, at the tempo */
         free_q8 += n << 8;
         if (free_q8 > 4u * len_q8) free_q8 = len_q8;
-        while (free_q8 >= len_q8) { free_q8 -= len_q8; arp_tick(); }
+        while (free_q8 >= len_q8) { free_q8 -= len_q8; arp_tick(free_tick++); }
     }
     while (i < n) {
         uint32_t seg = n - i;

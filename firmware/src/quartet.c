@@ -14,38 +14,37 @@
  *               square, noise, FM), resonant filter, ADSR, LFO; 10 sounds per track
  *   gb_fx.h     the pedals: distortion and phaser per track; reverb, delay, chorus shared (sends)
  *
- * Sound (outside edit mode): SELECT, by where it is in its turn, picks the chosen track's sound (2 clicks each):
+ * Sound (outside edit mode): SELECT picks the chosen track's sound, a click each (no test note):
  *   LEAD   PIANO, XYLOPHONE, BRASS, MUSIC BOX, ELEC GUITAR, HAMMOND, THEREMIN, SYNTH, SQUARE LEAD, CHIPTUNE
  *   PAD    STRINGS, CHOIR, AC GUITAR, ORGAN, ELEC PIANO, HANDPAN, WARM SYNTH, GLASS PAD, DRONE, SWEEP
  *   BASS   UPRIGHT, TUBA, SLAP, PLUCKED, FUZZ, SYNTH BASS, FM, ACID, REESE, WOBBLE
  *   DRUMS  the kits ROCK, HIP-HOP, MINI POPS, CR-78, LM-1, 606, 808, 909, LO-FI, INDUSTRIAL
- * (the sound changes only on entering another sound's clicks; its name shows big; stopped, you hear it). KNOB1-4 set the
- * page's four values, the bottom line shows them; hold ARP and turn SELECT for the detailed pages:
- *   MAIN    tempo, cutoff, resonance, filter envelope     OSC     wave 1, wave 2, osc 2 tuning, mix
- *   ENV     attack, decay, sustain, release               LFO     rate, depth, target (pitch/filter/amp), wave
- *   DRUMS   KNOB1 tempo; KNOB2-4 pitch, decay, level of the chosen drum (the last one played or chosen)
+ * (its name shows big). Home: KNOB1 tempo, KNOB2-4 cutoff, resonance, filter envelope (drums: pitch, decay, level of
+ * the drum last played). EDIT: the SOUND page, the sound in depth (EDIT again or HOME: back; ALGORITHM another track):
+ *   SELECT the page: MAIN tempo, cutoff, resonance, filter envelope   OSC wave 1, wave 2, osc 2 tuning, mix
+ *                    ENV attack, decay, sustain, release              LFO rate, depth, target (pitch/filter/amp), wave
+ *   DRUMS  SELECT the drum; KNOB1 tempo, KNOB2-4 its pitch, decay, level
  *
- * Pedals (gb_fx.h), for the chosen track: five slots (FX SEL ENV LFO EDIT), each holding any pedal of the library.
- * A tap on a top button shows that slot's pedal (the track's name above it, the pedal's category beside it, the ON
- * lamp, three knobs with a ring of dots for their level; HOME or SEQ go back). SELECT picks the category (DRIVE,
- * FILTER, MODULATION, SPACE, PITCH, OTHER), PRESETS the pedal in it (2 clicks each; a pedal in another of the track's
- * slots is not offered, nor GLITCH beside GHOST: ped_free()); KNOB1 switches it on (3 clicks
- * clockwise) / off (3 clicks back), KNOB2-4 turn its knobs; the button held 0.5 s switches it too (lit = on).
+ * Pedals (gb_fx.h), for the chosen track: four slots (FX SEL ENV LFO), each holding any pedal of the library. A tap
+ * on a top button switches its pedal on / off ("GLITCH ON" big on top; lit = on); held 0.5 s it shows the pedal (the
+ * track's name above it, the pedal's category beside it, the ON lamp, three knobs; HOME goes back). There SELECT picks
+ * the category (DRIVE, FILTER, MODULATION, SPACE, PITCH, OTHER), PRESETS the pedal in it (a click each; a pedal in
+ * another of the track's slots is not offered, nor GLITCH beside GHOST: ped_free()); KNOB1 switches it on (a click
+ * clockwise) / off (a click back), KNOB2-4 turn its knobs. (EDIT's slot is unused: EDIT is the sound editor.)
  * The space pedals (reverb, delay, tape echo, shimmer, reverse delay, spring reverb) are one each, shared: a track's
  * first knob is what it sends. STOP silences every pedal (gb_fx.h fx_flush).
  * A pedal that would overload the chip is refused: "CPU FULL" (ped_fits()). New: reverb, delay, distortion,
- * chorus, phaser in the five slots.
+ * chorus in the four slots.
  *   GLO   a tap: the MIXER (again: the KEY page, again: home): four channel strips; KNOB1-4 the volume of LEAD, PAD,
- *         BASS, DRUMS (100 = as is); there (only), SAVE / ARP / SEQ / PLAY mute LEAD / PAD / BASS / DRUMS, lit =
- *         playing; the bottom line also shows the CPU load of the sound code (FM-1 only).
+ *         BASS, DRUMS (100 = as is); there (only), FX / SEL / ENV / LFO mute LEAD / PAD / BASS / DRUMS, lit = playing.
  *         The KEY page (Conductor's): SELECT the key (sharps / flats), KNOB1 LOCK (the keys play only its notes, one
  *         off it the note below), KNOB2 LIGHTS (its notes glow on the keys).
  *         Held: BEAT REPEAT, the slice playing goes round until let go (then the music is where it would have been);
  *         meanwhile the white keys 1-5 choose the slice: 1/2 bar, 1/4, 1/8 (to start), 1/16, 1/32
  *   ARP   (outside edit mode) a tap shows the ARPEGGIATOR of the chosen synth track, held 0.5 s turns it on / off;
- *         KNOB1 on / off (3 clicks clockwise / back), KNOB2 the rate 1/4 .. 1/32, KNOB3 octaves 1-4, KNOB4 direction
- *         UP / DOWN / RANDOM (three clicks a step).
- *         The keys you hold play one at a time, locked to the tempo
+ *         KNOB1 on / off (a click clockwise / back), KNOB2 the rate 1/4 .. 1/32, KNOB3 octaves 1-4, KNOB4 direction
+ *         UP / DOWN / RANDOM (a click a step).
+ *         The keys you hold play one at a time, locked to the beat: each note on the grid of its rate
  *
  * The save page (SAVE; SAVE again: back home): 4 slots, SAVE 1-4, each the whole groovebox (patterns, sounds,
  * pedals, mixer, SUPER SEQ). KNOB1 picks the slot. REC saves to it, PLAY loads it: each asks first ("SAVE 2?", the
@@ -55,15 +54,15 @@
  * switching off loses nothing.
  *
  * Playing:
- *   ALGORITHM  choose the track: 2 clicks right the next one, 2 left the one before (LEAD, PAD, BASS, DRUMS, round)
- *   PRESETS    choose the track's pattern A-J, two clicks each round one turn. While playing it is queued ("A>C") and starts when the playing
+ *   ALGORITHM  choose the track: a click right the next one, left the one before (LEAD, PAD, BASS, DRUMS, round)
+ *   PRESETS    choose the track's pattern A-J, a click each. While playing it is queued ("A>C") and starts when the playing
  *              pattern comes round to its step 1; stopped, at once.
  *              Hold ARP and turn PRESETS: copy the pattern into the next letter(s)
  *              Hold HOME and turn PRESETS: the MIDI channel (OMNI, 1-16)
  *   keys       play the chosen track live, also while the patterns play (DRUMS: the first 6 white keys)
- *   HOME       always home (the sequencer screen); from there, SUPER SEQ and back. (Muting: on the mixer)
+ *   HOME       always home (the sequencer screen). (Muting: on the mixer)
  *
- * SUPER SEQ (HOME from home): songs made of your patterns. A row a track (ALGORITHM chooses it), 8 boxes each; each box
+ * SUPER SEQ (SEQ from the sequencer: SEQ twice from home; SEQ again or HOME: home): songs made of your patterns. A row a track (ALGORITHM chooses it), 8 boxes each; each box
  * plays its pattern once, then the next box, the 8 round and round. A blank box goes on with the pattern before it:
  * A...B.A. plays AAAABBAA. X is a rest (blanks after it rest too); blanks at the start rest (the track comes in
  * later). New: box 1 = A, the rest blank.
@@ -83,7 +82,7 @@
  * The score (REC from home; REC lit; REC or HOME: back): the chosen track's pattern in notation, 2 bars a page.
  *   KNOB1  the page   KNOB2  a step (a dotted mark)   KNOB3  TRUE / CENTRE   KNOB4  DARK / PAPER
  *
- * Live recording (SEQ in the step recorder; SEQ blinks; SEQ again: back to the step recorder; HOME: home). The keys
+ * Live recording (REC in the step recorder; SEQ blinks; SEQ: on to SUPER SEQ; HOME: home). The keys
  * play the chosen track as usual (DRUMS: the first 6 white keys); while recording, what you play goes into the
  * pattern playing, each note on the nearest step (its length rounded too), added to what is there:
  *   REC        start recording (and the music, from step 1, if stopped); REC again: stop recording. REC lit = recording.
@@ -94,7 +93,7 @@
  *   heard on that step, not twice; a note is written when you let go of it)
  *
  * Editing, the step recorder (SEQ lit; everything keeps playing). You edit the pattern chosen with PRESETS:
- *   SEQ        from home: the step recorder; in it: live recording (above). HOME: back home
+ *   SEQ        from home: the step recorder; REC there: live recording (above); SEQ again: SUPER SEQ. HOME: home
  *   PRESETS    the pattern A-J, as outside edit mode
  *   KNOB1      the pattern's length 16 / 32 / 48 / 64     KNOB2  the dynamic p mp mf f ACC (the cursor's note and
  *              what is written next; drums: new hits, or the hit whose white key is held)
@@ -103,8 +102,9 @@
  *   LEAD BASS  step recording: the lit white key is the cursor (the 16 white keys show the cursor's page of 16)
  *   PAD          a key     writes that note on the cursor's step, the cursor moves on
  *                         (LEAD, PAD: hold several keys together for a chord, up to 4; the cursor moves when you let go)
- *                REC       a rest: clears the cursor's step, the cursor moves on.  Hold REC 1 s: clear the pattern
- *                ARP       a tie: the note before the cursor lasts one step longer, the cursor moves on
+ *                REC       live recording.  Hold REC 1 s: clear the pattern
+ *                ARP       a tap: a tie, the note before the cursor lasts one step longer; held 0.5 s: a rest, the
+ *                          cursor's step cleared; either way the cursor moves on
  *                SELECT    move the cursor (through all the pattern's pages)
  *   DRUMS      the 16 WHITE keys = 16 steps of the page shown: press one to turn it on / off for the chosen drum;
  *              OCT- / OCT+ turn the page; the first 6 BLACK keys (F#3 G#3 A#3 C#4 D#4 F#4) choose KICK / SNARE /
@@ -451,20 +451,21 @@ static const char *const TRK_NAME[NTRK] = {"LEAD", "BASS", "PAD", "DRUMS"};
 static const char *const TRK_SHORT[NTRK] = {"LD", "BS", "PD", "DR"};
 static const uint8_t SEQ_ORDER[NTRK] = {T_LEAD, T_PAD, T_BASS, T_DRUMS};   /* the order on the screen, the mixer, ALGORITHM */
 /* on the mixer only: the buttons that mute LEAD, PAD, BASS, DRUMS (lit = playing) */
-static const uint8_t MUTE_BTN[NTRK] = {BTN_SAVE, BTN_ARP, BTN_SEQ, BTN_PLAY};
-static const char *const MUTE_BTN_NAME[NTRK] = {"SAVE", "ARP", "SEQ", "PLAY"};
+static const uint8_t MUTE_BTN[NTRK] = {BTN_FX, BTN_SEL, BTN_ENV, BTN_LFO};
+static const char *const MUTE_BTN_NAME[NTRK] = {"FX", "SEL", "ENV", "LFO"};
 static const char *const DR_NAME_ALL[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "CLAP", "PERC"};
 static const char *const DR_NAME_LM1[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "TOM L", "TOM H"};   /* (the LM-1's samples) */
 #define DR_NAME (set.dkit % NKIT == KIT_LM1 ? DR_NAME_LM1 : DR_NAME_ALL)   /* each drum's name, with this kit */
-enum { PG_MAIN, PG_OSC, PG_ENV, PG_LFO, NPAGE,  /* the sound pages (ARP held + SELECT, outside edit mode) */
+enum { PG_MAIN, PG_OSC, PG_ENV, PG_LFO, NPAGE,  /* the sound pages (the SOUND page's tabs; home is MAIN) */
        PG_FX = NPAGE,                           /* then the effect pages PG_FX + E_REV .. (the top buttons) */
        PG_PROJ = PG_FX + NFX,                   /* the save page (SAVE) */
        PG_ARP, PG_MIX, PG_SSEQ,                 /* the arpeggiator (ARP), the mixer (GLO), SUPER SEQ (HOME) */
        PG_SCORE,                                /* the score (REC from home) */
-       PG_KEY };                                /* the key (GLO from the mixer) */
+       PG_KEY,                                  /* the key (GLO from the mixer) */
+       PG_SOUND };                              /* the sound editor (EDIT) */
 #define IS_FX_PAGE(p) ((p) >= PG_FX && (p) < PG_PROJ)
 static const char *const PAGE_NAME[NPAGE] = {"MAIN", "OSC", "ENV", "LFO"};
-/* the top buttons: reverb, delay, distortion, chorus, phaser */
+/* the top buttons: the four pedal slots (FX SEL ENV LFO); EDIT, the fifth, is the sound editor */
 static const uint8_t FX_BTN[NFX] = {BTN_FX, BTN_SEL, BTN_ENV, BTN_LFO, BTN_EDIT};   /* (GLO: the mixer) */
 
 /* the pedal library: each pedal's name, category, colour (dark: black letters on it) and three knobs (KNOB2-4):
@@ -519,7 +520,7 @@ static uint32_t ped_free(uint32_t t, uint32_t e, uint32_t p)   /* can slot e of 
                                                    another of its slots, nor GLITCH beside GHOST (they share the track's line) */
 {
     uint32_t e2;
-    for (e2 = 0; e2 < NFX; e2++) {
+    for (e2 = 0; e2 < NPED_SLOTS; e2++) {
         uint32_t q = set.ped[t][e2] % NPD;
         if (e2 == e) continue;
         if (q == p || (q == PD_GLITCH && p == PD_GHOST) || (q == PD_GHOST && p == PD_GLITCH)) return 0;
@@ -562,7 +563,7 @@ static int ped_fits(void)
 {
     uint32_t t, e, c = 0, sp = 0;
     for (t = 0; t < NTRK; t++)
-        for (e = 0; e < NFX; e++)
+        for (e = 0; e < NPED_SLOTS; e++)
             if (set.fx[t].on >> e & 1u) {
                 uint32_t p = set.ped[t][e] % NPD;
                 c += PD_COST[p];
@@ -754,9 +755,10 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
         p = put(p, "K1:SLOT  REC:SAVE  PLAY:LOAD");
     } else if (page == PG_ARP) {                /* the arpeggiator: how to work it */
         p = put(p, trk < NSYN ? "K1/HOLD ARP:ON/OFF  HOME:BACK" : "HOME:BACK");
-    } else if (page == PG_MIX) {                /* the mixer; and the CPU load of the sound code */
-        p = put(p, "K:VOL  BUTTON:MUTE  CPU ");
-        if (cpu > 100u) p = put(p, "--"); else { p = put_num(p, cpu, 1); *p++ = '%'; }
+    } else if (page == PG_MIX) {                /* the mixer */
+        p = put(p, "FX, SEL, ENV, LFO: MUTE TRACKS");
+    } else if (page == PG_SOUND) {              /* the sound editor */
+        p = put(p, trk < NSYN ? "SELECT:PAGE  K1-K4:EDIT" : "SELECT:DRUM  K1-K4:EDIT");
     } else if (IS_FX_PAGE(page)) {              /* a pedal: the values are on the pedal; here, how to work it */
         p = put(p, "SELECT:TYPE  PRESETS:PEDAL");   /* (KNOB1 or holding the button: on / off) */
     } else if (trk == T_DRUMS) {                /* 808 KICK P44 D110 L72: the kit, the drum, its knobs */
@@ -1714,9 +1716,8 @@ static void draw_score(uint32_t t, uint32_t pt, uint32_t len, uint32_t pg, uint3
     score_system(t, pt, len, pg * 2u + 1u, 138, 78, 0, play, step, centre, ck, &c);
 }
 
-/* ---- the KEY page (GLO from the mixer; Conductor's): the key, its relative minor, the lock and the lights; its
- * signature and major scale on a staff; one octave of piano from the key's home note, its notes lit and named, the
- * notes held gold. SELECT the key (a sharp or flat a click), KNOB1 the lock, KNOB2 the lights */
+/* ---- the KEY page (GLO from the mixer; Conductor's): the key, its relative minor, the lock and the lights; one
+ * octave of keyboard from the key's home note, its notes lit and named, the notes held gold. SELECT the key (a sharp or flat a click), KNOB1 the lock, KNOB2 the lights */
 static const char *const KMAJ[15] = {"C-FLAT", "G-FLAT", "D-FLAT", "A-FLAT", "E-FLAT", "B-FLAT", "F", "C", "G", "D", "A",
                                       "E", "B", "F-SHARP", "C-SHARP"};
 static const char *const KMIN[15] = {"A-FLAT", "E-FLAT", "B-FLAT", "F", "C", "G", "D", "A", "E", "B", "F-SHARP", "C-SHARP",
@@ -1737,12 +1738,10 @@ static void sc_sharp(int32_t x, int32_t y, uint16_t c)   /* a sharp, about 7 x 1
 }
 static void draw_key(uint32_t held)             /* held: the pitch classes played (bit 0 C) */
 {
-    static const uint8_t MAJ[8] = {0, 2, 4, 5, 7, 9, 11, 12};
     static const char *const WN[12] = {"C", "", "D", "", "E", "F", "", "G", "", "A", "", "B"};
     static const char *const SHN[12] = {"", "C#", "", "D#", "", "", "F#", "", "G#", "", "A#", ""};
     static const char *const FLN[12] = {"", "Db", "", "Eb", "", "", "Gb", "", "Ab", "", "Bb", ""};
-    static const int8_t SH[7] = {8, 5, 9, 6, 3, 7, 4}, FL[7] = {4, 7, 3, 6, 2, 5, 1};   /* the signature's places */
-    int32_t key = set.key, nks = key < 0 ? -key : key, pc = (int32_t)key_pc(), k, a, x0, st = 76, top = 116;
+    int32_t key = set.key, nks = key < 0 ? -key : key, pc = (int32_t)key_pc(), k, top = 80;
     uint32_t half, lock = set.keyopt & 1u, lights = set.keyopt >> 1 & 1u;
     uint16_t gold = rgbk(TRK_RGB[T_LEAD], 100);
     char t[40], *p;
@@ -1767,24 +1766,6 @@ static void draw_key(uint32_t held)             /* held: the pitch classes playe
                 cv_text_bg(bx + 40 - text_w(&FONT_S, t) / 2, 52, &FONT_S, t, on ? C_BLACK : C_SUB, on ? gold : C_KEYCAP);
             }
         }
-        for (k = 0; k < 5; k++) cv_rect(8, st + k * 8, 224, 1, C_SUB);   /* the staff: clef, signature, scale */
-        cv_rect(8, st, 1, 33, C_SUB); cv_rect(231, st, 1, 33, C_SUB);
-        sc_sym(10, st - 11, MS_TREBLE, C_TXT, C_PANEL);
-        for (a = 0; a < nks; a++) {
-            int32_t pp = key > 0 ? SH[a] : FL[a], x = 34 + a * 7, yy = st + 32 - pp * 4;
-            if (key > 0) sc_sharp(x, yy, C_TXT); else sc_sym(x - 1, yy - 11, MS_FLAT, C_TXT, C_PANEL);
-        }
-        x0 = 34 + 7 * nks + 14;
-        for (k = 0; k < 8; k++) {
-            uint32_t n = (uint32_t)(60 + pc + MAJ[k]);
-            int32_t pp = sc_dia(n) - 30, x = x0 + k * (220 - x0) / 8 + 6, qq, yy = st + 32 - pp * 4;
-            uint16_t cc = k == 0 || k == 7 ? gold : C_TXT;
-            if (key > 0 && black(n)) pp = sc_dia(n - 1u) - 30, yy = st + 32 - pp * 4;   /* (sharp keys: C# is C's line) */
-            for (qq = -2; qq >= pp; qq -= 2) cv_rect(x - 7, st + 32 - qq * 4, 15, 1, C_SUB);
-            for (qq = 10; qq <= pp; qq += 2) cv_rect(x - 7, st + 32 - qq * 4, 15, 1, C_SUB);
-            sc_head(x, yy, cc, 0);
-            if (pp < 4) cv_rect(x + 4, yy - 22, 1, 22, cc); else cv_rect(x - 4, yy, 1, 22, cc);
-        }
         {                                       /* the piano: the key's home note to the next (a black home: from the
                                                    white key below); its notes lit and named, the notes held gold */
             int32_t lo = black((uint32_t)pc) ? pc - 1 : pc, hi = black((uint32_t)pc) ? pc + 13 : pc + 12, nw = 0, kw, x, n, wx[16];
@@ -1794,17 +1775,88 @@ static void draw_key(uint32_t held)             /* held: the pitch classes playe
                 uint32_t cpc = (uint32_t)(n + 12) % 12u, on = in_key(cpc), hit = held >> cpc & 1u;
                 if (black(cpc)) continue;
                 x = 12 + (216 - nw * kw) / 2 + k * kw; wx[n - lo] = x; k++;
-                cv_rect(x, top, kw - 1, 46, hit ? gold : on ? RGB(232, 232, 238) : RGB(96, 96, 106));
-                if (on) cv_text_bg(x + kw / 2 - text_w(&FONT_S, WN[cpc]) / 2, top + 28, &FONT_S, WN[cpc], C_BLACK, hit ? gold : RGB(232, 232, 238));
+                cv_rect(x, top, kw - 2, 80, hit ? gold : on ? RGB(232, 232, 238) : RGB(96, 96, 106));
+                if (on) cv_text_bg(x + kw / 2 - text_w(&FONT_S, WN[cpc]) / 2, top + 58, &FONT_S, WN[cpc], C_BLACK, hit ? gold : RGB(232, 232, 238));
             }
             for (n = lo + 1; n < hi; n++) {
                 uint32_t cpc = (uint32_t)(n + 12) % 12u, on = in_key(cpc), hit = held >> cpc & 1u;
                 const char *nm = key > 0 ? SHN[cpc] : FLN[cpc];
                 if (!black(cpc)) continue;
-                x = wx[n - 1 - lo] + kw - 10;
-                cv_rect(x, top, 20, 28, hit ? gold : on ? RGB(70, 70, 84) : RGB(14, 14, 18));
-                if (on) cv_text_bg(x + 10 - text_w(&FONT_S, nm) / 2, top + 4, &FONT_S, nm, hit ? C_BLACK : gold, hit ? gold : RGB(70, 70, 84));
+                x = wx[n - 1 - lo] + kw - 12;
+                cv_rect(x, top, 22, 48, hit ? gold : on ? RGB(70, 70, 84) : RGB(14, 14, 18));
+                if (on) cv_text_bg(x + 11 - text_w(&FONT_S, nm) / 2, top + 26, &FONT_S, nm, hit ? C_BLACK : gold, hit ? gold : RGB(70, 70, 84));
             }
+        }
+        cv_oy = 0;
+        cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
+    }
+}
+
+/* ---- the SOUND page (EDIT): the chosen instrument's sound in depth. Synths: four pages (SELECT) MAIN (tempo,
+ * cutoff, resonance, filter envelope), OSC (wave 1, wave 2, its tuning, the mix / FM depth), ENV (attack, decay,
+ * sustain, release), LFO (rate, depth, target, wave). Drums: the drum (SELECT), its pitch, decay, level (and the
+ * tempo). KNOB1-4 the four knobs; ALGORITHM another instrument; EDIT or HOME back */
+static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
+{
+    static const char *const TAB[NPAGE] = {"MAIN", "OSC", "ENV", "LFO"};
+    static const char *const DTAB[NDR] = {"BD", "SD", "HH", "OH", "CP", "PC"};
+    static const char *const WAVE[NWAVE] = {"SIN", "TRI", "SAW", "SQR", "NOISE", "FM"};
+    static const char *const LTGT[NLTGT] = {"PITCH", "FILT", "AMP"};
+    static const char *const LWAVE[NLWAVE] = {"TRI", "SQR", "SAW", "RND"};
+    const uint8_t *rgb = trk_mute >> trk & 1u ? MUTE_RGB : TRK_RGB[trk % NTRK];
+    uint16_t col = rgbk(rgb, 100), ink = C_TXT;
+    const char *nm[4], *vs[4];
+    uint32_t v[4], mx[4], half, i, ntab = trk < NSYN ? NPAGE : NDR, sel = trk < NSYN ? pg % NPAGE : drum % NDR;
+    char vb[4][8];
+    if (trk < NSYN) {
+        const snd_t *sp = &set.snd[trk];
+        switch (pg % NPAGE) {
+        case PG_MAIN: nm[0] = "TEMPO"; v[0] = set.bpm - BPM_MIN; mx[0] = BPM_MAX - BPM_MIN;
+                      nm[1] = "CUTOFF"; v[1] = sp->cut; nm[2] = "RESO"; v[2] = sp->res; nm[3] = "FILT ENV"; v[3] = sp->fenv;
+                      mx[1] = mx[2] = mx[3] = 127; break;
+        case PG_OSC: nm[0] = "WAVE 1"; v[0] = sp->w1 % NWAVE; mx[0] = NWAVE - 1u; nm[1] = "WAVE 2"; v[1] = sp->w2 % NWAVE; mx[1] = NWAVE - 1u;
+                     nm[2] = "TUNE 2"; v[2] = sp->tune; mx[2] = 48; nm[3] = "MIX"; v[3] = sp->mix; mx[3] = 127; break;
+        case PG_ENV: nm[0] = "ATTACK"; v[0] = sp->a; nm[1] = "DECAY"; v[1] = sp->d; nm[2] = "SUSTAIN"; v[2] = sp->s; nm[3] = "RELEASE"; v[3] = sp->r;
+                     mx[0] = mx[1] = mx[2] = mx[3] = 127; break;
+        default: nm[0] = "RATE"; v[0] = sp->lrate; mx[0] = 127; nm[1] = "DEPTH"; v[1] = sp->ldepth; mx[1] = 127;
+                 nm[2] = "TARGET"; v[2] = sp->ltgt % NLTGT; mx[2] = NLTGT - 1u; nm[3] = "WAVE"; v[3] = sp->lwave % NLWAVE; mx[3] = NLWAVE - 1u;
+        }
+    } else {
+        const dsnd_t *ds = &set.dsnd[drum % NDR];
+        nm[0] = "TEMPO"; v[0] = set.bpm - BPM_MIN; mx[0] = BPM_MAX - BPM_MIN;
+        nm[1] = "PITCH"; v[1] = ds->pitch; nm[2] = "DECAY"; v[2] = ds->decay; nm[3] = "LEVEL"; v[3] = ds->level;
+        mx[1] = mx[2] = mx[3] = 127;
+    }
+    for (i = 0; i < 4u; i++) {                  /* the values as words or numbers */
+        vs[i] = vb[i];
+        if (i == 0u && nm[0][0] == 'T' && nm[0][1] == 'E') *put_num(vb[0], set.bpm, 1) = 0;
+        else if (trk < NSYN && pg % NPAGE == PG_OSC && i < 2u) vs[i] = WAVE[v[i] % NWAVE];
+        else if (trk < NSYN && pg % NPAGE == PG_OSC && i == 2u) {
+            int32_t st = (int32_t)v[2] - 24; char *p = vb[2];
+            *p++ = st < 0 ? '-' : '+'; *put_num(p, (uint32_t)(st < 0 ? -st : st), 1) = 0;
+        } else if (trk < NSYN && pg % NPAGE == PG_LFO && i == 2u) vs[i] = LTGT[v[2] % NLTGT];
+        else if (trk < NSYN && pg % NPAGE == PG_LFO && i == 3u) vs[i] = LWAVE[v[3] % NLWAVE];
+        else *put_num(vb[i], v[i], 1) = 0;
+    }
+    for (half = 0; half < 2u; half++) {
+        cv_begin(240, H_PEDAL / 2, C_BLACK);
+        cv_oy = -(int32_t)half * (H_PEDAL / 2);
+        cv_rrect(0, 0, 240, H_PEDAL, 8, C_PANEL);
+        for (i = 0; i < ntab; i++) {            /* the pages (drums: the drums), the chosen one lit */
+            int32_t tw = 232 / (int32_t)ntab, tx = 4 + (int32_t)i * tw;
+            const char *tn = trk < NSYN ? TAB[i] : DTAB[i];
+            cv_rrect(tx + 1, 6, tw - 2, 22, 4, i == sel ? col : C_KEYCAP);
+            cv_text_bg(tx + tw / 2 - text_w(&FONT_S, tn) / 2, 9, &FONT_S, tn, i == sel ? C_BLACK : C_SUB, i == sel ? col : C_KEYCAP);
+        }
+        {
+            const char *sn = trk < NSYN ? PRESET_NAME[trk][set.snd[trk].preset % NPRESET] : KIT_NAME[set.dkit % NKIT];
+            cv_text_bg(120 - text_w(&FONT_S, sn) / 2, 36, &FONT_S, sn, col, C_PANEL);
+        }
+        for (i = 0; i < 4u; i++) {              /* the four knobs, KNOB1-4 */
+            int32_t cx = 31 + (int32_t)i * 59;
+            draw_knob(cx, 84, v[i], mx[i] ? mx[i] : 1u, col, rgbk(rgb, 35));
+            cv_text_bg(cx - text_w(&FONT_S, nm[i]) / 2, 106, &FONT_S, nm[i], ink, C_PANEL);
+            lcd_value(cx, 126, 54, vs[i], RGB(240, 240, 246));
         }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
@@ -1907,7 +1959,7 @@ static int knob(uint32_t enc, uint8_t *v, int32_t lo, int32_t hi)   /* a knob tu
     *v = (uint8_t)(t < lo ? lo : t > hi ? hi : t);
     return 1;
 }
-#define ARP_CLICKS 3                            /* the arp's knobs: clicks a step (a few, so a nudge does not jump) */
+#define ARP_CLICKS 1                            /* the slower knobs (length, page, the arp's): clicks a step (now one) */
 static int knob_pedal(uint32_t enc, uint8_t *v, int32_t *acc)   /* a pedal's 0..127 knob, in 20 steps of a click */
 {
     int32_t e = fm1_enc_take(enc), steps, l;
@@ -1924,7 +1976,7 @@ static int knob_pedal(uint32_t enc, uint8_t *v, int32_t *acc)   /* a pedal's 0..
     *v = nv;
     return 1;
 }
-#define SWITCH_CLICKS 3                         /* KNOB1 as a pedal's switch: clicks to turn it on (clockwise) / off */
+#define SWITCH_CLICKS 1                         /* KNOB1 as a pedal's switch: a click clockwise on, anticlockwise off */
 static int knob_switch(uint32_t enc, int32_t *acc)   /* 1: turned on, -1: turned off, 0: not yet */
 {
     int32_t e = fm1_enc_take(enc);
@@ -2128,7 +2180,7 @@ static void app_main(void)
     uint32_t view_drawn = ~0u, cpu_drawn = ~0u, cpu_t = 0, ch_t = 0;
     uint32_t edit = 0, drum = DR_KICK, dpage = 0, rec_t0 = 0, rec_long = 1, chord_n = 0, chord_trk = T_PAD, home_used = 1;
     uint32_t spage = PG_MAIN;                   /* the page shown (the knobs edit it) */
-    uint32_t sseq_cur = 0, song_pos = 0;        /* SUPER SEQ: the box KNOB2 is on; where PRESETS stands (the song, A-J) */
+    uint32_t sseq_cur = 0;                      /* SUPER SEQ: the box KNOB2 is on */
     uint32_t fxb_t0[NFX] = {0}, fxb_long = (1u << NFX) - 1u;   /* when each top button went down; bit e: no long press due */
     uint32_t proj_slot = 0, confirm = 0, confirm_t = 0, msg_t = 0, msg_ok = 0;   /* the save page: the slot; "sure?" (1 save, 2 load); a message */
     uint32_t proj_go = 0, proj_go_t = 0;        /* a save (1) / load (2) confirmed: done once the sound has stopped */
@@ -2137,7 +2189,6 @@ static void app_main(void)
     uint32_t sc_pg = 0, sc_step = 0, sc_hold_t = 0;   /* the score: its page of 2 bars, the step marked, when you last moved them */
     uint8_t sc_centre = 0, sc_paper = 0;        /* the score: CENTRE (else TRUE), PAPER (else DARK) */
     int32_t sc_acc = 0;                         /* the score's page knob: clicks gathered */
-    int32_t pcat_acc = 0, ppd_acc = 0;          /* a pedal page: SELECT (category) and PRESETS (pedal), clicks gathered */
     uint8_t dyn_ui = 3;                         /* the step recorder's dynamic (KNOB2), by the knob: p mp mf f ACC (f) */
     uint32_t dheld = 0xFFu;                     /* drums editing: the white key held (KNOB2 sets that hit's dynamic) */
     uint32_t glo_t0 = 0, glo_dn = 0, glo_used = 0, rep_sel = 2;   /* GLO: when it went down; held; used (no page);
@@ -2148,7 +2199,6 @@ static void app_main(void)
     uint32_t pedal_mode = 0, head_drawn = ~0u, pedal_drawn = ~0u;   /* the pedal screen up?, what it shows */
     /* ALGORITHM: 2 clicks either way go to the next / the previous track, LEAD, PAD, BASS, DRUMS, round and round */
     static const uint8_t ALG_TRK[4] = {T_LEAD, T_PAD, T_BASS, T_DRUMS};
-    int32_t alg_acc = 0;                        /* clicks gathered towards the next track */
     /* SELECT and PRESETS work the same way, one turn of ALG_CLICKS clicks per track: SELECT in tenths (the 10 sounds),
      * PRESETS in tenths (A-J, two clicks each). Where each knob stands, per track; set from what is chosen (knobs_sync) */
     uint32_t snd_pos[NTRK], pat_pos[NTRK];
@@ -2157,8 +2207,10 @@ static void app_main(void)
     int32_t seq_acc[2] = {0, 0};                /* edit mode: the length and page knobs, likewise */
     int32_t ped_acc[3] = {0, 0, 0};             /* the pedals' knobs, likewise (PEDAL_CLICKS) */
     int32_t sw_acc = 0;                         /* KNOB1 as the pedal / arpeggiator switch: clicks gathered */
-    uint32_t preset_t = 0, aud_t = 0, aud_trk = NTRK;   /* a preset picked: when (its name shows), the test note playing */
-    static const uint8_t AUD_NOTE[NSYN][3] = {{72, 0, 0}, {36, 0, 0}, {60, 63, 67}};   /* C5, C2, a C minor chord */
+    uint32_t preset_t = 0;                      /* a preset picked: when (its name shows) */
+    uint32_t snd_pg = PG_MAIN;                  /* the sound editor's page (synths: MAIN OSC ENV LFO) */
+    uint32_t earp_t0 = 0, earp_used = 1;        /* the step recorder: ARP down when; used (a hold: the rest) */
+    static char pmsg[24];                       /* "GLITCH ON" ... */
     uint32_t cur[NSYN] = {0, 0, 0};             /* each synth's step-recording cursor */
     uint8_t held_note[27] = {0}, held_trk[27] = {0};   /* what each held key plays, on which track (note 0: none) */
     uint8_t slot[27];                           /* a white key: its step on the page 0..15; a black key: 0..10 */
@@ -2182,7 +2234,6 @@ static void app_main(void)
     }
     proj_scan();                                /* which project slots are full */
     knobs_sync(snd_pos, pat_pos);
-    song_pos = (set.sseq_sel % NCHAIN) * ALG_CLICKS / NCHAIN;
     trk_mute = set.mute;
     clock_set_bpm(set.bpm);
     {
@@ -2349,7 +2400,7 @@ static void app_main(void)
             if (!rc) *p++ = (char)('1' + proj_slot);
             *p = 0;
             msg = done; msg_ok = rc == 0; msg_t = fm1_ms ? fm1_ms : 1u;
-            if (!rc && proj_go == 2u) { CHANGED(); knobs_sync(snd_pos, pat_pos); song_pos = (set.sseq_sel % NCHAIN) * ALG_CLICKS / NCHAIN; }   /* (now the current work) */
+            if (!rc && proj_go == 2u) { CHANGED(); knobs_sync(snd_pos, pat_pos); }   /* (now the current work) */
             else if (!rc) edits++;
             proj_go = 0;
         }
@@ -2365,62 +2416,44 @@ static void app_main(void)
             else { clk_go++; clk_run = 1; }     /* (clk_go first: the interrupt restarts at step 1, then counts on) */
         }
         if (!clk_run) live_rec = 0;             /* stopped: the recording ends */
-        /* SEQ, on a pedal, the arp, the mixer, the save page or SUPER SEQ: back to the sequencer screen (nothing else) */
-        if (b & (1u << BTN_SEQ)) {              /* from home: the step recorder; then between it and live recording */
-            if (spage >= PG_FX) spage = PG_MAIN;
-            else if (live_mode) { live_mode = 0; live_rec = 0; edit = 1; }
-            else if (edit) { edit = 0; live_mode = 1; }
-            else edit = 1;
+        /* SEQ: the sequencer (the step recorder; REC there: live recording); SEQ again: SUPER SEQ; again: home */
+        if (b & (1u << BTN_SEQ)) {
+            if (spage == PG_SSEQ) spage = PG_MAIN;
+            else if (edit || live_mode) { edit = 0; live_mode = 0; live_rec = 0; spage = PG_SSEQ; }
+            else { spage = PG_MAIN; edit = 1; }
             chord_n = 0;
         }
         /* HOME (let go, not used with PRESETS): always home, the sequencer screen; from there, SUPER SEQ and back */
         if (b & (1u << BTN_HOME)) home_used = 0;
         if (rel & (1u << BTN_HOME)) {
-            if (!home_used) {
-                if (spage == PG_SSEQ) spage = PG_MAIN;
-                else if (spage < PG_FX && !edit && !live_mode) spage = PG_SSEQ;
-                else { spage = PG_MAIN; edit = 0; live_mode = 0; live_rec = 0; chord_n = 0; }
-            }
+            if (!home_used) { spage = PG_MAIN; edit = 0; live_mode = 0; live_rec = 0; chord_n = 0; }   /* (always home) */
             home_used = 1;
         }
-        if ((e = fm1_enc_take(ENC_ALGORITHM)) != 0) {   /* the track: 2 clicks to the next (or the one before) */
-            alg_acc += e;
-            if (alg_acc >= 2 || alg_acc <= -2) {
-                int32_t st = alg_acc / 2, i;
-                alg_acc -= st * 2;
-                for (i = 0; i < 4 && ALG_TRK[i] != sel_trk; i++) {}
-                i = ((i % 4) + st % 4 + 4) % 4;
-                sel_trk = ALG_TRK[i];
-                chord_n = 0;
-            }
+        if ((e = fm1_enc_take(ENC_ALGORITHM)) != 0) {   /* the track: a click to the next (or the one before) */
+            int32_t i;
+            for (i = 0; i < 4 && ALG_TRK[i] != sel_trk; i++) {}
+            i = ((i % 4) + e % 4 + 4) % 4;
+            sel_trk = ALG_TRK[i];
+            chord_n = 0;
         }
         if ((e = fm1_enc_take(ENC_PRESETS)) != 0) {
             if (fm1_in.buttons >> BTN_HOME & 1u) {           /* HOME held: the MIDI channel */
                 int32_t v = (int32_t)set.ch + e;
                 set.ch = (uint8_t)(v < 0 ? 0 : v > 16 ? 16 : v);
                 home_used = 1; ch_t = fm1_ms;
-            } else if (IS_FX_PAGE(spage)) {     /* a pedal page: the pedal within its category (2 clicks each) */
-                ppd_acc += e;
-                if (ppd_acc >= 2 || ppd_acc <= -2) {
-                    uint32_t sl = spage - PG_FX, p = set.ped[trk][sl] % NPD;
-                    int32_t stp = ppd_acc / 2;
-                    ppd_acc -= stp * 2;
-                    ped_set(trk, sl, ped_step(trk, sl, p, stp));
-                    if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
-                }
-            } else if (spage == PG_SSEQ) {      /* SUPER SEQ: the song A-J, two clicks each (ARP held: copy it along) */
-                uint32_t to;
-                song_pos = turn(song_pos, e);
-                to = song_pos * NCHAIN / ALG_CLICKS;
+            } else if (IS_FX_PAGE(spage)) {     /* a pedal page: the pedal within its category (a click each) */
+                uint32_t sl = spage - PG_FX, p = set.ped[trk][sl] % NPD;
+                ped_set(trk, sl, ped_step(trk, sl, p, e));
+                if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
+            } else if (spage == PG_SSEQ) {      /* SUPER SEQ: the song A-J, a click each (ARP held: copy it along) */
+                uint32_t to = (uint32_t)(((int32_t)(set.sseq_sel % NCHAIN) + e % (int32_t)NCHAIN + (int32_t)NCHAIN) % (int32_t)NCHAIN);
                 if (to != set.sseq_sel % NCHAIN) {
                     if (fm1_in.buttons >> BTN_ARP & 1u) { bytes_copy(set.chain[to], set.chain[set.sseq_sel % NCHAIN], sizeof set.chain[0]); arp_used = 1; }
                     set.sseq_sel = (uint8_t)to;
                 }
-            } else {                            /* the pattern A-J, two clicks each, round and round (ARP held: a copy) */
-                uint32_t to;
+            } else {                            /* the pattern A-J, a click each, round and round (ARP held: a copy) */
+                uint32_t to = (uint32_t)(((int32_t)pt + e % (int32_t)NPAT + (int32_t)NPAT) % (int32_t)NPAT);
                 if (fm1_in.buttons >> BTN_ARP & 1u) arp_used = 1;   /* (ARP held: a copy, not the arp screen) */
-                pat_pos[trk] = turn(pat_pos[trk], e);
-                to = pat_pos[trk] * NPAT / ALG_CLICKS;
                 if (to != pt) {
                     if (!edit && fm1_in.buttons >> BTN_ARP & 1u) { pat_copy(trk, pt, to); arp_used = 1; }   /* (take this one along;
                                                    not in edit mode, where ARP is the tie) */
@@ -2430,12 +2463,10 @@ static void app_main(void)
             CHANGED();
         }
         if ((e = fm1_enc_take(ENC_SELECT)) != 0) {
-            if (IS_FX_PAGE(spage)) {            /* a pedal page: the category (2 clicks each); its first pedal */
-                pcat_acc += e;
-                if (pcat_acc >= 2 || pcat_acc <= -2) {
+            if (IS_FX_PAGE(spage)) {            /* a pedal page: the category (a click each); its first free pedal */
+                {
                     uint32_t sl = spage - PG_FX, ca = PDEF[set.ped[trk][sl] % NPD].cat % NPCAT, tries;
-                    int32_t stp = pcat_acc / 2, dir = stp > 0 ? 1 : -1, pf = -1;
-                    pcat_acc -= stp * 2;
+                    int32_t stp = e, dir = stp > 0 ? 1 : -1, pf = -1;
                     while (stp) {                       /* one category a step (one with nothing free is passed by) */
                         for (tries = 0, pf = -1; tries < NPCAT && pf < 0; tries++) {
                             ca = (uint32_t)(((int32_t)ca + dir + (int32_t)NPCAT) % (int32_t)NPCAT);
@@ -2453,50 +2484,52 @@ static void app_main(void)
                 set.key = (int8_t)(v < -7 ? -7 : v > 7 ? 7 : v);
                 CHANGED();
             }
+            else if (spage == PG_SOUND) {       /* the sound editor: the page (drums: the drum) */
+                if (trk < NSYN) snd_pg = (uint32_t)(((int32_t)snd_pg + e % (int32_t)NPAGE + (int32_t)NPAGE) % (int32_t)NPAGE);
+                else drum = (uint32_t)(((int32_t)drum + e % (int32_t)NDR + (int32_t)NDR) % (int32_t)NDR);
+            }
             else if (spage == PG_SSEQ || spage == PG_SCORE) {}   /* (SUPER SEQ, the score: nothing) */
             else if (syn_edit) {                /* editing a synth: the cursor, through all pages */
                 cur[trk] = (uint32_t)(((int32_t)cur[trk] + e % (int32_t)len + (int32_t)len) % (int32_t)len);
                 page_hold_t = fm1_ms;
             }
-            else if (!edit && fm1_in.buttons >> BTN_ARP & 1u) {   /* ARP held: the detailed pages MAIN, OSC, ENV, LFO */
-                arp_used = 1;
-                int32_t v = (int32_t)(spage >= PG_FX ? PG_MAIN : spage) + (spage >= PG_FX ? 0 : e);
-                spage = (uint32_t)(v < 0 ? 0 : v >= (int32_t)NPAGE ? (int32_t)NPAGE - 1 : v);
-            } else if (!edit) {                 /* the sound: 2 clicks each, 10 a turn (DRUMS: the kit) */
-                uint32_t c, now = trk < NSYN ? set.snd[trk].preset : set.dkit, i;
+            else if (!edit) {                   /* the sound: a click each, round and round (DRUMS: the kit); no test note */
+                uint32_t now = trk < NSYN ? set.snd[trk].preset : set.dkit, i;
+                uint32_t c2 = (uint32_t)(((int32_t)(now % NPRESET) + e % (int32_t)NPRESET + (int32_t)NPRESET) % (int32_t)NPRESET);
                 if (spage >= PG_FX) spage = PG_MAIN;   /* (from a pedal: back to the sequencer) */
-                snd_pos[trk] = turn(snd_pos[trk], e);
-                c = snd_pos[trk] * NPRESET / ALG_CLICKS;
-                if (c != now) {                 /* only on entering another sound's clicks: a small turn keeps your tweaks */
-                    if (aud_trk < NSYN)         /* (a test note still playing: let it go first) */
-                        for (i = 0; i < 3u; i++) if (AUD_NOTE[aud_trk][i]) live_note(aud_trk, AUD_NOTE[aud_trk][i], 0);
-                    aud_trk = NTRK;
-                    if (trk < NSYN) {
-                        set.snd[trk] = PRESETS[trk][c];
-                        if (!clk_run) {         /* stopped: hear it, a note (the pad: a chord) for 0.6 s */
-                            for (i = 0; i < 3u; i++) if (AUD_NOTE[trk][i]) live_note(trk, AUD_NOTE[trk][i], 1);
-                            aud_trk = trk; aud_t = fm1_ms;
-                        }
-                    } else {
-                        set.dkit = (uint8_t)c;
-                        for (i = 0; i < NDR; i++) set.dsnd[i] = KITS[c][i];
-                        if (!clk_run) { hit_req[DR_KICK]++; hit_req[DR_HAT]++; }   /* stopped: hear the kit */
-                    }
-                    preset_t = fm1_ms ? fm1_ms : 1u;   /* (its name shows big for a moment) */
-                    CHANGED();
-                }
-            }
-        }
-        /* the top buttons: a press opens that effect's page for the chosen track; held 0.5 s: the effect on / off */
-        for (k = 0; k < NFX; k++) {
-            if (b >> FX_BTN[k] & 1u) { spage = PG_FX + k; fxb_t0[k] = fm1_ms; fxb_long &= ~(1u << k); }
-            if (fm1_in.buttons >> FX_BTN[k] & 1u && !(fxb_long >> k & 1u) && fm1_ms - fxb_t0[k] >= 500u) {
-                set.fx[trk].on ^= (uint8_t)(1u << k);
-                if (set.fx[trk].on >> k & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << k); CPU_FULL(); }
-                fxb_long |= 1u << k;
+                if (trk < NSYN) set.snd[trk] = PRESETS[trk][c2];
+                else { set.dkit = (uint8_t)c2; for (i = 0; i < NDR; i++) set.dsnd[i] = KITS[c2][i]; }
+                preset_t = fm1_ms ? fm1_ms : 1u;   /* (its name shows big for a moment) */
                 CHANGED();
             }
-            if (rel >> FX_BTN[k] & 1u) fxb_long |= 1u << k;   /* (let go: no long press until the next press) */
+        }
+        /* the top buttons FX SEL ENV LFO: a tap switches that slot's pedal on / off for the chosen track ("GLITCH ON");
+         * held 0.5 s: its page, to choose and set it. (On the mixer they mute the tracks: handled above.) EDIT: the sound
+         * editor, and back */
+        for (k = 0; k < NPED_SLOTS; k++) {
+            if (b >> FX_BTN[k] & 1u) { fxb_t0[k] = fm1_ms; fxb_long &= ~(1u << k); }
+            if (spage != PG_MIX && fm1_in.buttons >> FX_BTN[k] & 1u && !(fxb_long >> k & 1u) && fm1_ms - fxb_t0[k] >= 500u) {
+                spage = PG_FX + k; edit = 0; live_mode = 0; live_rec = 0;   /* held: the pedal's page */
+                fxb_long |= 1u << k;
+            }
+            if (rel >> FX_BTN[k] & 1u) {
+                if (!(fxb_long >> k & 1u)) {    /* a tap: on / off */
+                    char *pp;
+                    set.fx[trk].on ^= (uint8_t)(1u << k);
+                    if (set.fx[trk].on >> k & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << k); CPU_FULL(); }
+                    else {
+                        pp = put(pmsg, PDEF[set.ped[trk][k] % NPD].name);
+                        *put(pp, set.fx[trk].on >> k & 1u ? " ON" : " OFF") = 0;
+                        msg = pmsg; msg_ok = 1; msg_t = fm1_ms ? fm1_ms : 1u;
+                    }
+                    CHANGED();
+                }
+                fxb_long |= 1u << k;            /* (let go: no long press until the next press) */
+            }
+        }
+        if (b & (1u << BTN_EDIT)) {             /* EDIT: the sound editor (again: home) */
+            if (spage == PG_SOUND) spage = PG_MAIN;
+            else { spage = PG_SOUND; edit = 0; live_mode = 0; live_rec = 0; chord_n = 0; }
         }
         if (confirm && (fm1_ms - confirm_t > 3000u || spage != PG_PROJ)) confirm = 0;   /* "sure?" lapses */
         /* KNOB1-4: the page's four settings */
@@ -2505,7 +2538,7 @@ static void app_main(void)
             uint32_t sy = trk < NSYN;
             uint8_t li = (uint8_t)(len / PAGE - 1u), pg = (uint8_t)((sy ? cur[trk] : dpage * PAGE) / PAGE);
             int ch = 0;
-            if (knob_slow(ENC_KNOB1, &li, 0, NSTEP / PAGE - 1u, &seq_acc[0])) {   /* 16 / 32 / 48 / 64, 3 clicks a step */
+            if (knob_slow(ENC_KNOB1, &li, 0, NSTEP / PAGE - 1u, &seq_acc[0])) {   /* 16 / 32 / 48 / 64, a click a step */
                 set.plen[trk][pt] = (uint8_t)((li + 1u) * PAGE);
                 len = pat_len(trk, pt);
                 if (sy && cur[trk] >= len) cur[trk] = len - 1u;
@@ -2529,7 +2562,7 @@ static void app_main(void)
                 cur[trk] = (uint32_t)(((int32_t)cur[trk] + e % (int32_t)len + (int32_t)len) % (int32_t)len);
                 page_hold_t = fm1_ms;
             }
-            if (knob_slow(ENC_KNOB3, &pg, 0, (int32_t)(len / PAGE) - 1, &seq_acc[1])) {   /* the page of 16, 3 clicks a step */
+            if (knob_slow(ENC_KNOB3, &pg, 0, (int32_t)(len / PAGE) - 1, &seq_acc[1])) {   /* the page of 16, a click a step */
                 page_hold_t = fm1_ms;
                 if (sy) cur[trk] = pg * PAGE + cur[trk] % PAGE;
                 else dpage = pg;
@@ -2583,11 +2616,30 @@ static void app_main(void)
             ch |= knob(ENC_KNOB3, &set.chain[set.sseq_sel % NCHAIN][trk][sseq_cur % NLINK], 0, CH_REST);   /* blank, A-J, X */
             ch |= knob(ENC_KNOB4, &set.sseq_on, 0, 1);   /* on / off */
             if (ch) CHANGED();
+        } else if (spage == PG_SOUND) {         /* the sound editor: the page's four knobs */
+            int ch = 0;
+            if (trk == T_DRUMS || snd_pg == PG_MAIN) { if (knob(ENC_KNOB1, &set.bpm, BPM_MIN, BPM_MAX)) { clock_set_bpm(set.bpm); ch = 1; } }
+            if (trk == T_DRUMS) {
+                dsnd_t *ds = &set.dsnd[drum];
+                ch |= knob(ENC_KNOB2, &ds->pitch, 0, 127) | knob(ENC_KNOB3, &ds->decay, 0, 127) | knob(ENC_KNOB4, &ds->level, 0, 127);
+            } else {
+                snd_t *sp = &set.snd[trk];
+                switch (snd_pg) {
+                case PG_MAIN: ch |= knob(ENC_KNOB2, &sp->cut, 0, 127) | knob(ENC_KNOB3, &sp->res, 0, 127) | knob(ENC_KNOB4, &sp->fenv, 0, 127); break;
+                case PG_OSC: ch |= knob(ENC_KNOB1, &sp->w1, 0, NWAVE - 1) | knob(ENC_KNOB2, &sp->w2, 0, NWAVE - 1)
+                                 | knob(ENC_KNOB3, &sp->tune, 0, 48) | knob(ENC_KNOB4, &sp->mix, 0, 127); break;
+                case PG_ENV: ch |= knob(ENC_KNOB1, &sp->a, 0, 127) | knob(ENC_KNOB2, &sp->d, 0, 127)
+                                 | knob(ENC_KNOB3, &sp->s, 0, 127) | knob(ENC_KNOB4, &sp->r, 0, 127); break;
+                default: ch |= knob(ENC_KNOB1, &sp->lrate, 0, 127) | knob(ENC_KNOB2, &sp->ldepth, 0, 127)
+                                | knob(ENC_KNOB3, &sp->ltgt, 0, NLTGT - 1) | knob(ENC_KNOB4, &sp->lwave, 0, NLWAVE - 1); break;
+                }
+            }
+            if (ch) CHANGED();
         } else if (spage == PG_KEY) {           /* the key: KNOB1 the lock, KNOB2 the lights */
             uint8_t lk = set.keyopt & 1u, li = set.keyopt >> 1 & 1u;
             if (knob(ENC_KNOB1, &lk, 0, 1) | knob(ENC_KNOB2, &li, 0, 1)) { set.keyopt = (uint8_t)(lk | li << 1); CHANGED(); }
             fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
-        } else if (spage == PG_SCORE) {         /* the score: KNOB1 the page (2 bars, 3 clicks), KNOB2 the step marked,
+        } else if (spage == PG_SCORE) {         /* the score: KNOB1 the page (2 bars, a click each), KNOB2 the step marked,
                                                    KNOB3 TRUE / CENTRE, KNOB4 DARK / PAPER */
             uint32_t npg = (len + 31u) / 32u;
             uint8_t pg = (uint8_t)(sc_pg < npg ? sc_pg : 0u);
@@ -2638,7 +2690,7 @@ static void app_main(void)
                     trk_mute = set.mute;
                     clock_set_bpm(set.bpm);
                     knobs_sync(snd_pos, pat_pos);
-                    song_pos = 0; sseq_cur = 0; dpage = 0; drum = DR_KICK;
+                    sseq_cur = 0; dpage = 0; drum = DR_KICK;
                     for (k = 0; k < NSYN; k++) cur[k] = 0;
                     msg = "ALL CLEARED"; msg_ok = 1; msg_t = fm1_ms ? fm1_ms : 1u;
                     CHANGED();
@@ -2651,7 +2703,7 @@ static void app_main(void)
             }
         }
         if (rel & (1u << BTN_REC)) {
-            if (!rec_long && syn_edit) { syn_clear_step(trk, pt, cur[trk]); cur[trk] = (cur[trk] + 1u) % len; CHANGED(); }
+            if (!rec_long && edit && spage < PG_FX) { edit = 0; live_mode = 1; chord_n = 0; }   /* the step recorder: live */
             else if (!rec_long && spage == PG_SCORE) spage = PG_MAIN;   /* the score: back home */
             else if (!rec_long && !edit && !live_mode && spage < PG_FX) spage = PG_SCORE;   /* home: the score */
             else if (!rec_long && live_mode && spage < PG_FX) {
@@ -2660,7 +2712,14 @@ static void app_main(void)
             }
             rec_long = 1;
         }
-        if (b & (1u << BTN_ARP) && syn_edit) { syn_tie(trk, pt, cur[trk], len); cur[trk] = (cur[trk] + 1u) % len; CHANGED(); }
+        /* the step recorder: ARP a tap = tie (the note before goes on into this step), held 0.5 s = a rest (the step
+         * cleared); either way the cursor moves on */
+        if (b & (1u << BTN_ARP) && syn_edit) { earp_t0 = fm1_ms; earp_used = 0; }
+        if (syn_edit && !earp_used && fm1_in.buttons >> BTN_ARP & 1u && fm1_ms - earp_t0 >= 500u) {
+            syn_clear_step(trk, pt, cur[trk]); cur[trk] = (cur[trk] + 1u) % len; earp_used = 1; CHANGED();
+        }
+        if (rel & (1u << BTN_ARP) && syn_edit && !earp_used) { syn_tie(trk, pt, cur[trk], len); cur[trk] = (cur[trk] + 1u) % len; CHANGED(); }
+        if (rel & (1u << BTN_ARP)) earp_used = 1;
         /* ARP outside edit mode: a tap (not used with PRESETS or SELECT) opens the arpeggiator; GLO: the mixer */
         if (b & (1u << BTN_ARP)) { arp_used = edit != 0u; arp_t0 = fm1_ms; }
         if (rel & (1u << BTN_ARP)) {           /* let go: a tap opens the arpeggiator, a hold (0.5 s) turns it on / off */
@@ -2684,10 +2743,6 @@ static void app_main(void)
             glo_dn = 0; glo_used = 0; rep_len = 0;
         }
 
-        if (aud_trk < NSYN && fm1_ms - aud_t >= 600u) {   /* the preset's test note ends */
-            for (k = 0; k < 3u; k++) if (AUD_NOTE[aud_trk][k]) live_note(aud_trk, AUD_NOTE[aud_trk][k], 0);
-            aud_trk = NTRK;
-        }
         midi_in();
         if (mclk_bpm && fm1_ms - mclk_t0 > 2000u) mclk_bpm = 0, mclk_run = 0;   /* the MIDI clock has stopped coming */
 
@@ -2726,13 +2781,15 @@ static void app_main(void)
         }
         fm1_led_key(BTN_OCT_DOWN, drum_edit ? dpage > 0u : oct < 0);
         fm1_led_key(BTN_OCT_UP, drum_edit ? dpage + 1u < len / PAGE : oct > 0);
-        fm1_led_key(BTN_SEQ, edit || (live_mode && (fm1_ms / 400u) % 2u));   /* step recorder: lit; live: blinking */
-        fm1_led_key(BTN_HOME, spage == PG_SSEQ);   /* SUPER SEQ up */
+        fm1_led_key(BTN_SEQ, edit || spage == PG_SSEQ || (live_mode && (fm1_ms / 400u) % 2u));   /* step recorder, SUPER SEQ:
+                                                   lit; live: blinking */
+        fm1_led_key(BTN_HOME, 0);
+        fm1_led_key(BTN_EDIT, spage == PG_SOUND);   /* the sound editor up */
         fm1_led_key(BTN_SAVE, spage == PG_PROJ);   /* the save page up */
         fm1_led_key(BTN_GLO, ((spage == PG_MIX || spage == PG_KEY) && !rep_len) || (rep_len && (fm1_ms / 120u) % 2u));   /* the mixer
                                                    or the key open; blinking: a beat repeat */
         fm1_led_key(BTN_ARP, trk < NSYN && set.arp_on >> trk & 1u);   /* the chosen track arpeggiates */
-        for (k = 0; k < NFX; k++) {             /* top buttons: lit = that effect is on for the chosen track; its page open: a glow */
+        for (k = 0; k < NPED_SLOTS; k++) {      /* top buttons: lit = that effect is on for the chosen track; its page open: a glow */
             uint32_t on = set.fx[trk].on >> k & 1u;
             fm1_led_key(FX_BTN[k], on);
             fm1_led_key_glow(FX_BTN[k], !on && spage == PG_FX + k);
@@ -2768,7 +2825,7 @@ static void app_main(void)
          * (1), the arpeggiator (2), the mixer (3) */
         {
             uint32_t scr = IS_FX_PAGE(spage) ? 1u : spage == PG_ARP ? 2u : spage == PG_MIX ? 3u : spage == PG_SSEQ ? 4u : spage == PG_PROJ ? 5u
-                         : spage == PG_SCORE ? 6u : spage == PG_KEY ? 7u : 0u;
+                         : spage == PG_SCORE ? 6u : spage == PG_KEY ? 7u : spage == PG_SOUND ? 8u : 0u;
             if (scr != pedal_mode) {
                 pedal_mode = scr;
                 lcd_fill(0, 0, 240, 240, C_BLACK);  /* (all of it: the screens differ in their parts) */
@@ -2776,7 +2833,16 @@ static void app_main(void)
             }
         }
         score_up = pedal_mode == 6u;
-        if (pedal_mode == 7u) {                 /* the key: KEY, the page (the notes held light gold) */
+        if (pedal_mode == 8u) {                 /* the sound editor: the track (SOUND), its page */
+            const uint8_t *sb = trk < NSYN ? (const uint8_t *)&set.snd[trk] : (const uint8_t *)&set.dsnd[drum];
+            uint32_t nb = trk < NSYN ? sizeof(snd_t) : sizeof(dsnd_t);
+            if ((st = mix(mix(trk, trk_mute >> trk & 1u), 8u)) != head_drawn) {
+                head_drawn = st; head_badge = "SOUND"; head_track(trk, TRK_NAME[trk], 0); head_badge = 0;
+            }
+            st = mix(mix(mix(mix(mix(mix(trk, snd_pg), drum), set.bpm), set.dkit), trk_mute >> trk & 1u), 81u);
+            for (k = 0; k < nb; k++) st = mix(st, sb[k]);
+            if (st != pedal_drawn) { pedal_drawn = st; draw_sound(trk, snd_pg, drum); }
+        } else if (pedal_mode == 7u) {          /* the key: KEY, the page (the notes held light gold) */
             uint32_t pcs = 0;
             for (k = 0; k < 27u; k++)
                 if (keys >> k & 1u) {
@@ -2883,7 +2949,7 @@ static void app_main(void)
             {
                 uint32_t leg = wipe_ask ? 5u : spage < PG_FX ? (syn_edit ? 1u : drum_edit ? 2u : live_mode ? (trk < NSYN ? 3u : 4u) : 0u) : 0u;   /* SEQ screens: the legend; "CLEAR ALL?" */
                 uint32_t pj = leg << 6;
-                st = mix(mix(st, pj), spage == PG_MIX ? cpu_drawn : 0u);
+                st = mix(st, pj);
                 if (st != status_drawn && spage != PG_SSEQ) { status_drawn = st; draw_status(oct, trk, show_ch, spage, drum, pj, cpu_drawn); }
             }
         }

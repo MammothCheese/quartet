@@ -204,7 +204,7 @@ static const uint8_t ARP_TICKS[4] = {16, 8, 4, 2};   /* ticks a note: 1/4, 1/8, 
 static const char *const ARP_NAME[4] = {"1/4", "1/8", "1/16", "1/32"};
 static uint8_t arp_dyn[NSYN];                   /* interrupt: the dynamic of the step the arpeggiator plays from */
 static uint8_t arp_held[NSYN][ARP_MAX], arp_n[NSYN], arp_cur[NSYN];   /* interrupt only: the keys held, low to high */
-static uint32_t arp_count[NSYN], arp_idx[NSYN], arp_gate[NSYN];
+static uint32_t arp_idx[NSYN], arp_gate[NSYN];
 static uint8_t seq_arp[NSYN][4];                /* interrupt only: the pattern's notes the arpeggiator holds now (0: none) */
 
 static void arp_add(uint32_t t, uint32_t note)
@@ -212,7 +212,7 @@ static void arp_add(uint32_t t, uint32_t note)
     uint32_t i, j;
     for (i = 0; i < arp_n[t]; i++) if (arp_held[t][i] == note) return;
     if (arp_n[t] >= ARP_MAX) return;
-    if (!arp_n[t]) { arp_count[t] = 0; arp_idx[t] = 0; }   /* the first key: the arpeggio starts at once */
+    if (!arp_n[t]) arp_idx[t] = 0;              /* (the first key: the arpeggio starts from it, on the next beat of its rate) */
     for (i = 0; i < arp_n[t] && arp_held[t][i] < note; i++) {}
     for (j = arp_n[t]; j > i; j--) arp_held[t][j] = arp_held[t][j - 1u];
     arp_held[t][i] = (uint8_t)note;
@@ -231,7 +231,7 @@ static void seq_arp_drop(uint32_t t)            /* the pattern's notes end: the 
     uint32_t i;
     for (i = 0; i < 4u; i++) if (seq_arp[t][i]) { arp_del(t, seq_arp[t][i]); seq_arp[t][i] = 0; }
 }
-static void arp_tick(void)                      /* every clock tick */
+static void arp_tick(uint32_t tick)             /* every clock tick: tick, counted from the start (step 1) */
 {
     uint32_t t;
     for (t = 0; t < NSYN; t++) {
@@ -243,7 +243,7 @@ static void arp_tick(void)                      /* every clock tick */
             continue;
         }
         if (!arp_n[t]) continue;
-        if (arp_count[t]++ % rate == 0u) {      /* the next note: through the keys, over 1..4 octaves */
+        if (tick % rate == 0u) {                /* on the beat of its rate: the next note, through the keys, over 1..4 octaves */
             static uint32_t rnd = 77777u;
             uint32_t span = arp_n[t] * ((set.arp_oct[t] & 3u) + 1u), i, note;
             if (set.arp_dir[t] == 2u) { rnd ^= rnd << 13; rnd ^= rnd >> 17; rnd ^= rnd << 5; i = rnd % span; }   /* RANDOM */

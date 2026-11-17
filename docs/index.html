@@ -95,7 +95,7 @@ footer a { color: var(--sub); }
   <div>
     <div class="kicker">Custom firmware for the M-VAVE FM-1 &middot; free and open source</div>
     <h1>Four instruments.<br>One little <em>band</em>.</h1>
-    <p class="lede">QUARTET turns the FM-1 into a four-track groovebox: lead, pads and chords, bass and drums. Ten sounds and ten patterns for each, five pedal slots with a library of 36 stompboxes, an arpeggiator, live recording, a score view and a song arranger.</p>
+    <p class="lede">QUARTET turns the FM-1 into a four-track groovebox: lead, pads and chords, bass and drums. Ten sounds and ten patterns for each, four pedal slots with a library of 36 stompboxes, a sound editor, an arpeggiator, live recording, a score view and a song arranger.</p>
     <a class="btn primary" href="https://github.com/MammothCheese/quartet/releases/latest">Download</a>
     <a class="btn ghost" href="https://github.com/MammothCheese/quartet#install">How to install</a>
     <a class="btn ghost" href="https://github.com/MammothCheese/quartet">Source</a>
@@ -111,11 +111,11 @@ footer a { color: var(--sub); }
   <h2>In short</h2>
   <p class="sub">Pick an instrument, pick a sound, write a pattern, add pedals, then chain patterns into a song. Everything lives on the FM-1's own buttons and knobs.</p>
   <ul>
-    <li><kbd>ALGORITHM</kbd> picks the instrument, <kbd>SELECT</kbd> its sound, <kbd>PRESETS</kbd> its pattern (A&ndash;J). Each takes two clicks per choice.</li>
+    <li><kbd>ALGORITHM</kbd> picks the instrument, <kbd>SELECT</kbd> its sound, <kbd>PRESETS</kbd> its pattern (A&ndash;J), a click each.</li>
     <li><kbd>SEQ</kbd> opens the step recorder; press it again for live recording. <kbd>HOME</kbd> always comes back.</li>
     <li><kbd>REC</kbd> on the home screen shows the pattern as sheet music.</li>
-    <li>The five top buttons <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> <kbd>EDIT</kbd> are pedal slots, each holding any of 36 pedals; <kbd>ARP</kbd> is the arpeggiator.</li>
-    <li><kbd>HOME</kbd> from home opens <b>SUPER SEQ</b>, the song arranger. <kbd>GLO</kbd> is the mixer, <kbd>SAVE</kbd> the four save slots.</li>
+    <li><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are pedal slots, each holding any of 36 pedals: tap to switch one on or off, hold to open it. <kbd>EDIT</kbd> is the sound editor; <kbd>ARP</kbd> the arpeggiator.</li>
+    <li><kbd>SEQ</kbd> twice opens <b>SUPER SEQ</b>, the song arranger. <kbd>GLO</kbd> is the mixer, <kbd>SAVE</kbd> the four save slots. <kbd>HOME</kbd> always comes back.</li>
     <li>Your work is kept by itself: two seconds after the music stops and goes quiet, it is saved.</li>
   </ul>
 </section>
@@ -135,14 +135,15 @@ footer a { color: var(--sub); }
       <p>Play the keys to hear the chosen instrument; on drums the first six white keys hit the six voices. <kbd>OCT-</kbd> <kbd>OCT+</kbd> change the octave and <kbd>MASTER</kbd> sets the volume. <b>A&gt;C</b> on a tile means pattern C is queued after A: it starts when A comes round.</p>
       <h3>On the home screen</h3>
       <div class="grid">
-        <div class="card"><h4>ALGORITHM</h4><p>The instrument: LEAD, PAD, BASS, DRUMS (2 clicks each).</p></div>
-        <div class="card"><h4>SELECT</h4><p>Its sound, or drum kit (2 clicks each). The name shows big for a moment.</p></div>
+        <div class="card"><h4>ALGORITHM</h4><p>The instrument: LEAD, PAD, BASS, DRUMS (a click each).</p></div>
+        <div class="card"><h4>SELECT</h4><p>Its sound, or drum kit (a click each). The name shows big for a moment.</p></div>
         <div class="card"><h4>PRESETS</h4><p>Its pattern, A to J. Hold <kbd>ARP</kbd> and turn: copy it into the next letter.</p></div>
         <div class="card"><h4>KNOB 1</h4><p>The tempo.</p></div>
         <div class="card"><h4>KNOB 2&ndash;4</h4><p>Synths: filter cutoff, resonance, filter envelope. Drums: pitch, decay and level of the drum last played.</p></div>
         <div class="card"><h4>PLAY</h4><p>All four instruments start (from step one) or stop.</p></div>
         <div class="card"><h4>REC</h4><p>Tap: the score view. Hold 1 s: <b>CLEAR ALL?</b>, then REC again to clear everything.</p></div>
-        <div class="card"><h4>HOME</h4><p>SUPER SEQ. Hold it and turn <kbd>PRESETS</kbd>: the MIDI channel.</p></div>
+        <div class="card"><h4>EDIT</h4><p>The SOUND page: the sound in depth.</p></div>
+        <div class="card"><h4>HOME</h4><p>Home, from anywhere. Hold it and turn <kbd>PRESETS</kbd>: the MIDI channel.</p></div>
       </div>
     </div>
     <div class="shot">
@@ -160,14 +161,14 @@ footer a { color: var(--sub); }
       <h3>The step recorder (<kbd>SEQ</kbd>)</h3>
       <p>Synths show a piano roll: move the cursor and play keys to write notes. Keys held together make a chord (LEAD and PAD).</p>
       <table class="t">
-        <tr><td><kbd>KNOB 1</kbd></td><td>Pattern length: 16 / 32 / 48 / 64 (3 clicks a step).</td></tr>
+        <tr><td><kbd>KNOB 1</kbd></td><td>Pattern length: 16 / 32 / 48 / 64.</td></tr>
         <tr><td><kbd>SELECT</kbd></td><td>The step cursor.</td></tr>
         <tr><td><kbd>KNOB 2</kbd></td><td><b>DYN</b>: the note's dynamic, p / mp / mf / f / ACC (an accent): the note at the cursor, and the notes you write next.</td></tr>
-        <tr><td><kbd>KNOB 3</kbd></td><td>The page of 16 steps (3 clicks a step).</td></tr>
+        <tr><td><kbd>KNOB 3</kbd></td><td>The page of 16 steps.</td></tr>
         <tr><td><kbd>KNOB 4</kbd></td><td>Swing for the whole groove: 50&ndash;66 %.</td></tr>
-        <tr><td><kbd>REC</kbd></td><td>Tap: a rest, the cursor moves on. Hold 1 s: clear the pattern.</td></tr>
-        <tr><td><kbd>ARP</kbd></td><td>Tie: the note before the cursor lasts into this step.</td></tr>
-        <tr><td><kbd>SEQ</kbd> / <kbd>HOME</kbd></td><td>Live recording / home.</td></tr>
+        <tr><td><kbd>REC</kbd></td><td>Tap: live recording. Hold 1 s: clear the pattern.</td></tr>
+        <tr><td><kbd>ARP</kbd></td><td>Tap: tie (the note before lasts into this step). Hold 0.5 s: a rest. The cursor moves on.</td></tr>
+        <tr><td><kbd>SEQ</kbd> / <kbd>HOME</kbd></td><td>SUPER SEQ / home.</td></tr>
       </table>
       <p>While the music plays, a long pattern is followed page by page, except for three seconds after you move or write.</p>
     </div>
@@ -184,7 +185,7 @@ footer a { color: var(--sub); }
     <div>
       <h3>Drums</h3>
       <p>In the step recorder the <b>first six black keys</b> choose the drum (and play it); the <b>white keys</b> switch its steps on and off on the page shown. <kbd>OCT-</kbd> <kbd>OCT+</kbd> turn the page. <kbd>KNOB 2</kbd> sets the dynamic of new hits; hold a hit's white key and turn it to change that hit. Softer hits look dimmer, accents have a white mark.</p>
-      <h3>Live recording (<kbd>SEQ</kbd> again)</h3>
+      <h3>Live recording (<kbd>REC</kbd> in the step recorder)</h3>
       <p><kbd>SEQ</kbd> blinks. Tap <kbd>REC</kbd> and play: notes go into the pattern playing, on the nearest 16th, added to what is there. Tap <kbd>REC</kbd> again to stop recording while the music goes on; if stopped, REC starts it. Hold <kbd>REC</kbd> 1 s to clear the pattern playing. <kbd>KNOB 1&ndash;3</kbd>: length, cursor, page.</p>
       <div class="tip">The demo groove is in pattern A. Try writing a new bassline in pattern B, then turn <kbd>PRESETS</kbd> while playing: it takes over when A comes round.</div>
     </div>
@@ -197,7 +198,7 @@ footer a { color: var(--sub); }
   <div class="split">
     <div>
       <table class="t">
-        <tr><td><kbd>KNOB 1</kbd> PG</td><td>Which two bars (3 clicks a page). While playing it follows the music, three seconds after you last moved it.</td></tr>
+        <tr><td><kbd>KNOB 1</kbd> PG</td><td>Which two bars. While playing it follows the music, three seconds after you last moved it.</td></tr>
         <tr><td><kbd>KNOB 2</kbd> STEP</td><td>Marks a step with a small dotted line under the staff.</td></tr>
         <tr><td><kbd>KNOB 3</kbd> MODE</td><td><b>TRUE</b>: real pitch, bass on the bass clef; a bar far off the staff is drawn nearer under <b>8va / 15ma</b> or <b>8vb / 15mb</b>. <b>CENTRE</b>: all on the treble clef, the pattern moved by octaves around the middle; a note still far off gets a small arrow per octave.</td></tr>
         <tr><td><kbd>KNOB 4</kbd> D/P</td><td><b>DARK</b> (the note playing turns white) or <b>PAPER</b> (dark notes on cream).</td></tr>
@@ -228,8 +229,8 @@ footer a { color: var(--sub); }
     <tr><td>10</td><td class="c-lead">Chiptune</td><td class="c-pad">Sweep</td><td class="c-bass">Wobble</td><td class="c-drums">Industrial</td></tr>
   </table>
   <p>The kits are synthesised, except the <b>LM-1</b>, which plays samples of a real Linn LM-1 (its CLAP and PERC keys are its low and high toms). PERC changes per kit: a conga on CR-78, a shaker on Mini Pops and 606, toms on 808 and Lo-Fi.</p>
-  <h3>Deeper editing</h3>
-  <p>Hold <kbd>ARP</kbd> and turn <kbd>SELECT</kbd> to switch the sound pages of LEAD, PAD and BASS:</p>
+  <h3>The sound editor (<kbd>EDIT</kbd>)</h3>
+  <p>Press <kbd>EDIT</kbd> for the SOUND page of the chosen instrument. <kbd>SELECT</kbd> the page, <kbd>KNOB 1&ndash;4</kbd> edit it, <kbd>ALGORITHM</kbd> another instrument, <kbd>EDIT</kbd> or <kbd>HOME</kbd> back. Drums: a tab per drum, its pitch, decay and level.</p>
   <table class="t grid4">
     <tr><th>Page</th><th>KNOB 1</th><th>KNOB 2</th><th>KNOB 3</th><th>KNOB 4</th></tr>
     <tr><td>MAIN</td><td>Tempo</td><td>Cutoff</td><td>Resonance</td><td>Filter envelope</td></tr>
@@ -242,15 +243,15 @@ footer a { color: var(--sub); }
 
 <section id="pedals">
   <h2>Pedals and arpeggiator</h2>
-  <p class="sub">The five top buttons are five pedal slots for the chosen instrument, and each can hold any pedal from a library of 36. Tap a button to see its stompbox; hold it 0.5 s to switch it on or off (lit = on).</p>
+  <p class="sub"><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are four pedal slots for the chosen instrument, and each can hold any pedal from a library of 36. <b>Tap</b> a button to switch its pedal on or off (its name shows: GLITCH ON); <b>hold</b> it 0.5 s to open the pedal (lit = on).</p>
   <div class="split">
     <div>
       <table class="t">
-        <tr><td><kbd>SELECT</kbd></td><td>The category (shown beside the instrument's name), 2 clicks each.</td></tr>
-        <tr><td><kbd>PRESETS</kbd></td><td>The pedal within it, 2 clicks each.</td></tr>
-        <tr><td><kbd>KNOB 1</kbd></td><td>The switch: three clicks clockwise on, three anticlockwise off.</td></tr>
+        <tr><td><kbd>SELECT</kbd></td><td>The category (shown beside the instrument's name), a click each.</td></tr>
+        <tr><td><kbd>PRESETS</kbd></td><td>The pedal within it, a click each.</td></tr>
+        <tr><td><kbd>KNOB 1</kbd></td><td>The switch: a click clockwise on, anticlockwise off.</td></tr>
         <tr><td><kbd>KNOB 2&ndash;4</kbd></td><td>The pedal's three knobs (most run 0&ndash;20).</td></tr>
-        <tr><td><kbd>HOME</kbd> / <kbd>SEQ</kbd></td><td>Back to the sequencer.</td></tr>
+        <tr><td><kbd>HOME</kbd></td><td>Back home.</td></tr>
       </table>
       <table class="t grid4">
         <tr><th>Category</th><th>Pedals</th></tr>
@@ -265,9 +266,9 @@ footer a { color: var(--sub); }
       <p><b>Space pedals are shared</b>: one of each for the whole band. Each instrument sets how much it sends; the other two knobs change the shared pedal for everyone. All the others are each slot's own. A new project starts with Reverb, Delay, Distortion, Chorus and Phaser.</p>
       <div class="tip">If switching a pedal on would overload the chip, it stays off and <b>CPU FULL</b> shows: switch another one off first. Phaser, Uni, Filter Seq and Wah are the heaviest.</div>
       <h3>Arpeggiator (<kbd>ARP</kbd>)</h3>
-      <p>Plays held notes, and the pattern's chords, one after another. Tap <kbd>ARP</kbd> for its page; hold it 0.5 s to switch it on or off.</p>
+      <p>Plays held notes, and the pattern's chords, one after another, locked to the beat. Tap <kbd>ARP</kbd> for its page; hold it 0.5 s to switch it on or off.</p>
       <table class="t">
-        <tr><td><kbd>KNOB 1</kbd></td><td>On / off (3 clicks).</td></tr>
+        <tr><td><kbd>KNOB 1</kbd></td><td>On / off (a click clockwise / anticlockwise).</td></tr>
         <tr><td><kbd>KNOB 2</kbd></td><td>Rate: 1/4 to 1/32.</td></tr>
         <tr><td><kbd>KNOB 3</kbd></td><td>Octaves: 1 to 4.</td></tr>
         <tr><td><kbd>KNOB 4</kbd></td><td>Direction: up, down, random.</td></tr>
@@ -285,7 +286,7 @@ footer a { color: var(--sub); }
   <div class="split">
     <div>
       <h3>SUPER SEQ: songs</h3>
-      <p>Press <kbd>HOME</kbd> on the home screen. Ten songs (<b>A&ndash;J</b>); each instrument has its own row of up to eight boxes. A box plays its pattern once, then the next; instruments move on at their own pattern lengths.</p>
+      <p>Press <kbd>SEQ</kbd> twice (the sequencer, then SUPER SEQ). Ten songs (<b>A&ndash;J</b>); each instrument has its own row of up to eight boxes. A box plays its pattern once, then the next; instruments move on at their own pattern lengths.</p>
       <ul>
         <li><b>A&ndash;J</b>: play that pattern. <b>Blank</b>: the pattern before goes on (blanks at the start are silent). <b>X</b>: a rest.</li>
         <li><code>A...B.A.</code> plays <b>A A A A B B A A</b>.</li>
@@ -308,9 +309,9 @@ footer a { color: var(--sub); }
       <h3>Beat repeat (hold <kbd>GLO</kbd>)</h3>
       <p>Hold <kbd>GLO</kbd> while playing: the slice playing goes round until you let go, then the music carries on where it would have been. Meanwhile the first five white keys choose the slice: 1/2 bar, 1/4, 1/8 (to start), 1/16, 1/32.</p>
       <h3>Mixer (<kbd>GLO</kbd>)</h3>
-      <p><kbd>KNOB 1&ndash;4</kbd> set the volumes of LEAD, PAD, BASS and DRUMS. Here <kbd>SAVE</kbd> <kbd>ARP</kbd> <kbd>SEQ</kbd> <kbd>PLAY</kbd> mute them (lit = playing). The CPU load shows at the bottom: if the sound crackles, switch a pedal off. Tap <kbd>GLO</kbd> again for the KEY page, and again to go home.</p>
+      <p><kbd>KNOB 1&ndash;4</kbd> set the volumes of LEAD, PAD, BASS and DRUMS. Here <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute them (lit = playing). If the sound crackles, switch a pedal off. Tap <kbd>GLO</kbd> again for the KEY page, and again to go home.</p>
       <h3>The KEY page</h3>
-      <p>The key, its relative minor, its signature and scale on a staff, and an octave of piano with the key's notes lit. <kbd>SELECT</kbd> the key (a sharp or flat at a time), <kbd>KNOB 1</kbd> <b>LOCK</b> (the keys play only the key's notes), <kbd>KNOB 2</kbd> <b>LIGHTS</b> (the key's notes glow on the keys).</p>
+      <p>The key, its relative minor and signature, and an octave of keyboard with the key's notes lit and named. <kbd>SELECT</kbd> the key (a sharp or flat at a time), <kbd>KNOB 1</kbd> <b>LOCK</b> (the keys play only the key's notes), <kbd>KNOB 2</kbd> <b>LIGHTS</b> (the key's notes glow on the keys).</p>
       <h3>Saving (<kbd>SAVE</kbd>)</h3>
       <p>Your current work is kept by itself. For keeps, there are four slots: <kbd>KNOB 1</kbd> picks one, <kbd>REC</kbd> twice saves, <kbd>PLAY</kbd> twice loads (the second press within three seconds; any other button cancels). Saving and loading stop the music. <kbd>SAVE</kbd> again leaves.</p>
       <h3>Starting over</h3>
@@ -327,9 +328,11 @@ footer a { color: var(--sub); }
   <h3>Anywhere</h3>
   <table class="t">
     <tr><td><kbd>PLAY</kbd></td><td>Start (from step one) and stop.</td></tr>
-    <tr><td><kbd>ALGORITHM</kbd></td><td>The instrument (2 clicks).</td></tr>
-    <tr><td><kbd>PRESETS</kbd></td><td>Its pattern, A&ndash;J (2 clicks). Hold <kbd>ARP</kbd>: copy into the next letter. Hold <kbd>HOME</kbd>: the MIDI channel.</td></tr>
-    <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> <kbd>EDIT</kbd></td><td>Tap: the pedal slot's page. Hold 0.5 s: the pedal on / off.</td></tr>
+    <tr><td><kbd>ALGORITHM</kbd></td><td>The instrument (a click each).</td></tr>
+    <tr><td><kbd>PRESETS</kbd></td><td>Its pattern, A&ndash;J (a click each). Hold <kbd>ARP</kbd>: copy into the next letter. Hold <kbd>HOME</kbd>: the MIDI channel.</td></tr>
+    <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd></td><td>Tap: the pedal on / off (its name shows). Hold 0.5 s: the pedal's page.</td></tr>
+    <tr><td><kbd>EDIT</kbd></td><td>The SOUND page (again: back).</td></tr>
+    <tr><td><kbd>HOME</kbd></td><td>Home.</td></tr>
     <tr><td><kbd>ARP</kbd></td><td>Tap: the arpeggiator's page. Hold 0.5 s: on / off.</td></tr>
     <tr><td><kbd>GLO</kbd></td><td>Tap: the mixer, then the KEY page, then home. Hold: beat repeat (white keys 1&ndash;5: 1/2 &ndash; 1/32).</td></tr>
     <tr><td><kbd>SAVE</kbd></td><td>The save page (again: close).</td></tr>
@@ -339,12 +342,11 @@ footer a { color: var(--sub); }
 
   <h3>Home screen</h3>
   <table class="t">
-    <tr><td><kbd>SELECT</kbd></td><td>The sound or kit (2 clicks). Hold <kbd>ARP</kbd>: the sound pages MAIN, OSC, ENV, LFO.</td></tr>
+    <tr><td><kbd>SELECT</kbd></td><td>The sound or kit (a click each).</td></tr>
     <tr><td><kbd>KNOB 1</kbd></td><td>Tempo.</td></tr>
     <tr><td><kbd>KNOB 2</kbd> / <kbd>3</kbd> / <kbd>4</kbd></td><td>Cutoff / resonance / filter envelope (drums: pitch / decay / level).</td></tr>
     <tr><td><kbd>SEQ</kbd></td><td>The step recorder.</td></tr>
     <tr><td><kbd>REC</kbd></td><td>Tap: the score view. Hold 1 s, then REC again: clear everything.</td></tr>
-    <tr><td><kbd>HOME</kbd></td><td>SUPER SEQ.</td></tr>
   </table>
 
   <h3>Step recorder</h3>
@@ -352,16 +354,16 @@ footer a { color: var(--sub); }
     <tr><td><kbd>KNOB 1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> / <kbd>4</kbd></td><td>Length / dynamic / page / swing.</td></tr>
     <tr><td><kbd>SELECT</kbd></td><td>The cursor.</td></tr>
     <tr><td>Keys</td><td>Synths: write notes (held together: a chord). Drums: black keys choose the drum, white keys switch steps.</td></tr>
-    <tr><td><kbd>REC</kbd></td><td>Tap: a rest. Hold 1 s: clear the pattern.</td></tr>
+    <tr><td><kbd>REC</kbd></td><td>Tap: live recording. Hold 1 s: clear the pattern.</td></tr>
     <tr><td><kbd>ARP</kbd></td><td>Tie.</td></tr>
-    <tr><td><kbd>SEQ</kbd> / <kbd>HOME</kbd></td><td>Live recording / home.</td></tr>
+    <tr><td><kbd>SEQ</kbd> / <kbd>HOME</kbd></td><td>SUPER SEQ / home.</td></tr>
   </table>
 
   <h3>Live recording</h3>
   <table class="t">
     <tr><td><kbd>REC</kbd></td><td>Tap: recording on / off (starts the music if stopped). Hold 1 s: clear the pattern playing.</td></tr>
     <tr><td><kbd>KNOB 1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></td><td>Length / cursor / page.</td></tr>
-    <tr><td><kbd>SEQ</kbd> / <kbd>HOME</kbd></td><td>Step recorder / home.</td></tr>
+    <tr><td><kbd>SEQ</kbd> / <kbd>HOME</kbd></td><td>SUPER SEQ / home.</td></tr>
   </table>
 
   <h3>Score view</h3>
@@ -373,9 +375,9 @@ footer a { color: var(--sub); }
   <h3>Pedal and arpeggiator pages</h3>
   <table class="t">
     <tr><td><kbd>SELECT</kbd> / <kbd>PRESETS</kbd></td><td>Pedal page: the category / the pedal.</td></tr>
-    <tr><td><kbd>KNOB 1</kbd></td><td>On / off (3 clicks).</td></tr>
+    <tr><td><kbd>KNOB 1</kbd></td><td>On / off (a click clockwise / anticlockwise).</td></tr>
     <tr><td><kbd>KNOB 2</kbd> / <kbd>3</kbd> / <kbd>4</kbd></td><td>The pedal's three knobs; arpeggiator: rate / octaves / direction.</td></tr>
-    <tr><td><kbd>HOME</kbd> <kbd>SEQ</kbd></td><td>Back to the sequencer (on the arpeggiator, <kbd>SELECT</kbd> too).</td></tr>
+    <tr><td><kbd>HOME</kbd></td><td>Back home (on the arpeggiator, <kbd>SELECT</kbd> too).</td></tr>
   </table>
 
   <h3>SUPER SEQ</h3>
@@ -388,7 +390,7 @@ footer a { color: var(--sub); }
   <h3>Mixer and save page</h3>
   <table class="t">
     <tr><td><kbd>KNOB 1&ndash;4</kbd></td><td>Mixer: the four volumes. Save page: <kbd>KNOB 1</kbd> the slot.</td></tr>
-    <tr><td><kbd>SAVE</kbd> <kbd>ARP</kbd> <kbd>SEQ</kbd> <kbd>PLAY</kbd></td><td>Mixer: mute LEAD, PAD, BASS, DRUMS.</td></tr>
+    <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd></td><td>Mixer: mute LEAD, PAD, BASS, DRUMS.</td></tr>
     <tr><td><kbd>REC</kbd> twice / <kbd>PLAY</kbd> twice</td><td>Save page: save / load.</td></tr>
   </table>
 
@@ -407,6 +409,7 @@ footer a { color: var(--sub); }
     <figure><img src="guide/superseq.png" alt=""><figcaption>SUPER SEQ</figcaption></figure>
     <figure><img src="guide/mixer.png" alt=""><figcaption>Mixer</figcaption></figure>
     <figure><img src="guide/key.png" alt=""><figcaption>The key</figcaption></figure>
+    <figure><img src="guide/editor.png" alt=""><figcaption>The sound editor</figcaption></figure>
     <figure><img src="guide/save.png" alt=""><figcaption>Save page</figcaption></figure>
   </div>
 </section>

@@ -27,6 +27,8 @@
 enum { E_REV, E_DLY, E_DST, E_CHO, E_PHS, NFX };    /* the slots (FX, SEL, ENV, LFO, EDIT) and the pedal each held before
                                                    the pedals could be chosen (an older save loads them so) */
 typedef char nfx_matches_the_save[NFX == PEDAL_SLOTS ? 1 : -1];
+#define NPED_SLOTS 4u                           /* the slots in use: FX SEL ENV LFO (the fifth, EDIT's, is kept in the save but
+                                                   unused: EDIT is the sound editor) */
 enum { PD_DIST, PD_OD, PD_FUZZ, PD_OCTF, PD_GATEF, PD_FOLD,              /* DRIVE */
        PD_FSEQ, PD_WAH,                                                  /* FILTER */
        PD_CHO, PD_PHS, PD_FLG, PD_TREM, PD_SLICE, PD_VIB, PD_UNI,        /* MODULATION */
@@ -890,7 +892,7 @@ static void fx_process(int32_t *out, uint32_t n)
         int32_t gv = (int32_t)set.vol[t] * 4096 / 100;   /* the mixer: 100 = as is (Q12), 127 = x1.27, after the pedals */
         for (e = 0; e < NFX; e++) {
             uint32_t p = set.ped[t][e] % NPD;
-            if (on >> e & 1u && !PD_SPACE(p) && !(fx_quiet && (p == PD_GHOST || p == PD_GLITCH))) ped_insert(t, e, p, set.pk[t][e], tb[t], n);
+            if (e < NPED_SLOTS && on >> e & 1u && !PD_SPACE(p) && !(fx_quiet && (p == PD_GHOST || p == PD_GLITCH))) ped_insert(t, e, p, set.pk[t][e], tb[t], n);
             else pst[t][e].live = 0;
         }
         if (gv != 4096) {
@@ -902,7 +904,7 @@ static void fx_process(int32_t *out, uint32_t n)
         int32_t *bus = fx_bus[b];
         uint32_t first = 1;
         for (t = 0; t < NTRK; t++)
-            for (e = 0; e < NFX; e++) {
+            for (e = 0; e < NPED_SLOTS; e++) {
                 int32_t sv = set.pk[t][e][0];
                 const int32_t *x = tb[t];
                 if (!(set.fx[t].on >> e & 1u) || sp_of(set.ped[t][e] % NPD) != (int32_t)b || !sv || fx_quiet) continue;
