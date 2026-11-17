@@ -25,15 +25,14 @@
  *   ENV     attack, decay, sustain, release               LFO     rate, depth, target (pitch/filter/amp), wave
  *   DRUMS   KNOB1 tempo; KNOB2-4 pitch, decay, level of the chosen drum (the last one played or chosen)
  *
- * Pedals (gb_fx.h), for the chosen track. A tap on a top button shows that pedal (the track's name big above it,
- * the ON lamp, three knobs with a ring of dots for their level; the sequence is not shown: HOME, SEQ or SELECT go back);
- * KNOB1 switches it on (3 clicks clockwise) / off (3 clicks back), KNOB2-4 turn its knobs; the button held 0.5 s
- * switches it too (the button lit = on, however it was switched).
- *   FX    REVERB      LEVEL, TONE, TIME               (one reverb for all: LEVEL is this track's, TONE / TIME shared)
- *   SEL   DELAY       REPEAT RATE, ECHO, INTENSITY    (shared; the repeat rate on the tempo, 1/16 .. 1/2)
- *   ENV   DISTORTION  LEVEL, TONE, DIST               (this track's own; the volume follows the drive)
- *   LFO   CHORUS      RATE, DEPTH, LEVEL              (shared, stereo; LEVEL is this track's)
- *   EDIT  PHASER      RATE, DEPTH, FEEDBACK           (this track's own)
+ * Pedals (gb_fx.h), for the chosen track: five slots (FX SEL ENV LFO EDIT), each holding any pedal of the library.
+ * A tap on a top button shows that slot's pedal (the track's name above it, the pedal's category beside it, the ON
+ * lamp, three knobs with a ring of dots for their level; HOME or SEQ go back). SELECT picks the category (DRIVE,
+ * FILTER, MODULATION, SPACE, OTHER), PRESETS the pedal in it (2 clicks each); KNOB1 switches it on (3 clicks
+ * clockwise) / off (3 clicks back), KNOB2-4 turn its knobs; the button held 0.5 s switches it too (lit = on).
+ * The space pedals (reverb, delay, tape echo, shimmer) are one each, shared: a track's first knob is what it sends.
+ * A pedal that would overload the chip is refused: "CPU FULL" (ped_fits()). New: reverb, delay, distortion,
+ * chorus, phaser in the five slots.
  *   GLO   the MIXER (GLO again: back): four channel strips; KNOB1-4 the volume of LEAD, PAD, BASS, DRUMS (100 =
  *         as is); there (only), SAVE / ARP / SEQ / PLAY mute LEAD / PAD / BASS / DRUMS, lit = playing;
  *         the bottom line also shows the CPU load of the sound code (FM-1 only)
@@ -180,6 +179,8 @@ typedef struct {                                /* the shared pedals' knobs */
     uint8_t crate, cdepth;                      /* CHORUS: rate, depth */
 } gfx_t;
 #define FXN 256u                                /* frames the effects take at a time (the audio block) */
+#define PEDAL_SLOTS 5u                          /* the pedal slots of a track (the top buttons; NFX in gb_fx.h) */
+#define NSPACE 4u                               /* the shared pedals: reverb, delay, tape echo, shimmer (gb_fx.h) */
 
 static struct {
     uint8_t oct, ch, bpm, mute;                 /* mute: bit t = track t muted */
@@ -203,6 +204,10 @@ static struct {
     uint8_t clen[NCHAIN];                       /* each song's length: boxes 1..8 used (KNOB1 on its page; added later, so last) */
     uint8_t sound_order;                        /* (1: the sounds in QUARTET's order. Only its place matters: a save without
                                                    it is older, and its sound numbers are moved to the new order) */
+    /* the pedal library (added later, so last: an older save lacks them and gets its five pedals as they were) */
+    uint8_t ped[NTRK][PEDAL_SLOTS];             /* each slot's pedal (PD_DIST ..., gb_fx.h) */
+    uint8_t pk[NTRK][PEDAL_SLOTS][3];           /* its three knobs (a shared pedal: [0] is what this track sends) */
+    uint8_t spk[NSPACE][2];                     /* the shared pedals' other two knobs */
 } set;
 #define SET_V10 ((uint32_t)((uint8_t *)&set.sseq_on - (uint8_t *)&set))   /* the size of a v1.0 save */
 #define SET_SS1 ((uint32_t)((uint8_t *)&set.clen - (uint8_t *)&set))      /* the size of a save from before song lengths */
@@ -289,6 +294,26 @@ static void chain_defaults(void)                /* SUPER SEQ off; every song: ea
     for (c = 0; c < NCHAIN; c++) set.clen[c] = NLINK;
 }
 
+static void ped_from_legacy(void)               /* the five pedals every slot had before they could be chosen, with their
+                                                   settings (an older save; and the defaults) */
+{
+    const gfx_t *g = &set.gfx;
+    uint32_t t;
+    for (t = 0; t < NTRK; t++) {
+        const tfx_t *f = &set.fx[t];
+        uint8_t *k;
+        set.ped[t][E_REV] = PD_REV; k = set.pk[t][E_REV]; k[0] = f->rev_send; k[1] = 0; k[2] = 0;
+        set.ped[t][E_DLY] = PD_DLY; k = set.pk[t][E_DLY]; k[0] = f->dly_send; k[1] = 0; k[2] = 0;
+        set.ped[t][E_DST] = PD_DIST; k = set.pk[t][E_DST]; k[0] = f->dlevel; k[1] = f->tone; k[2] = f->drive;
+        set.ped[t][E_CHO] = PD_CHO; k = set.pk[t][E_CHO]; k[0] = g->crate; k[1] = g->cdepth; k[2] = f->cho_send;
+        set.ped[t][E_PHS] = PD_PHS; k = set.pk[t][E_PHS]; k[0] = f->prate; k[1] = f->pdepth; k[2] = f->pfb;
+    }
+    set.spk[SP_REV][0] = g->rtone; set.spk[SP_REV][1] = g->rtime;
+    set.spk[SP_DLY][0] = g->dtime; set.spk[SP_DLY][1] = g->dfb;
+    set.spk[SP_TAPE][0] = 2; set.spk[SP_TAPE][1] = 60;   /* (1/8, some repeats) */
+    set.spk[SP_SHIM][0] = 90; set.spk[SP_SHIM][1] = 70;
+}
+
 static void set_defaults(void)                  /* a starting groove in pattern A: C minor, all four tracks */
 {
     static const uint8_t LEAD[16][2] = {{72, 2}, {0, 1}, {0, 1}, {75, 1}, {0, 1}, {0, 1}, {79, 2}, {0, 1},
@@ -327,6 +352,7 @@ static void set_defaults(void)                  /* a starting groove in pattern 
         *step_len(T_PAD, 0, i * 4u) = 4;
     }
     chain_defaults();
+    ped_from_legacy();
     set.sound_order = 1;
 }
 
@@ -374,6 +400,7 @@ static const uint8_t MUTE_RGB[3] = {238, 56, 46};
 static uint32_t live_mode, live_rec;            /* the live recording page is up; it records (main loop) */
 static uint32_t scr_home;                       /* the sequencer screen is home (not a recorder): for the top bar */
 static uint32_t score_up;                       /* the SCORE page is up (for the top bar's badge) */
+static const char *head_badge;                  /* a badge after the name (a pedal page: its category), or none */
 #define KEY0 53u                                /* key 0 = F3 */
 static int black(uint32_t note) { return (0x54Au >> (note % 12u)) & 1u; }
 static const char *const TRK_NAME[NTRK] = {"LEAD", "BASS", "PAD", "DRUMS"};
@@ -392,28 +419,81 @@ enum { PG_MAIN, PG_OSC, PG_ENV, PG_LFO, NPAGE,  /* the sound pages (ARP held + S
        PG_SCORE };                              /* the score (REC from home) */
 #define IS_FX_PAGE(p) ((p) >= PG_FX && (p) < PG_PROJ)
 static const char *const PAGE_NAME[NPAGE] = {"MAIN", "OSC", "ENV", "LFO"};
-static const char *const FX_NAME[NFX] = {"REVERB", "DELAY", "DISTORTION", "CHORUS", "PHASER"};
 /* the top buttons: reverb, delay, distortion, chorus, phaser */
 static const uint8_t FX_BTN[NFX] = {BTN_FX, BTN_SEL, BTN_ENV, BTN_LFO, BTN_EDIT};   /* (GLO: the mixer) */
 
-/* each pedal's three knobs (KNOB1-3), named as on a pedal: what they set, how far they go */
+/* the pedal library: each pedal's name, category, colour (dark: black letters on it) and three knobs (KNOB2-4):
+ * where each is kept (0-2: the slot's knob; 3, 4: the shared pedal's), how far it goes, where it starts, how shown */
+enum { KV_LVL, KV_DLY, KV_R4, KV_R8, KV_GL, KV_OCT, KV_PAT };   /* 0..20; a note value; 1/4-1/16; 1/8-1/32; 1/32-1/8; 0/-1/-2; 1-8 */
+typedef struct { const char *name; uint8_t src, max, def, kind; } pkdef_t;
+typedef struct { const char *name; uint8_t cat, rgb[3], dark; pkdef_t k[3]; } pdef_t;
+#define KL(n, s, d) {n, s, 127, d, KV_LVL}
+static const pdef_t PDEF[NPD] = {
+    {"DISTORTION", 0, {235, 120, 20}, 1, {KL("LEVEL", 0, 32), KL("TONE", 1, 80), KL("DIST", 2, 60)}},
+    {"OVERDRIVE", 0, {40, 160, 80}, 1, {KL("LEVEL", 0, 64), KL("TONE", 1, 70), KL("DRIVE", 2, 60)}},
+    {"FUZZ", 0, {170, 30, 40}, 0, {KL("LEVEL", 0, 64), KL("TONE", 1, 60), KL("FUZZ", 2, 90)}},
+    {"OCTAVE FUZZ", 0, {230, 200, 40}, 1, {KL("LEVEL", 0, 64), KL("TONE", 1, 70), KL("FUZZ", 2, 80)}},
+    {"GATED FUZZ", 0, {90, 90, 100}, 0, {KL("LEVEL", 0, 64), KL("GATE", 1, 40), KL("FUZZ", 2, 100)}},
+    {"WAVEFOLDER", 0, {20, 140, 150}, 0, {KL("LEVEL", 0, 64), KL("TONE", 1, 90), KL("FOLD", 2, 60)}},
+    {"FILTER SEQ", 1, {60, 70, 200}, 0, {{"RATE", 0, 2, 2, KV_R4}, KL("DEPTH", 1, 100), KL("RES", 2, 80)}},
+    {"WAH", 1, {30, 30, 34}, 0, {KL("SENS", 0, 80), KL("RANGE", 1, 90), KL("RES", 2, 70)}},
+    {"CHORUS", 2, {70, 180, 210}, 1, {KL("RATE", 0, 40), KL("DEPTH", 1, 60), KL("LEVEL", 2, 70)}},
+    {"PHASER", 2, {120, 60, 170}, 0, {KL("RATE", 0, 40), KL("DEPTH", 1, 90), KL("FEEDBACK", 2, 60)}},
+    {"FLANGER", 2, {200, 200, 210}, 1, {KL("RATE", 0, 30), KL("DEPTH", 1, 90), KL("FEEDBACK", 2, 80)}},
+    {"TREMOLO", 2, {150, 40, 110}, 0, {KL("RATE", 0, 60), KL("DEPTH", 1, 90), KL("SHAPE", 2, 0)}},
+    {"SLICER", 2, {240, 90, 140}, 1, {{"RATE", 0, 2, 1, KV_R8}, KL("DEPTH", 1, 127), {"PATTERN", 2, 7, 0, KV_PAT}}},
+    {"VIBRATO", 2, {80, 120, 60}, 0, {KL("RATE", 0, 60), KL("DEPTH", 1, 50), KL("MIX", 2, 127)}},
+    {"UNI", 2, {200, 140, 60}, 1, {KL("RATE", 0, 40), KL("DEPTH", 1, 90), KL("MIX", 2, 64)}},
+    {"REVERB", 3, {30, 80, 160}, 0, {KL("LEVEL", 0, 60), KL("TONE", 3, 70), KL("TIME", 4, 70)}},
+    {"DELAY", 3, {190, 190, 196}, 1, {{"REPEAT", 3, NDLY - 1u, 3, KV_DLY}, KL("ECHO", 0, 60), KL("INTENSITY", 4, 50)}},
+    {"TAPE ECHO", 3, {120, 80, 50}, 0, {KL("ECHO", 0, 70), {"TIME", 3, NDLY - 1u, 2, KV_DLY}, KL("REPEATS", 4, 60)}},
+    {"SHIMMER", 3, {170, 200, 240}, 1, {KL("LEVEL", 0, 70), KL("TIME", 3, 90), KL("SHIMMER", 4, 70)}},
+    {"CASSETTE", 4, {60, 60, 70}, 0, {KL("WOW", 0, 60), KL("HISS", 1, 40), KL("TONE", 2, 60)}},
+    {"VINYL", 4, {110, 30, 30}, 0, {KL("CRACKLE", 0, 60), KL("AGE", 1, 60), KL("LEVEL", 2, 64)}},
+    {"GLITCH", 4, {50, 230, 120}, 1, {KL("CHANCE", 0, 50), {"LENGTH", 1, 2, 1, KV_GL}, KL("MIX", 2, 100)}},
+    {"UNDERWATER", 4, {20, 90, 140}, 0, {KL("DEPTH", 0, 80), KL("WOBBLE", 1, 50), KL("LEVEL", 2, 64)}},
+    {"SYNTH", 4, {130, 200, 40}, 1, {{"OCTAVE", 0, 2, 1, KV_OCT}, KL("TONE", 1, 60), KL("MIX", 2, 80)}},
+};
+#define NPCAT 5u
+static const char *const PCAT_NAME[NPCAT] = {"DRIVE", "FILTER", "MODULATION", "SPACE", "OTHER"};
+static const uint8_t PCAT_FIRST[NPCAT + 1u] = {PD_DIST, PD_FSEQ, PD_CHO, PD_REV, PD_CASS, NPD};
+
+/* each pedal's three knobs (KNOB2-4): where the value is kept, how far it goes */
 typedef struct { const char *name; uint8_t *v; uint8_t max; } pknob_t;
 static void pedal_knobs(uint32_t trk, uint32_t e, pknob_t k[3])
 {
-    tfx_t *f = &set.fx[trk];
-    gfx_t *g = &set.gfx;
-    switch (e) {
-    case E_REV: k[0] = (pknob_t){"LEVEL", &f->rev_send, 127}; k[1] = (pknob_t){"TONE", &g->rtone, 127};
-                k[2] = (pknob_t){"TIME", &g->rtime, 127}; break;
-    case E_DLY: k[0] = (pknob_t){"REPEAT", &g->dtime, NDLY - 1}; k[1] = (pknob_t){"ECHO", &f->dly_send, 127};
-                k[2] = (pknob_t){"INTENSITY", &g->dfb, 127}; break;
-    case E_DST: k[0] = (pknob_t){"LEVEL", &f->dlevel, 127}; k[1] = (pknob_t){"TONE", &f->tone, 127};
-                k[2] = (pknob_t){"DIST", &f->drive, 127}; break;
-    case E_CHO: k[0] = (pknob_t){"RATE", &g->crate, 127}; k[1] = (pknob_t){"DEPTH", &g->cdepth, 127};
-                k[2] = (pknob_t){"LEVEL", &f->cho_send, 127}; break;
-    default:    k[0] = (pknob_t){"RATE", &f->prate, 127}; k[1] = (pknob_t){"DEPTH", &f->pdepth, 127};
-                k[2] = (pknob_t){"FEEDBACK", &f->pfb, 127};
+    uint32_t p = set.ped[trk][e] % NPD, i;
+    for (i = 0; i < 3u; i++) {
+        const pkdef_t *d = &PDEF[p].k[i];
+        k[i].name = d->name; k[i].max = d->max;
+        k[i].v = d->src < 3u ? &set.pk[trk][e][d->src] : &set.spk[(p - PD_REV) % NSPACE][d->src - 3u];
     }
+}
+/* what the pedals switched on cost: tenths of a microsecond per audio block, measured on a PC (fx_process timed,
+ * each pedal in 20 slots; a shared pedal once, plus a little per send). The five original pedals on all four tracks
+ * come to 156 (on the FM-1 ~40 % of the CPU, on top of the instruments); more than PED_BUDGET is refused */
+static const uint8_t PD_COST[NPD] = {5, 5, 4, 5, 6, 4, 17, 16, 7, 18, 5, 2, 4, 5, 19, 1, 1, 1, 1, 9, 5, 3, 6, 4};
+static const uint8_t SP_COST[NSPACE] = {19, 9, 17, 18};   /* reverb, delay, tape echo, shimmer */
+#define PED_BUDGET 170u
+static int ped_fits(void)
+{
+    uint32_t t, e, c = 0, sp = 0;
+    for (t = 0; t < NTRK; t++)
+        for (e = 0; e < NFX; e++)
+            if (set.fx[t].on >> e & 1u) {
+                uint32_t p = set.ped[t][e] % NPD;
+                c += PD_COST[p];
+                if (PD_SPACE(p)) sp |= 1u << (p - PD_REV);
+            }
+    for (e = 0; e < NSPACE; e++) if (sp >> e & 1u) c += SP_COST[e];
+    return c <= PED_BUDGET;
+}
+
+static void ped_set(uint32_t trk, uint32_t e, uint32_t p)   /* a slot gets another pedal: its own knobs start fresh */
+{
+    uint32_t i;
+    set.ped[trk][e] = (uint8_t)p;
+    for (i = 0; i < 3u; i++) if (PDEF[p].k[i].src < 3u) set.pk[trk][e][PDEF[p].k[i].src] = PDEF[p].k[i].def;
 }
 
 #define PEDAL_STEPS 20                          /* a pedal knob: 0..20 on the pedal (the value 0..127 underneath, ~6 a step) */
@@ -498,6 +578,14 @@ static void head_track(uint32_t trk, const char *name, int chips)
         cv_rrect(bx, 11, 42, 16, 3, live_rec ? C_MUTE : C_KEYCAP);
         cv_text_bg(bx + (42 - text_w(&FONT_S, live_rec ? "REC" : "LIVE")) / 2, 11, &FONT_S, live_rec ? "REC" : "LIVE", live_rec ? C_BLACK : C_TXT, live_rec ? C_MUTE : C_KEYCAP);
         bx += 48;
+    }
+    if (head_badge) {                           /* a pedal page: the pedal's category */
+        int32_t bw = text_w(&FONT_S, head_badge) + 12;
+        if (bx + bw <= lim) {
+            cv_rrect(bx, 11, bw, 16, 3, C_KEYCAP);
+            cv_text_bg(bx + 6, 11, &FONT_S, head_badge, C_TXT, C_KEYCAP);
+            bx += bw + 6;
+        }
     }
     if (chips && score_up && bx + 50 <= lim) {  /* the score page */
         cv_rrect(bx, 11, 50, 16, 3, C_KEYCAP);
@@ -585,8 +673,7 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
         p = put(p, "K:VOL  BUTTON:MUTE  CPU ");
         if (cpu > 100u) p = put(p, "--"); else { p = put_num(p, cpu, 1); *p++ = '%'; }
     } else if (IS_FX_PAGE(page)) {              /* a pedal: the values are on the pedal; here, how to work it */
-        static const char *const BTN_NAME[NFX] = {"FX", "SEL", "ENV", "LFO", "EDIT"};
-        p = put(p, "K1/HOLD "); p = put(p, BTN_NAME[page - PG_FX]); p = put(p, ":ON/OFF  HOME:BACK");
+        p = put(p, "SELECT:TYPE  PRESETS:PEDAL");   /* (KNOB1 or holding the button: on / off) */
     } else if (trk == T_DRUMS) {                /* 808 KICK P44 D110 L72: the kit, the drum, its knobs */
         const char *kn = KIT_NAME[set.dkit % NKIT];
         uint32_t kl = 0, dl = 0;
@@ -846,25 +933,40 @@ static void draw_stomp(const uint8_t *rgb, int dark, const char *title, uint32_t
     }
 }
 
-/* ---- the pedal screen: the chosen track in the top bar, under it the pedal */
-static void draw_pedal_head(uint32_t trk) { head_track(trk, TRK_NAME[trk], 0); }   /* the track whose pedal this is */
+/* ---- the pedal screen: the chosen track in the top bar (the pedal's category beside it), under it the pedal */
+static void draw_pedal_head(uint32_t trk, int32_t e)   /* e < 0: no badge (the arpeggiator) */
+{
+    head_badge = e >= 0 ? PCAT_NAME[PDEF[set.ped[trk][e] % NPD].cat % NPCAT] : 0;
+    head_track(trk, TRK_NAME[trk], 0);
+    head_badge = 0;
+}
 
 static void draw_pedal(uint32_t trk, uint32_t e)
 {
-    static const uint8_t BODY[NFX][3] = {{30, 80, 160}, {190, 190, 196}, {235, 120, 20}, {70, 180, 210}, {120, 60, 170}};
-    static const uint8_t DARK_TEXT = (1u << E_DLY) | (1u << E_DST) | (1u << E_CHO);   /* light pedals: black letters */
+    static const char *const R4[3] = {"1/4", "1/8", "1/16"}, *const R8[3] = {"1/8", "1/16", "1/32"};
+    static const char *const GL[3] = {"1/32", "1/16", "1/8"}, *const OC[3] = {"0", "-1", "-2"};
+    const pdef_t *d = &PDEF[set.ped[trk][e] % NPD];
     char val[3][8];
     kview_t kv[3];
     pknob_t pk[3];
     uint32_t k;
     pedal_knobs(trk, e, pk);
     for (k = 0; k < 3u; k++) {
-        uint32_t v = *pk[k].v;
-        if (e == E_DLY && k == 0u) *put(val[k], DLY_NAME[v % NDLY]) = 0;   /* the repeat rate: a note value */
-        else *put_num(val[k], pk[k].max == 127u ? pedal_level(v) : v, 1) = 0;   /* (0..127 shown as 0..20) */
-        kv[k] = (kview_t){pk[k].name, v, pk[k].max, val[k]};
+        uint32_t v = *pk[k].v, m = pk[k].max ? pk[k].max : 1u;
+        const char *s = 0;
+        switch (d->k[k].kind) {
+        case KV_DLY: s = DLY_NAME[v % NDLY]; break;
+        case KV_R4: s = R4[v % 3u]; break;
+        case KV_R8: s = R8[v % 3u]; break;
+        case KV_GL: s = GL[v % 3u]; break;
+        case KV_OCT: s = OC[v % 3u]; break;
+        default: break;
+        }
+        if (s) *put(val[k], s) = 0;
+        else *put_num(val[k], d->k[k].kind == KV_PAT ? v % (m + 1u) + 1u : pedal_level(v), 1) = 0;   /* (0..127 shown as 0..20) */
+        kv[k] = (kview_t){pk[k].name, v, m, val[k]};
     }
-    draw_stomp(BODY[e % NFX], DARK_TEXT >> e & 1u, FX_NAME[e], set.fx[trk].on >> e & 1u, kv, 3, 0);
+    draw_stomp(d->rgb, d->dark, d->name, set.fx[trk].on >> e & 1u, kv, 3, 0);
 }
 
 /* the arpeggiator, a stompbox too: the lamp (hold ARP), RATE, OCTAVES, DIR */
@@ -1671,6 +1773,13 @@ static int settings_ok(void)
         if (g->rtone > 127u || g->rtime > 127u || g->dtime >= NDLY || g->dfb > 127u || g->crate > 127u || g->cdepth > 127u)
             return 0;
     }
+    for (t = 0; t < NTRK; t++)
+        for (i = 0; i < NFX; i++) {
+            if (set.ped[t][i] >= NPD) return 0;
+            for (s = 0; s < 3u; s++) if (set.pk[t][i][s] > 127u) return 0;
+        }
+    for (i = 0; i < NSPACE; i++) if (set.spk[i][0] > 127u || set.spk[i][1] > 127u) return 0;
+    if (set.spk[SP_DLY][0] >= NDLY || set.spk[SP_TAPE][0] >= NDLY) return 0;
     return 1;
 }
 
@@ -1714,7 +1823,8 @@ static int proj_load(uint32_t i)                /* 0 = loaded; -1 = empty or bro
     bytes_copy(&set, proj_buf, n);
     if (n <= SET_V10) chain_defaults();         /* (v1.0: no SUPER SEQ) */
     else if (n <= SET_SS1) for (c = 0; c < NCHAIN; c++) set.clen[c] = NLINK;   /* (no song lengths: all 8) */
-    if (n < sizeof set) sound_reorder();        /* (from before QUARTET's order) */
+    if (n < SET_ORD) sound_reorder();           /* (from before QUARTET's order) */
+    if (n < sizeof set) ped_from_legacy();      /* (from before the pedal library: its five pedals, as they were) */
     if (!settings_ok()) { bytes_copy(&set, proj_keep, sizeof set); return -1; }
     trk_mute = set.mute;
     clock_set_bpm(set.bpm);
@@ -1787,6 +1897,7 @@ static void app_main(void)
     uint32_t sc_pg = 0, sc_step = 0, sc_hold_t = 0;   /* the score: its page of 2 bars, the step marked, when you last moved them */
     uint8_t sc_centre = 0, sc_paper = 0;        /* the score: CENTRE (else TRUE), PAPER (else DARK) */
     int32_t sc_acc = 0;                         /* the score's page knob: clicks gathered */
+    int32_t pcat_acc = 0, ppd_acc = 0;          /* a pedal page: SELECT (category) and PRESETS (pedal), clicks gathered */
     const char *msg = 0;                        /* shown big for 1.5 s: SAVED 3, LOAD FAILED, ALL CLEARED ... */
     uint32_t pedal_mode = 0, head_drawn = ~0u, pedal_drawn = ~0u;   /* the pedal screen up?, what it shows */
     /* ALGORITHM: 2 clicks either way go to the next / the previous track, LEAD, PAD, BASS, DRUMS, round and round */
@@ -1818,7 +1929,8 @@ static void app_main(void)
     set_defaults();
     if (song_load() != 0) set_defaults();       /* (an older save has other sizes: that fails, so defaults) */
     else {
-        if (song_loaded < sizeof set) sound_reorder();   /* (from before the reorder) */
+        if (song_loaded < SET_ORD) sound_reorder();   /* (from before the reorder) */
+        if (song_loaded < sizeof set) ped_from_legacy();   /* (from before the pedal library) */
         if (!settings_ok()) set_defaults();
     }
     proj_scan();                                /* which project slots are full */
@@ -1839,6 +1951,7 @@ static void app_main(void)
     lcd_fill(0, 0, 240, 240, C_BLACK);
 
 #define CHANGED() (dirty = 1, t_change = fm1_ms, edits++)
+#define CPU_FULL() (msg = "CPU FULL", msg_ok = 0, msg_t = fm1_ms ? fm1_ms : 1u)   /* a pedal refused: too much at once */
     for (;;) {
         uint32_t keys, down, up, rel, b, out_ch = set.ch ? set.ch - 1u : 0u, st, run, trk = sel_trk, pt, len, t;
         uint32_t syn_edit, drum_edit, play;
@@ -2029,6 +2142,15 @@ static void app_main(void)
                 int32_t v = (int32_t)set.ch + e;
                 set.ch = (uint8_t)(v < 0 ? 0 : v > 16 ? 16 : v);
                 home_used = 1; ch_t = fm1_ms;
+            } else if (IS_FX_PAGE(spage)) {     /* a pedal page: the pedal within its category (2 clicks each) */
+                ppd_acc += e;
+                if (ppd_acc >= 2 || ppd_acc <= -2) {
+                    uint32_t sl = spage - PG_FX, p = set.ped[trk][sl] % NPD, ca = PDEF[p].cat % NPCAT;
+                    int32_t stp = ppd_acc / 2, nn = (int32_t)(PCAT_FIRST[ca + 1u] - PCAT_FIRST[ca]);
+                    ppd_acc -= stp * 2;
+                    ped_set(trk, sl, PCAT_FIRST[ca] + (uint32_t)((((int32_t)p - PCAT_FIRST[ca] + stp) % nn + nn) % nn));
+                    if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
+                }
             } else if (spage == PG_SSEQ) {      /* SUPER SEQ: the song A-J, two clicks each (ARP held: copy it along) */
                 uint32_t to;
                 song_pos = turn(song_pos, e);
@@ -2051,7 +2173,19 @@ static void app_main(void)
             CHANGED();
         }
         if ((e = fm1_enc_take(ENC_SELECT)) != 0) {
-            if (spage == PG_SSEQ || spage == PG_SCORE) {}   /* (SUPER SEQ, the score: nothing) */
+            if (IS_FX_PAGE(spage)) {            /* a pedal page: the category (2 clicks each); its first pedal */
+                pcat_acc += e;
+                if (pcat_acc >= 2 || pcat_acc <= -2) {
+                    uint32_t sl = spage - PG_FX, ca = PDEF[set.ped[trk][sl] % NPD].cat % NPCAT;
+                    int32_t stp = pcat_acc / 2;
+                    pcat_acc -= stp * 2;
+                    ca = (uint32_t)(((int32_t)ca + stp % (int32_t)NPCAT + (int32_t)NPCAT) % (int32_t)NPCAT);
+                    ped_set(trk, sl, PCAT_FIRST[ca]);
+                    if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
+                    CHANGED();
+                }
+            }
+            else if (spage == PG_SSEQ || spage == PG_SCORE) {}   /* (SUPER SEQ, the score: nothing) */
             else if (syn_edit) {                /* editing a synth: the cursor, through all pages */
                 cur[trk] = (uint32_t)(((int32_t)cur[trk] + e % (int32_t)len + (int32_t)len) % (int32_t)len);
                 page_hold_t = fm1_ms;
@@ -2090,6 +2224,7 @@ static void app_main(void)
             if (b >> FX_BTN[k] & 1u) { spage = PG_FX + k; fxb_t0[k] = fm1_ms; fxb_long &= ~(1u << k); }
             if (fm1_in.buttons >> FX_BTN[k] & 1u && !(fxb_long >> k & 1u) && fm1_ms - fxb_t0[k] >= 500u) {
                 set.fx[trk].on ^= (uint8_t)(1u << k);
+                if (set.fx[trk].on >> k & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << k); CPU_FULL(); }
                 fxb_long |= 1u << k;
                 CHANGED();
             }
@@ -2126,7 +2261,10 @@ static void app_main(void)
             pknob_t pk[3];
             int ch = 0, sw = knob_switch(ENC_KNOB1, &sw_acc);
             uint8_t bit = (uint8_t)(1u << (spage - PG_FX));
-            if (sw > 0 && !(set.fx[trk].on & bit)) { set.fx[trk].on |= bit; ch = 1; }   /* (its button lights) */
+            if (sw > 0 && !(set.fx[trk].on & bit)) {   /* (its button lights) */
+                set.fx[trk].on |= bit; ch = 1;
+                if (!ped_fits()) { set.fx[trk].on &= (uint8_t)~bit; CPU_FULL(); }
+            }
             if (sw < 0 && set.fx[trk].on & bit) { set.fx[trk].on &= (uint8_t)~bit; ch = 1; }
             pedal_knobs(trk, spage - PG_FX, pk);
             for (k = 0; k < 3u; k++)            /* (0..127 ones: 20 steps; DELAY's REPEAT: its 7 note values) */
@@ -2375,15 +2513,21 @@ static void app_main(void)
             for (k = 0; k < NTRK; k++) st = mix(st, vb[k]);
             if (st != pedal_drawn) { pedal_drawn = st; draw_mixer(); }
         } else if (pedal_mode == 2u) {          /* the arpeggiator: the track's name, the arp "pedal" */
-            if ((st = mix(trk, trk_mute >> trk & 1u)) != head_drawn) { head_drawn = st; draw_pedal_head(trk); }
+            if ((st = mix(trk, trk_mute >> trk & 1u)) != head_drawn) { head_drawn = st; draw_pedal_head(trk, -1); }
             st = mix(mix(mix(trk, 2u), set.arp_on), trk < NSYN ? set.arp_rate[trk] | set.arp_oct[trk] << 2 | set.arp_dir[trk] << 4 : 0u);
             if (st != pedal_drawn) { pedal_drawn = st; draw_arp(trk); }
         } else if (pedal_mode) {                /* a pedal: the track's name, the pedal (no sequence: HOME goes back) */
-            const uint8_t *fb = (const uint8_t *)&set.fx[trk], *gb = (const uint8_t *)&set.gfx;
-            if ((st = mix(trk, trk_mute >> trk & 1u)) != head_drawn) { head_drawn = st; draw_pedal_head(trk); }
-            st = mix(trk, spage);
-            for (k = 0; k < sizeof(tfx_t); k++) st = mix(st, fb[k]);
-            for (k = 0; k < sizeof(gfx_t); k++) st = mix(st, gb[k]);
+            const uint8_t *kb = set.pk[trk][spage - PG_FX], *sb = &set.spk[0][0];
+            uint32_t pd = set.ped[trk][spage - PG_FX] % NPD;
+            uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
+            if ((st = mix(mix(mix(mix(trk, trk_mute >> trk & 1u), PDEF[pd].cat), spage), show_msg ? msg_t : 0u)) != head_drawn) {
+                head_drawn = st;
+                if (show_msg) head_text(msg, msg_ok ? C_WHITE : C_MUTE, msg_ok ? C_PLAYG : C_MUTE);   /* CPU FULL ... */
+                else draw_pedal_head(trk, (int32_t)(spage - PG_FX));
+            }
+            st = mix(mix(mix(trk, spage), pd), set.fx[trk].on);
+            for (k = 0; k < 3u; k++) st = mix(st, kb[k]);
+            for (k = 0; k < NSPACE * 2u; k++) st = mix(st, sb[k]);
             if (st != pedal_drawn) { pedal_drawn = st; draw_pedal(trk, spage - PG_FX); }
         } else {
         st = mix(mix(mix(mix(edits, edit), trk), run), trk_mute);

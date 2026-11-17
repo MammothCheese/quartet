@@ -95,7 +95,7 @@ footer a { color: var(--sub); }
   <div>
     <div class="kicker">Custom firmware for the M-VAVE FM-1 &middot; free and open source</div>
     <h1>Four instruments.<br>One little <em>band</em>.</h1>
-    <p class="lede">QUARTET turns the FM-1 into a four-track groovebox: lead, pads and chords, bass and drums. Ten sounds and ten patterns for each, five effects pedals drawn as stompboxes, an arpeggiator, live recording, a score view and a song arranger.</p>
+    <p class="lede">QUARTET turns the FM-1 into a four-track groovebox: lead, pads and chords, bass and drums. Ten sounds and ten patterns for each, five pedal slots with a library of 24 stompboxes, an arpeggiator, live recording, a score view and a song arranger.</p>
     <a class="btn primary" href="https://github.com/MammothCheese/quartet/releases/latest">Download</a>
     <a class="btn ghost" href="https://github.com/MammothCheese/quartet#install">How to install</a>
     <a class="btn ghost" href="https://github.com/MammothCheese/quartet">Source</a>
@@ -114,7 +114,7 @@ footer a { color: var(--sub); }
     <li><kbd>ALGORITHM</kbd> picks the instrument, <kbd>SELECT</kbd> its sound, <kbd>PRESETS</kbd> its pattern (A&ndash;J). Each takes two clicks per choice.</li>
     <li><kbd>SEQ</kbd> opens the step recorder; press it again for live recording. <kbd>HOME</kbd> always comes back.</li>
     <li><kbd>REC</kbd> on the home screen shows the pattern as sheet music.</li>
-    <li>The five top buttons <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> <kbd>EDIT</kbd> are effects pedals; <kbd>ARP</kbd> is the arpeggiator.</li>
+    <li>The five top buttons <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> <kbd>EDIT</kbd> are pedal slots, each holding any of 24 pedals; <kbd>ARP</kbd> is the arpeggiator.</li>
     <li><kbd>HOME</kbd> from home opens <b>SUPER SEQ</b>, the song arranger. <kbd>GLO</kbd> is the mixer, <kbd>SAVE</kbd> the four save slots.</li>
     <li>Your work is kept by itself: two seconds after the music stops and goes quiet, it is saved.</li>
   </ul>
@@ -241,18 +241,26 @@ footer a { color: var(--sub); }
 
 <section id="pedals">
   <h2>Pedals and arpeggiator</h2>
-  <p class="sub">The five top buttons are effects pedals for the chosen instrument. Tap one to see its stompbox; hold it 0.5 s to switch it on or off (lit = on).</p>
+  <p class="sub">The five top buttons are five pedal slots for the chosen instrument, and each can hold any pedal from a library of 24. Tap a button to see its stompbox; hold it 0.5 s to switch it on or off (lit = on).</p>
   <div class="split">
     <div>
-      <table class="t grid4">
-        <tr><th>Button</th><th>Pedal</th><th>KNOB 2</th><th>KNOB 3</th><th>KNOB 4</th></tr>
-        <tr><td><kbd>FX</kbd></td><td>Reverb</td><td>Level</td><td>Tone</td><td>Time</td></tr>
-        <tr><td><kbd>SEL</kbd></td><td>Delay</td><td>Repeat rate</td><td>Echo</td><td>Intensity</td></tr>
-        <tr><td><kbd>ENV</kbd></td><td>Distortion</td><td>Level</td><td>Tone</td><td>Distortion</td></tr>
-        <tr><td><kbd>LFO</kbd></td><td>Chorus</td><td>Rate</td><td>Depth</td><td>Level</td></tr>
-        <tr><td><kbd>EDIT</kbd></td><td>Phaser</td><td>Rate</td><td>Depth</td><td>Feedback</td></tr>
+      <table class="t">
+        <tr><td><kbd>SELECT</kbd></td><td>The category (shown beside the instrument's name), 2 clicks each.</td></tr>
+        <tr><td><kbd>PRESETS</kbd></td><td>The pedal within it, 2 clicks each.</td></tr>
+        <tr><td><kbd>KNOB 1</kbd></td><td>The switch: three clicks clockwise on, three anticlockwise off.</td></tr>
+        <tr><td><kbd>KNOB 2&ndash;4</kbd></td><td>The pedal's three knobs (most run 0&ndash;20).</td></tr>
+        <tr><td><kbd>HOME</kbd> / <kbd>SEQ</kbd></td><td>Back to the sequencer.</td></tr>
       </table>
-      <p><kbd>KNOB 1</kbd> is the pedal's switch: three clicks clockwise on, three anticlockwise off. Most values run 0&ndash;20. Reverb, delay and chorus share their timing and tone between instruments (each sets its own amount); distortion and phaser are per instrument. <kbd>HOME</kbd>, <kbd>SEQ</kbd> or <kbd>SELECT</kbd> go back.</p>
+      <table class="t grid4">
+        <tr><th>Category</th><th>Pedals</th></tr>
+        <tr><td>DRIVE</td><td>Distortion &middot; Overdrive &middot; Fuzz &middot; Octave Fuzz &middot; Gated Fuzz &middot; Wavefolder</td></tr>
+        <tr><td>FILTER</td><td>Filter Seq (steps in time) &middot; Wah (opens as you play louder)</td></tr>
+        <tr><td>MODULATION</td><td>Chorus &middot; Phaser &middot; Flanger &middot; Tremolo &middot; Slicer (chops in time) &middot; Vibrato &middot; Uni</td></tr>
+        <tr><td>SPACE</td><td>Reverb &middot; Delay &middot; Tape Echo &middot; Shimmer</td></tr>
+        <tr><td>OTHER</td><td>Cassette &middot; Vinyl &middot; Glitch &middot; Underwater &middot; Synth (a square wave under the notes)</td></tr>
+      </table>
+      <p><b>Space pedals are shared</b>: one of each for the whole band. Each instrument sets how much it sends; the other two knobs change the shared pedal for everyone. All the others are each slot's own. A new project starts with Reverb, Delay, Distortion, Chorus and Phaser.</p>
+      <div class="tip">If switching a pedal on would overload the chip, it stays off and <b>CPU FULL</b> shows: switch another one off first. Phaser, Uni, Filter Seq and Wah are the heaviest.</div>
       <h3>Arpeggiator (<kbd>ARP</kbd>)</h3>
       <p>Plays held notes, and the pattern's chords, one after another. Tap <kbd>ARP</kbd> for its page; hold it 0.5 s to switch it on or off.</p>
       <table class="t">
@@ -263,7 +271,7 @@ footer a { color: var(--sub); }
       </table>
     </div>
     <div>
-      <div class="shot"><img src="guide/pedal.png" alt="The distortion pedal"><p>A pedal: <kbd>ENV</kbd>, the distortion, switched on.</p></div>
+      <div class="shot"><img src="guide/pedal.png" alt="The fuzz pedal"><p>A pedal: the <kbd>ENV</kbd> slot holding a Fuzz, switched on.</p></div>
       <div class="shot" style="margin-top:18px"><img src="guide/arp.png" alt="The arpeggiator"><p>The arpeggiator.</p></div>
     </div>
   </div>
@@ -314,7 +322,7 @@ footer a { color: var(--sub); }
     <tr><td><kbd>PLAY</kbd></td><td>Start (from step one) and stop.</td></tr>
     <tr><td><kbd>ALGORITHM</kbd></td><td>The instrument (2 clicks).</td></tr>
     <tr><td><kbd>PRESETS</kbd></td><td>Its pattern, A&ndash;J (2 clicks). Hold <kbd>ARP</kbd>: copy into the next letter. Hold <kbd>HOME</kbd>: the MIDI channel.</td></tr>
-    <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> <kbd>EDIT</kbd></td><td>Tap: the pedal's page. Hold 0.5 s: the pedal on / off.</td></tr>
+    <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> <kbd>EDIT</kbd></td><td>Tap: the pedal slot's page. Hold 0.5 s: the pedal on / off.</td></tr>
     <tr><td><kbd>ARP</kbd></td><td>Tap: the arpeggiator's page. Hold 0.5 s: on / off.</td></tr>
     <tr><td><kbd>GLO</kbd></td><td>The mixer (again: close).</td></tr>
     <tr><td><kbd>SAVE</kbd></td><td>The save page (again: close).</td></tr>
@@ -357,9 +365,10 @@ footer a { color: var(--sub); }
 
   <h3>Pedal and arpeggiator pages</h3>
   <table class="t">
+    <tr><td><kbd>SELECT</kbd> / <kbd>PRESETS</kbd></td><td>Pedal page: the category / the pedal.</td></tr>
     <tr><td><kbd>KNOB 1</kbd></td><td>On / off (3 clicks).</td></tr>
     <tr><td><kbd>KNOB 2</kbd> / <kbd>3</kbd> / <kbd>4</kbd></td><td>The pedal's three knobs; arpeggiator: rate / octaves / direction.</td></tr>
-    <tr><td><kbd>HOME</kbd> <kbd>SEQ</kbd> <kbd>SELECT</kbd></td><td>Back to the sequencer.</td></tr>
+    <tr><td><kbd>HOME</kbd> <kbd>SEQ</kbd></td><td>Back to the sequencer (on the arpeggiator, <kbd>SELECT</kbd> too).</td></tr>
   </table>
 
   <h3>SUPER SEQ</h3>

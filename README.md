@@ -16,7 +16,10 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
 - **10 drum kits**: Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi and Industrial: synthesised, with toms,
   congas, shakers and more on PERC, and the LM-1 played from samples of a real Linn LM-1 (rossf, Sampling+ 1.0: see
   [LICENSING.md](LICENSING.md)).
-- **Five pedals** per track, drawn as stompboxes: reverb, delay, distortion, chorus, phaser.
+- **Five pedal slots** per track, each holding any of **24 pedals**, drawn as stompboxes: drives (distortion, overdrive,
+  fuzz, octave fuzz, gated fuzz, wavefolder), filters (filter sequencer, wah), modulation (chorus, phaser, flanger,
+  tremolo, slicer, vibrato, uni), space (reverb, delay, tape echo, shimmer) and oddities (cassette, vinyl, glitch,
+  underwater, synth).
 - **Arpeggiator** (rate, octaves, direction), for the keys and for the recorded patterns.
 - **Score view**: the pattern written as sheet music, two bars at a time, at real pitch (8va / 8vb) or centred on the
   treble staff, on a dark or paper look.
