@@ -72,6 +72,12 @@ static const uint8_t KIT_CRUSH_N[NKIT] = {0, 2, 0, 0, 0, 0, 0, 0, 3, 4};
 static const uint16_t KIT_CRUSH_M[NKIT] = {0, 255, 0, 0, 0, 0, 0, 0, 1023, 4095};
 
 static struct { uint32_t ph, inc, end, cnt; int32_t amp, amp2, lp1, lp2; } dr[NDR];   /* interrupt only */
+static uint8_t dvel[NDR] = {128, 128, 128, 128, 128, 128};   /* each drum's last hit: how hard (Q7, 128 = as ever) */
+static uint32_t blk_pos;                        /* gb_clock.h: the sample in the audio block being rendered now */
+static int32_t kick_at = -1;                    /* the sample in this block where a kick started (-1: none; gb_fx.h) */
+static uint32_t fx_quiet;                       /* STOP until PLAY or a note played: the shared pedals take in nothing new
+                                                   (a release tail would make fresh echoes after a stop; gb_fx.h) */
+static const uint8_t DYN_G7[5] = {128, 100, 76, 55, 181};   /* a step's dynamic: f, mf, mp, p, accent (+3 dB) */
 static volatile uint8_t hit_req[NDR];           /* main loop: +1 = "play drum d now" (the interrupt counts what it did) */
 
 static uint32_t scale_q12(uint32_t v, uint32_t m) { return (uint32_t)(((uint64_t)v * m) >> 12); }
@@ -79,6 +85,7 @@ static uint32_t scale_q12(uint32_t v, uint32_t m) { return (uint32_t)(((uint64_t
 static void drum_trigger(uint32_t d)
 {
     uint32_t kit = set.dkit % NKIT, m = MULT[set.dsnd[d].pitch & 127u];
+    if (d == DR_KICK && kick_at < 0) kick_at = (int32_t)blk_pos;
     dr[d].amp = AMP_FULL;
     dr[d].ph = 0;
     dr[d].cnt = 0;
@@ -106,7 +113,7 @@ static void drums_step(void)
     uint32_t d, s = trk_pos[T_DRUMS], p = play_pat[T_DRUMS] % NPAT;
     if ((trk_mute | chain_rest) >> T_DRUMS & 1u) return;   /* muted, or a SUPER SEQ rest */
     for (d = 0; d < NDR; d++)
-        if (dbit(p, d, s)) drum_trigger(d);
+        if (dbit(p, d, s)) { dvel[d] = DYN_G7[ddyn_get(p, d, s) % 5u]; drum_trigger(d); }
 }
 static void drums_tick(void) {}                 /* (drums have no note lengths) */
 static void drums_stop(void) {}                 /* (they ring out) */
@@ -137,7 +144,7 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
     int32_t k[NDR], g[NDR];
     uint32_t i, d;
     for (d = 0; d < NDR; d++)
-        if (hit_done[d] != hit_req[d]) { hit_done[d] = hit_req[d]; drum_trigger(d); }
+        if (hit_done[d] != hit_req[d]) { hit_done[d] = hit_req[d]; dvel[d] = 128; drum_trigger(d); fx_quiet = 0; }
     if (drums_quiet())
         return;                                 /* silent: costs nothing */
     if (kit == KIT_LM1) {                       /* the LM-1: its samples (mu-law, from flash), each read at its speed,
@@ -145,7 +152,7 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
         for (d = 0; d < NDR; d++) {
             uint32_t dc = set.dsnd[d].decay & 127u;
             k[d] = dc >= 64u ? 0 : (int32_t)(64u - dc) * 2;
-            g[d] = set.dsnd[d].level & 127u;
+            g[d] = (int32_t)((set.dsnd[d].level & 127u) * dvel[d]) >> 7;
         }
         for (i = 0; i < n; i++) {
             int32_t s = 0;
@@ -168,7 +175,7 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
     for (d = 0; d < NDR; d++) {                 /* each drum's decay and level, for this piece */
         int32_t kk = (int32_t)((KDEF[d] * (uint32_t)MULT[127u - (set.dsnd[d].decay & 127u)]) >> 12);
         k[d] = kk < 1 ? 1 : kk > 1023 ? 1023 : kk;
-        g[d] = set.dsnd[d].level & 127u;        /* 64 = as designed, 127 = about twice */
+        g[d] = (int32_t)((set.dsnd[d].level & 127u) * dvel[d]) >> 7;   /* 64 = as designed, 127 = about twice; times the hit's dynamic */
     }
     if (kt->clap_tune) {                        /* 2048 x and 256 x the pitch's multiple (Q12): 1/2 and 1/16 at 64 */
         uint32_t m = MULT[set.dsnd[DR_CLAP].pitch & 127u];

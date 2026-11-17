@@ -3,7 +3,7 @@
 
 **Four instruments. One little band.**
 
-Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, ten sounds and ten patterns per instrument, five pedal slots each with a library of 24 pedals, live recording and a song arranger.
+Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, ten sounds and ten patterns per instrument, five pedal slots each with a library of 36 pedals, live recording and a song arranger.
 
 > **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, go to the **home screen**, **hold REC for one second** until **CLEAR ALL?** appears, then **press REC again within three seconds** (any other button cancels). This erases the demo groove for good, but not your four saved projects.
 
@@ -28,7 +28,8 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 | Control | Step recorder |
 |---|---|
 | **KNOB1** | Pattern length: 16 / 32 / 48 / 64 |
-| **KNOB2 or SELECT** | Melodic step cursor |
+| **SELECT** | Melodic step cursor |
+| **KNOB2** | **DYN**: the note's dynamic, **p / mp / mf / f / ACC** (see below) |
 | **KNOB3** | Page of 16 steps |
 | **KNOB4** | Swing for the whole song: 50–66% |
 | **OCT− / OCT+** | Drum step page |
@@ -36,7 +37,13 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 | **ARP tap** | Tie previous melodic note into next step |
 | **SEQ / HOME** | Live recording / home |
 
+**Dynamics.** Every note (and drum hit) has a dynamic: **p** (soft), **mp**, **mf**, **f** (full, as notes always were) or **ACC**, an accent (louder still and a little brighter). Turn **KNOB2** in the step recorder: it changes the note under the cursor, and the notes you write next. For drums it sets new hits; to change a hit already there, **hold its white key and turn KNOB2**. Softer notes look dimmer on the piano roll and the drum grid, an accent has a white edge, and the score view marks accents with **>**. Live recording writes notes at full (**f**).
+
 While the music plays, a pattern longer than 16 steps is followed page by page on the display, unless you edit or change pages; it resumes following after three seconds. KNOB1 and KNOB3 take three clicks per setting.
+
+## Beat repeat
+
+**Hold GLO** while the music plays: the slice that is playing goes round and round (**REPEAT** shows at the top and GLO blinks) until you let go, and then the music carries on exactly where it would have been. While holding GLO, the first five **white keys** choose the slice: **1/2 bar, 1/4, 1/8 (the starting choice), 1/16, 1/32**; you can change it mid-repeat. A quick tap of GLO still opens the mixer.
 
 ## Live recording
 
@@ -91,7 +98,7 @@ OSC waveforms: sine, triangle, saw, square, noise and FM. For drums, the main kn
 
 ## Effects pedals and arpeggiator
 
-The five top-row buttons are **five pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 24**. **Tap** a button to open its pedal. **SELECT** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, two clicks each. Switch the pedal on with **KNOB1** (three clicks clockwise) and off again (three clicks anticlockwise), or **hold its button 0.5 seconds**; the button is lit while the pedal is on. **KNOB2–4** adjust it. **HOME or SEQ** returns to the sequencer. A new project starts with Reverb, Delay, Distortion, Chorus and Phaser in the five slots.
+The five top-row buttons are **five pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 36**. **Tap** a button to open its pedal. **SELECT** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, two clicks each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Ghost, as they share the instrument's sound memory. Switch the pedal on with **KNOB1** (three clicks clockwise) and off again (three clicks anticlockwise), or **hold its button 0.5 seconds**; the button is lit while the pedal is on. **KNOB2–4** adjust it. **HOME or SEQ** returns to the sequencer. A new project starts with Reverb, Delay, Distortion, Chorus and Phaser in the five slots.
 
 | Category | Pedal | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|
@@ -101,6 +108,7 @@ The five top-row buttons are **five pedal slots for the selected instrument**, a
 | | Octave Fuzz: an octave up, fuzzed | Level | Tone | Fuzz |
 | | Gated Fuzz: splutters and cuts out as notes die | Level | Gate | Fuzz |
 | | Wavefolder: metallic, folds back on itself | Level | Tone | Fold |
+| | Bitcrusher: fewer bits and a lower sample rate, crunchy digital grit | Bits | Rate | Mix |
 | **Filter** | Filter Seq: the filter steps in time with the tempo | Rate 1/4–1/16 | Depth | Resonance |
 | | Wah: opens as you play louder | Sensitivity | Range | Resonance |
 | **Modulation** | Chorus | Rate | Depth | Level |
@@ -108,19 +116,32 @@ The five top-row buttons are **five pedal slots for the selected instrument**, a
 | | Flanger: jet-plane sweep | Rate | Depth | Feedback |
 | | Tremolo: volume pulsing | Rate | Depth | Shape: round to square |
 | | Slicer: rhythmic chopping, in time | Rate 1/8–1/32 | Depth | Pattern 1–8 |
+| | Pump: ducks the instrument on every kick, the sidechain "breathing" | Depth | Release | Source: kick / 1/4 / 1/8 |
 | | Vibrato: pitch wobble | Rate | Depth | Mix |
 | | Uni: throbbing 60s swirl | Rate | Depth | Mix |
 | **Space** | Reverb | Level | Tone | Time |
 | | Delay | Repeat rate | Echo | Intensity |
 | | Tape Echo: wobbly, darkening repeats | Echo | Time | Repeats |
 | | Shimmer: reverb that rises in octaves | Level | Time | Shimmer |
+| | Reverse Delay: backwards echoes that swell into each repeat | Echo | Time | Repeats |
+| | Spring Reverb: the splashy, metallic spring of an old amp | Level | Tone | Time |
+| **Pitch** | Shifter: the notes moved up or down | Semitones −12…+12 | Octave −2…+2 | Mix |
+| | Harmonizer: a second note at an interval above or below | Interval (octave, 5th, 4th, 3rd, minor 3rd, down or up) | Level | Tone |
 | **Other** | Cassette: wow, flutter and hiss | Wow | Hiss | Tone |
 | | Vinyl: crackle and an old, narrow sound | Crackle | Age | Level |
 | | Glitch: on a step, now and then, a slice repeats, reverses or stutters | Chance | Length 1/32–1/8 | Mix |
 | | Underwater: muffled and drifting | Depth | Wobble | Level |
 | | Synth: a square wave following the lowest note | Octave 0/−1/−2 | Tone | Mix |
+| | Lo-Fi: lower sample rate, noise and a worn digital sound | Rate | Noise | Dirt |
+| | Slow: no attack, each note swells in like a bowed string | Rise | Depth | Sensitivity |
+| | Ghost: a quiet, slightly late copy, like a second player following | Delay | Level | Drift |
+| | Music Box: a little plucked metal bell on each note, slightly uneven | Decay | Tone | Mix |
+| | Broken Clock: notes now and then late or twice, like a worn mechanism | Amount | Chance | Hiccup |
+| | Shadow: a quieter, darker copy an octave (or two) below | Level | Tone | Octave −1/−2 |
 
-Most values run 0–20. **Space pedals are shared**: there is one Reverb, one Delay, one Tape Echo and one Shimmer for the whole band. Each instrument sets **how much it sends** (Level / Echo); the other two knobs belong to the shared pedal and change it for every instrument using it. All other pedals are each instrument's own, slot by slot, and run in slot order (FX first).
+Most values run 0–20. **Space pedals are shared**: there is one of each (Reverb, Delay, Tape Echo, Shimmer, Reverse Delay, Spring Reverb) for the whole band. Each instrument sets **how much it sends** (Level / Echo); the other two knobs belong to the shared pedal and change it for every instrument using it. All other pedals are each instrument's own, slot by slot, and run in slot order (FX first).
+
+**PLAY / STOP**: stopping silences every pedal at once: echoes, reverb tails, loops, Glitch, Ghost and late Broken Clock notes all end (the space pedals fade out in a few milliseconds), and nothing left over is heard when you start again. While stopped, the pedals come back as soon as you play a key.
 
 The chip can only do so much at once: if switching a pedal on (or choosing a heavier one) would overload it, the pedal stays off and **CPU FULL** shows. Switch another pedal off first. Phaser, Uni, Filter Seq and Wah are the heaviest; the drives, Tremolo, Slicer, Glitch and Synth the lightest. The mixer shows the CPU load.
 
@@ -152,7 +173,9 @@ When SUPER SEQ is on, it chooses the playing patterns instead of PRESETS. **PLAY
 
 ## Mixer and saving
 
-**GLO** opens the mixer. **KNOB1–4** set the volumes of lead, pads, bass and drums. On the mixer, **SAVE / ARP / SEQ / PLAY** mute those instruments respectively (lit = playing). Press **GLO** again to close it. The mixer shows CPU load; if audio crackles, try disabling an effect.
+**GLO** opens the mixer. **KNOB1–4** set the volumes of lead, pads, bass and drums. On the mixer, **SAVE / ARP / SEQ / PLAY** mute those instruments respectively (lit = playing). Tap **GLO** again for the **KEY page**, and once more to go home (**HOME** also goes straight home). The mixer shows CPU load; if audio crackles, try disabling an effect.
+
+**The KEY page** (from Conductor) shows the key, its relative minor, its key signature and scale on a staff, and one octave of piano with the key's notes lit (the notes you play light gold). **SELECT** chooses the key, a sharp or a flat at a time (C, G, D … or F, B-flat, E-flat …; QUARTET's demo groove is in C minor, the key of E-flat). **KNOB1** switches **LOCK** on: the keys then play only the key's notes, a note outside it sounding the one below. **KNOB2** switches **LIGHTS** on: the key's notes glow on the FM-1's keys (lead, pads and bass, outside the step recorder).
 
 Quartet **automatically remembers current work** after playback stops and the sound has been quiet for two seconds. Four separate save slots let you keep projects.
 
@@ -168,8 +191,8 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 |---|---|---|---|
 | **ALGORITHM** | Select instrument (2 clicks) | Select instrument | SUPER SEQ: select row; LIVE: select instrument |
 | **PRESETS** | Select pattern A–J (2 clicks) | Select pattern | SUPER SEQ: select song; pedal: the pedal in its category |
-| **SELECT** | Select sound/kit (2 clicks) | Melodic step cursor | Pedal: the pedal's category; arpeggiator, mixer, save: back home (and changes the sound if turned onto another); SUPER SEQ, score: nothing |
-| **KNOB1–4** | Tempo + sound settings | Length / cursor / page / swing | LIVE: length / cursor / page / —; score: page / step / TRUE-CENTRE / DARK-PAPER; otherwise labelled settings |
+| **SELECT** | Select sound/kit (2 clicks) | Melodic step cursor | Pedal: the pedal's category; KEY: the key; arpeggiator, mixer, save: back home (and changes the sound if turned onto another); SUPER SEQ, score: nothing |
+| **KNOB1–4** | Tempo + sound settings | Length / dynamic / page / swing | LIVE: length / cursor / page / —; score: page / step / TRUE-CENTRE / DARK-PAPER; KEY: lock / lights; otherwise labelled settings |
 | **Keys** | Play notes; drums: first six white keys | Melodic notes; drums: black keys choose voice, white keys toggle hits | LIVE: play and record |
 | **OCT− / OCT+** | Change octave | Drum step page | Octave where applicable |
 | **PLAY** | Start/stop from step one | Start/stop | LIVE: start/stop (stopping ends recording); mixer: mute drums; save: load |
@@ -178,7 +201,7 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 | **REC** | Tap: score view; hold: CLEAR ALL?, press again to confirm | Tap: rest; hold: clear pattern | LIVE: record on/off or hold clear; save: save; score: tap back home; pedal, arpeggiator, mixer, SUPER SEQ: hold clears the selected instrument's current pattern straight away (no question) |
 | **ARP** | Tap: arpeggiator; hold: on/off | Tap: tie | Mixer: mute pads |
 | **FX / SEL / ENV / LFO / EDIT** | Tap: pedal slot; hold: pedal on/off | Same | Pedal screen: SELECT category, PRESETS pedal, KNOB1 on/off, KNOB2–4 adjust it |
-| **GLO** | Open mixer | Open mixer | Close mixer |
+| **GLO** | Tap: mixer, then KEY, then home. Hold: beat repeat (white keys 1–5 choose 1/2–1/32) | Same | Same |
 | **SAVE** | Open save screen | Open save screen | Save screen: close; mixer: mute lead |
 | **MASTER** | Overall volume | Overall volume | Overall volume |
 

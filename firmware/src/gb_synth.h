@@ -143,6 +143,8 @@ static struct {
     int32_t env;                                /* the ADSR, Q23 */
     int32_t low, band, f, q;
     uint8_t gate, note, seq, stage, blk, fmi;   /* seq: started by the sequencer; stage: 0 attack, 1 decay/sustain, 2 release; fmi: FM depth */
+    int32_t vel;                                /* how hard: Q15 (32767 = as ever; an accent ~+3 dB) */
+    uint8_t acc;                                /* an accent: the filter a little more open too */
 } vx[NVOX];                                     /* interrupt only */
 static uint32_t syn_left[NSYN];                 /* interrupt: ticks until the sequenced notes of a track end */
 static uint32_t vx_ages;
@@ -161,7 +163,8 @@ static void live_note(uint32_t trk, uint32_t note, uint32_t on)   /* main loop *
     live_w = w + 1u;                            /* (published last: the interrupt sees a whole entry) */
 }
 
-static void voice_on(uint32_t trk, uint32_t note, uint32_t seq)
+static const int32_t DYN_G15[5] = {32767, 25500, 19500, 14000, 46286};   /* f, mf, mp, p, accent (+3 dB); Conductor's */
+static void voice_on(uint32_t trk, uint32_t note, uint32_t seq, uint32_t dyn)
 {
     uint32_t v, pick = TRK[trk].first, best = 0xFFFFFFFFu, tune = set.snd[trk].tune;
     if (!note || note > 127u) return;
@@ -176,6 +179,8 @@ static void voice_on(uint32_t trk, uint32_t note, uint32_t seq)
     vx[pick].inc2 += vx[pick].inc2 >> 8;        /* ~7 cents above: two oscillators that beat a little sound wider */
     vx[pick].note = (uint8_t)note;
     vx[pick].seq = (uint8_t)seq;
+    vx[pick].vel = DYN_G15[dyn % 5u];
+    vx[pick].acc = (uint8_t)(dyn % 5u == 4u);
     vx[pick].age = ++vx_ages;
     vx[pick].stage = 0;                         /* attack, from wherever the envelope is (no click) */
     vx[pick].gate = 1;
@@ -197,6 +202,7 @@ static void voice_off(uint32_t trk, uint32_t note, int seq_only)   /* note 0: al
 #define ARP_MAX 8u
 static const uint8_t ARP_TICKS[4] = {16, 8, 4, 2};   /* ticks a note: 1/4, 1/8, 1/16, 1/32 (TPS = 4 a 16th) */
 static const char *const ARP_NAME[4] = {"1/4", "1/8", "1/16", "1/32"};
+static uint8_t arp_dyn[NSYN];                   /* interrupt: the dynamic of the step the arpeggiator plays from */
 static uint8_t arp_held[NSYN][ARP_MAX], arp_n[NSYN], arp_cur[NSYN];   /* interrupt only: the keys held, low to high */
 static uint32_t arp_count[NSYN], arp_idx[NSYN], arp_gate[NSYN];
 static uint8_t seq_arp[NSYN][4];                /* interrupt only: the pattern's notes the arpeggiator holds now (0: none) */
@@ -245,31 +251,34 @@ static void arp_tick(void)                      /* every clock tick */
             note = arp_held[t][i % arp_n[t]] + 12u * (i / arp_n[t]);
             if (note > 127u) note = 127u;
             if (arp_cur[t]) voice_off(t, arp_cur[t], 0);
-            voice_on(t, note, 0);
+            voice_on(t, note, 0, arp_dyn[t]);
             arp_cur[t] = (uint8_t)note;
             arp_gate[t] = rate / 2u ? rate / 2u : 1u;
         }
     }
 }
 
-static void synth_step(void)
+static void synth_step_t(uint32_t t)            /* one track's step (BROKEN CLOCK may play it late: gb_clock.h) */
 {
-    uint32_t t, i;
-    for (t = 0; t < NSYN; t++) {
+    uint32_t i;
+    {
         const uint8_t *nt = step_note(t, play_pat[t], trk_pos[t]);
-        uint32_t ln = *step_len(t, play_pat[t], trk_pos[t]);
-        if ((trk_mute | chain_rest) >> t & 1u || !nt[0]) continue;   /* (muted, or a SUPER SEQ rest) */
+        uint32_t ln = *step_len(t, play_pat[t], trk_pos[t]), dy = sdyn_get(t, play_pat[t], trk_pos[t]);
+        if ((trk_mute | chain_rest) >> t & 1u || !nt[0]) return;   /* (muted, or a SUPER SEQ rest) */
         voice_off(t, 0, 1);                     /* (the last step's notes end: a new one starts) */
         if (set.arp_on >> t & 1u) {             /* the arpeggiator on: it takes the notes, as if held on the keys */
             seq_arp_drop(t);
+            arp_dyn[t] = (uint8_t)dy;
             for (i = 0; i < STEP_NN(t); i++)
                 if (nt[i] && nt[i] < 128u) { arp_add(t, nt[i]); seq_arp[t][i] = nt[i]; }
         } else
             for (i = 0; i < STEP_NN(t); i++)
-                if (nt[i] && nt[i] < 128u) voice_on(t, nt[i], 1);
+                if (nt[i] && nt[i] < 128u) voice_on(t, nt[i], 1, dy);
         syn_left[t] = (ln ? ln : 1u) * TPS - 1u;   /* the notes end a tick before their last step does */
     }
 }
+static void synth_step(void) { uint32_t t; for (t = 0; t < NSYN; t++) synth_step_t(t); }
+
 static void synth_tick(void)
 {
     uint32_t t;
@@ -316,7 +325,7 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
             if (set.arp_on >> lt & 1u) {        /* the arpeggiator takes the keys */
                 if (live_q[r % LIVE_N].on) arp_add(lt, ln);
                 else { arp_del(lt, ln); voice_off(lt, ln, 0); }   /* (a note held from before the arp went on: let go) */
-            } else if (live_q[r % LIVE_N].on) voice_on(lt, ln, 0);
+            } else if (live_q[r % LIVE_N].on) { voice_on(lt, ln, 0, 0); fx_quiet = 0; }
             else voice_off(lt, ln, 0);
         }
         live_r = r + 1u;
@@ -364,6 +373,7 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                     eff = env;
                     if (sp->ltgt == L_AMP)      /* tremolo: down to ~1 % at full depth */
                         eff = (int32_t)(((int64_t)eff * (32768 - ((((lv + 32768) >> 1) * (int32_t)(sp->ldepth & 127u)) >> 7))) >> 15);
+                    eff = (int32_t)(((int64_t)eff * vx[v].vel) >> 15);   /* the note's dynamic */
                     if (!env && vx[v].stage == 2u) { amp = 0; dstep = 0; }   /* the release has ended: silence */
                     else dstep = (eff - amp) >> 4;   /* a ramp over the block: no steps you could hear */
                     en = ((env >> 8) * 32767) / TRK[t].level;   /* the envelope 0..32767 for the filter */
@@ -373,6 +383,7 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                         fmi = (uint32_t)(fx > 127 ? 127 : fx);
                     }
                     if (sp->ltgt == L_FILT) c += (lmod * 64) >> 15;   /* wah: +-64 cutoff steps */
+                    if (vx[v].acc) c += 10;     /* (an accent: brighter) */
                     c = c < 0 ? 0 : c > TRK[t].cmax ? TRK[t].cmax : c;
                     f = over == 2u ? FTAB[c] >> 1 : FTAB[c];
                     q = 16384 - (int32_t)(sp->res & 127u) * 119;   /* damping, Q13: 2.0 (none) .. 0.15 (screaming) */

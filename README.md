@@ -16,13 +16,18 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
 - **10 drum kits**: Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi and Industrial: synthesised, with toms,
   congas, shakers and more on PERC, and the LM-1 played from samples of a real Linn LM-1 (rossf, Sampling+ 1.0: see
   [LICENSING.md](LICENSING.md)).
-- **Five pedal slots** per track, each holding any of **24 pedals**, drawn as stompboxes: drives (distortion, overdrive,
-  fuzz, octave fuzz, gated fuzz, wavefolder), filters (filter sequencer, wah), modulation (chorus, phaser, flanger,
-  tremolo, slicer, vibrato, uni), space (reverb, delay, tape echo, shimmer) and oddities (cassette, vinyl, glitch,
-  underwater, synth).
+- **Five pedal slots** per track, each holding any of **36 pedals**, drawn as stompboxes: drives (distortion, overdrive,
+  fuzz, octave fuzz, gated fuzz, wavefolder, bitcrusher), filters (filter sequencer, wah), modulation (chorus, phaser,
+  flanger, tremolo, slicer, vibrato, uni, pump), space (reverb, delay, tape echo, shimmer, reverse delay, spring reverb),
+  pitch (shifter, harmonizer) and oddities (cassette, vinyl, glitch, underwater, synth, lo-fi, slow, ghost, music box,
+  broken clock, shadow).
 - **Arpeggiator** (rate, octaves, direction), for the keys and for the recorded patterns.
 - **Score view**: the pattern written as sheet music, two bars at a time, at real pitch (8va / 8vb) or centred on the
   treble staff, on a dark or paper look.
+- **Dynamics on every note**: p, mp, mf, f or an accent, per note and per drum hit.
+- **Beat repeat**: hold GLO and the slice playing goes round (1/2 bar down to 1/32); let go and the music is where it
+  would have been.
+- **Key page**: the key's signature and scale, a scale lock for the keys and the key's notes lit on them.
 - **Mixer** with mutes.
 - **SUPER SEQ**: chain each track's patterns into songs (10 songs, 8 boxes per track).
 - **4 save slots** for the whole groovebox, and your current work is kept by itself across power-offs.

@@ -26,6 +26,8 @@
 static volatile uint32_t clk_run;               /* 1 = playing */
 static volatile uint32_t clk_go;                /* +1 = start from step 1 now (write before clk_run = 1) */
 static volatile uint32_t clk_tick_q8 = TICK_Q8(120u);
+static volatile uint32_t rep_len;               /* BEAT REPEAT while held: the slice in steps (8, 4, 2, 1; REP_HALF a 1/32); 0 off */
+#define REP_HALF 0x80u
 /* the interrupt writes these */
 static volatile uint32_t clk_step;              /* steps since PLAY (for the beat display) */
 static volatile uint32_t clk_sub;               /* the tick within the step, 0..TPS-1 (live recording rounds with it) */
@@ -103,6 +105,78 @@ static uint32_t tick_len(uint32_t base_q8, uint32_t tick)
     return (tick / TPS) & 1u ? base_q8 - d : base_q8 + d;
 }
 
+/* BEAT REPEAT: the slice playing (on the grid of its length) goes round while rep_len is set. Every step the tracks'
+ * places are kept (the last 16); the slice's start is found there, and every slice-length the tracks go back to it.
+ * Let go: back to the start, then on, silently, as many steps as went by: the music is where it would have been. A
+ * 1/32: each step plays twice (its half-way tick fires the step again). */
+typedef struct { uint8_t pos[NTRK], pat[NTRK], cat[NTRK]; uint32_t rest; } seqst_t;
+static seqst_t rep_hist[16], rep_snap, rep_true;   /* the last 16 steps; the slice's start; where the repeat began */
+static uint32_t rep_on, rep_n, rep_L, rep_tn;   /* on; steps into the slice; its length; steps since it began */
+static void seq_keep(seqst_t *s)
+{
+    uint32_t t;
+    for (t = 0; t < NTRK; t++) { s->pos[t] = trk_pos[t]; s->pat[t] = play_pat[t]; s->cat[t] = chain_at[t]; }
+    s->rest = chain_rest;
+}
+static void seq_back(const seqst_t *s)
+{
+    uint32_t t;
+    for (t = 0; t < NTRK; t++) { trk_pos[t] = s->pos[t]; play_pat[t] = s->pat[t]; chain_at[t] = s->cat[t]; }
+    chain_rest = s->rest;
+}
+static void repeat_step(uint32_t step, int restart)   /* a new step, after the tracks moved on to it */
+{
+    uint32_t L = rep_len == REP_HALF ? 0u : rep_len, k;   /* (a 1/32 plays each step twice: no slice to go round) */
+    if (restart) rep_on = 0;
+    else if (rep_on) {
+        rep_tn++; rep_n++;
+        if (!L) { seq_back(&rep_true); for (k = 0; k < rep_tn; k++) seq_advance(0); rep_on = 0; }   /* let go */
+        else if (L == rep_L && rep_n % rep_L == 0u) seq_back(&rep_snap);   /* round again */
+    }
+    seq_keep(&rep_hist[step & 15u]);
+    if (L && !restart && (!rep_on || L != rep_L)) {   /* start (or another length): the slice playing, from its start */
+        uint32_t a = step / L * L;
+        rep_snap = rep_hist[a & 15u];
+        rep_n = step - a; rep_L = L;
+        if (!rep_on) { rep_true = rep_snap; rep_tn = rep_n; rep_on = 1; }
+    }
+}
+
+/* BROKEN CLOCK (a pedal, gb_fx.h): a track with it plays some of its steps late, by up to 3 ticks (3/4 of a step),
+ * and now and then twice (a hiccup), like a worn mechanism. AMOUNT how late at most, CHANCE how often, HICCUP how
+ * often twice. Its late steps wait here (cleared on STOP) */
+static uint8_t brk_wait[NTRK], brk_again[NTRK];
+static uint32_t brk_rnd = 0x2545F491u;
+static void track_step(uint32_t t) { if (t == T_DRUMS) drums_step(); else synth_step_t(t); }
+static const uint8_t *broken_k(uint32_t t)      /* the track's BROKEN CLOCK knobs, if it has one on */
+{
+    uint32_t e;
+    for (e = 0; e < NFX; e++) if (set.fx[t].on >> e & 1u && set.ped[t][e] % NPD == PD_BROKEN) return set.pk[t][e];
+    return 0;
+}
+static void steps_fire(void)                    /* a new step: each track plays it, now or (broken) a little later */
+{
+    uint32_t t;
+    for (t = 0; t < NTRK; t++) {
+        const uint8_t *k = broken_k(t);
+        uint32_t r;
+        brk_wait[t] = brk_again[t] = 0;
+        if (!k) { track_step(t); continue; }
+        brk_rnd = brk_rnd * 1664525u + 1013904223u; r = brk_rnd;
+        if ((r >> 24) < (uint32_t)k[1] * 2u) brk_wait[t] = (uint8_t)(1u + (r >> 8) % (1u + (uint32_t)k[0] * 2u / 127u));
+        else track_step(t);
+        if (((r >> 16) & 255u) < (uint32_t)k[2] * 2u) brk_again[t] = (uint8_t)(brk_wait[t] + 2u);   /* (a hiccup: again) */
+    }
+}
+static void broken_tick(void)                   /* every tick between steps: a late step's time come? */
+{
+    uint32_t t;
+    for (t = 0; t < NTRK; t++) {
+        if (brk_wait[t] && --brk_wait[t] == 0u) track_step(t);
+        if (brk_again[t] && --brk_again[t] == 0u) track_step(t);
+    }
+}
+
 static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
 {
     clk_sub = tick % TPS;
@@ -110,9 +184,12 @@ static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
     synth_tick();
     if (tick % TPS == 0u) {
         seq_advance(tick == 0u);
+        repeat_step(tick / TPS, tick == 0u);
         clk_step = tick / TPS;
-        drums_step();
-        synth_step();
+        steps_fire();
+    } else {
+        broken_tick();
+        if (tick % TPS == TPS / 2u && rep_len == REP_HALF) { drums_step(); synth_step(); }   /* (a 1/32 repeat) */
     }
     arp_tick();                                 /* (playing: on the patterns' own ticks; after the step, so it arpeggiates
                                                    the step's notes from their first tick) */
@@ -127,10 +204,15 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
         if (set.sseq_on) for (t = 0; t < NTRK; t++) chain_go(t, 0);
         else { chain_rest = 0; for (t = 0; t < NTRK; t++) if (set.sel[t] < NPAT) play_pat[t] = set.sel[t]; }
     }
+    blk_pos = 0;
     if (go_done != clk_go) { go_done = clk_go; pos_q8 = 0; tick = 0; clock_fire(0); }   /* PLAY: step 1 now */
-    if (was_run && !run) { drums_stop(); synth_stop(); }
+    if (was_run && !run) {                      /* STOP: the notes let go; the pedals fall silent (gb_fx.h); no late step */
+        drums_stop(); synth_stop(); fx_flush_req = 1; fx_quiet = 1;
+        for (t = 0; t < NTRK; t++) brk_wait[t] = brk_again[t] = 0;
+    }
     was_run = run;
     if (pos_q8 > 2u * len_q8) pos_q8 = len_q8;  /* (the tempo jumped up a lot: one tick now, not a burst) */
+    if (run) fx_quiet = 0;
     fxc_run = run; fxc_tick = tick; fxc_pos = pos_q8 < len_q8 ? pos_q8 : 0u; fxc_len = len_q8;   /* (for synced effects) */
     if (!run) {                                 /* stopped: the arpeggiator still ticks, at the tempo */
         free_q8 += n << 8;
@@ -142,10 +224,11 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
         if (run) {
             uint32_t todo;
             uint32_t cur = tick_len(len_q8, tick);   /* (this tick's length: swing stretches and shrinks them) */
-            if (pos_q8 >= cur) { pos_q8 -= cur; clock_fire(++tick); continue; }
+            if (pos_q8 >= cur) { pos_q8 -= cur; blk_pos = i; clock_fire(++tick); continue; }
             todo = (cur - pos_q8 + 255u) >> 8;  /* whole samples to the next tick */
             if (todo < seg) seg = todo;
         }
+        blk_pos = i;
         drums_render(&tb[T_DRUMS][i], seg);
         synth_render(tb, i, seg);
         i += seg;

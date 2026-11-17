@@ -12,6 +12,12 @@
  *   SPACE       REVERB, DELAY, TAPE ECHO, SHIMMER    one of each, shared: a track's first knob is what it sends;
  *               the other two knobs belong to the shared pedal (set.spk[pedal][0..1]), for every track using it
  *   OTHER       CASSETTE, VINYL, GLITCH (on the tempo), UNDERWATER, SYNTH (a square wave under the notes)
+ *   (and PUMP, in MODULATION: ducks its track on every kick, or on the beat: the sidechain "breathing")
+ *   later: BITCRUSHER (drive); REVERSE DELAY, SPRING REVERB (space, shared); PITCH: SHIFTER, HARMONIZER; OTHER: LO-FI,
+ *   SLOW (no attack: swells), GHOST (a quiet copy just behind), MUSIC BOX (a little bell on each note), BROKEN CLOCK
+ *   (timing hiccups: gb_clock.h plays the track's steps late), SHADOW (a darker copy an octave down)
+ * STOP silences them all: fx_flush_req makes fx_process fade the shared pedals out over one block, then empty every
+ * line, buffer and state (no echo, loop or late note left over, nothing heard again on PLAY). 
  *
  * Speed: each pedal is its own tight loop over the whole block; a send bus is filled only from the slots that use
  * it; the reverb and the shimmer run at half rate. The time-based pedals take their timing from the clock (exact).
@@ -26,13 +32,24 @@ enum { PD_DIST, PD_OD, PD_FUZZ, PD_OCTF, PD_GATEF, PD_FOLD,              /* DRIV
        PD_CHO, PD_PHS, PD_FLG, PD_TREM, PD_SLICE, PD_VIB, PD_UNI,        /* MODULATION */
        PD_REV, PD_DLY, PD_TAPE, PD_SHIM,                                 /* SPACE (shared) */
        PD_CASS, PD_VINYL, PD_GLITCH, PD_WATER, PD_SYNTH,                 /* OTHER */
+       PD_PUMP,                                 /* (added later: MODULATION too; new ones go last, saves keep their numbers) */
+       PD_CRUSH, PD_REVD, PD_SPRING,            /* (later still: DRIVE, SPACE, SPACE) */
+       PD_SHIFT, PD_HARM,                       /* PITCH */
+       PD_LOFI, PD_SLOW, PD_GHOST, PD_MBOX, PD_BROKEN, PD_SHADOW,   /* OTHER */
        NPD };
-enum { SP_REV, SP_DLY, SP_TAPE, SP_SHIM };      /* the shared pedals (and their send buses) */
-typedef char nsp_matches_the_save[SP_SHIM + 1 == NSPACE ? 1 : -1];
-#define PD_SPACE(p) ((p) >= PD_REV && (p) <= PD_SHIM)
+enum { SP_REV, SP_DLY, SP_TAPE, SP_SHIM, SP_REVD, SP_SPRING, NSPACE_ALL };   /* the shared pedals (and their buses); the
+                                                   first NSPACE keep their knobs in set.spk, the later ones in set.spk2 */
+typedef char nsp_matches_the_save[SP_SHIM + 1 == NSPACE && NSPACE_ALL - NSPACE == 2 ? 1 : -1];
+static int32_t sp_of(uint32_t p)                /* a pedal's shared pedal (SP_...), or -1: it is the slot's own */
+{
+    return p >= PD_REV && p <= PD_SHIM ? (int32_t)(p - PD_REV) : p == PD_REVD ? SP_REVD : p == PD_SPRING ? SP_SPRING : -1;
+}
+#define PD_SPACE(p) (sp_of(p) >= 0)
+static uint8_t *spk_of(uint32_t sp) { return sp < NSPACE ? set.spk[sp] : set.spk2[(sp - NSPACE) % 2u]; }   /* its two knobs */
+static volatile uint32_t fx_flush_req;          /* gb_clock.h: the music stopped: every pedal falls silent (fx_process) */
 
 static int32_t tb[NTRK][FXN];                   /* each track's sound for this block, mono */
-static int32_t fx_bus[NSPACE][FXN] __attribute__((section(".pool")));   /* what the tracks send to each shared pedal (x 128) */
+static int32_t fx_bus[NSPACE_ALL][FXN] __attribute__((section(".pool")));   /* what the tracks send to each shared pedal (x 128) */
 static uint32_t fxc_run, fxc_tick, fxc_pos, fxc_len;   /* the clock at the block's start (gb_clock.h writes) */
 
 static int16_t sat16(int32_t v) { return (int16_t)(v > 32767 ? 32767 : v < -32767 ? -32767 : v); }
@@ -80,6 +97,77 @@ static int16_t *const SHM_CB[4] = {shm_c0, shm_c1, shm_c2, shm_c3};
 static int16_t shm_ps[SHM_PS] __attribute__((section(".pool")));
 static uint32_t shm_ci[4], shm_pw, shm_pp;
 static int32_t shm_lp[4], shm_last, shm_dc;
+
+/* REVERSE DELAY: the last slice (on the tempo) played backwards while the next is recorded: each echo swells towards
+ * the note. Kept at a quarter of the rate (it is a soft, swelling sound): 8192 samples, slices up to 0.37 s; fed back,
+ * the repeats turn round each time (backwards, forwards ...) */
+#define RVD_N 8192u
+static int16_t rvd_buf[RVD_N] __attribute__((section(".pool")));
+static uint32_t rvd_w, rvd_k, rvd_cs, rvd_q;
+static int32_t rvd_acc, rvd_y0, rvd_y1;
+static void revdly_block(const int32_t *in, int32_t *out, uint32_t n, uint32_t rtime, uint32_t rfb)
+{
+    uint32_t N = (220500u * DLY_DIV3[rtime % NDLY] / set.bpm) >> 2, i;
+    int32_t fb = (int32_t)rfb * 105 / 127;
+    while (N >= RVD_N / 2u) N >>= 1;
+    if (N < 128u) N = 128u;
+    for (i = 0; i < n; i++) {
+        int32_t y;
+        rvd_acc += in[i] >> 7;
+        if (++rvd_q == 4u) {                    /* a quarter-rate sample: read the last slice backwards, write this one */
+            uint32_t k = rvd_k;
+            int32_t g = (int32_t)(k < 96u ? k : N - k < 96u ? N - k : 96u);   /* (soft at the slice's two ends) */
+            rvd_q = 0;
+            y = (rvd_buf[(rvd_cs - 1u - k) & (RVD_N - 1u)] * g) / 96;
+            rvd_buf[rvd_w] = sat16((rvd_acc >> 2) + ((y * fb) >> 7));
+            rvd_acc = 0;
+            rvd_w = (rvd_w + 1u) & (RVD_N - 1u);
+            if (++rvd_k >= N) { rvd_k = 0; rvd_cs = rvd_w; }
+            rvd_y0 = rvd_y1; rvd_y1 = y;
+        }
+        y = rvd_y0 + (((rvd_y1 - rvd_y0) * (int32_t)rvd_q) >> 2);   /* (back to the full rate: a straight line) */
+        y = (y * 110) >> 7;
+        out[2u * i] += y; out[2u * i + 1u] += y;
+    }
+}
+
+/* SPRING REVERB: a short loop (~30 ms, wobbling a little) through six allpasses that smear each round into a chirp:
+ * the "boing" and splash of a spring tank. Half rate; the two sides read the loop at different places */
+#define SPR_N 1024u
+static int16_t spr_line[SPR_N] __attribute__((section(".pool")));
+static const uint8_t SPR_APL[6] = {37, 43, 53, 61, 71, 79};
+static int16_t spr_apb[344] __attribute__((section(".pool")));   /* (the six allpasses' lines, one after another) */
+static uint32_t spr_w, spr_api[6], spr_ph;
+static int32_t spr_lp;
+static void spring_block(const int32_t *in, int32_t *out, uint32_t n, uint32_t tone, uint32_t stime)
+{
+    uint32_t m = n >> 1, j, k, w = spr_w;
+    int32_t fb = 18000 + (int32_t)stime * 95, damp = 5000 + (int32_t)tone * 200, lp = spr_lp, L, L2;
+    spr_ph += LFO_INC[40] * n;
+    L = 640 + (sine(spr_ph) >> 13);             /* the loop's length wobbles: the spring sways */
+    L2 = L * 47 / 64;
+    for (j = 0; j < m; j++) {
+        int32_t x = ((in[2u * j] + in[2u * j + 1u]) >> 8) >> 2, y = spr_line[(w - (uint32_t)L) & (SPR_N - 1u)], v, o = 0;
+        lp += ((y - lp) * damp) >> 15;
+        v = x + ((lp * fb) >> 15);
+        for (k = 0; k < 6u; k++) {              /* allpass: out = old - a in; line = in + a out (a = 0.62) */
+            int16_t *b = spr_apb + o;
+            int32_t bo = b[spr_api[k]], ya = bo - ((20316 * v) >> 15);
+            b[spr_api[k]] = sat16(v + ((20316 * ya) >> 15));
+            if (++spr_api[k] >= SPR_APL[k]) spr_api[k] = 0;
+            v = ya; o += SPR_APL[k];
+        }
+        spr_line[w] = sat16(v);
+        w = (w + 1u) & (SPR_N - 1u);
+        rev_l[j] = y; rev_r[j] = spr_line[(w - (uint32_t)L2) & (SPR_N - 1u)];
+    }
+    for (j = 0; j < m; j++) {
+        int32_t l = (rev_l[j] * 120) >> 7, r = (rev_r[j] * 120) >> 7;
+        out[4u * j] += l; out[4u * j + 1u] += r;
+        out[4u * j + 2u] += l; out[4u * j + 3u] += r;
+    }
+    spr_w = w; spr_lp = lp;
+}
 
 static void delay_block(const int32_t *in, int32_t *out, uint32_t n, uint32_t dtime, uint32_t dfb)   /* repeats that get darker */
 {
@@ -220,7 +308,7 @@ typedef struct {
 } pst_t;
 static pst_t pst[NTRK][NFX] __attribute__((section(".pool")));
 #define PB_N 512u                               /* 11.6 ms */
-static int16_t pbuf[NTRK][NFX][PB_N] __attribute__((section(".pool")));
+static int16_t pbuf[NTRK][NFX][PB_N] __attribute__((section(".pool"), aligned(4)));
 #define GL_N 4096u                              /* GLITCH: the track's last 93 ms */
 static int16_t glbuf[NTRK][GL_N] __attribute__((section(".pool")));
 
@@ -471,6 +559,32 @@ static void amp_block(uint32_t type, pst_t *st, const uint8_t *k, int32_t *x, ui
     st->s[0] = g;
 }
 
+/* PUMP: DEPTH, RELEASE (50 .. 600 ms), SOURCE (the kick, as it plays; or every 1/4 or 1/8): down at once, back up on a
+ * curve (the gain's dip squared: it comes back slowly, then quickly), as a compressor fed by the kick does */
+static void pump_block(pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    static const uint8_t TK[3] = {0, 16, 8};
+    uint32_t i, src = k[2] % 3u, R = 2205u + (uint32_t)k[1] * 200u, pos = (uint32_t)st->s[3], per = TK[src];
+    int32_t g = 32767, depth = k[0];
+    sync_t c;
+    if (!st->s[4]) { pos = R; st->s[4] = 1; }  /* (fresh: not ducked) */
+    sync_begin(&c, st);
+    for (i = 0; i < n; i++) {
+        int edge = sync_step(&c), trig = src ? edge && c.tk % per == 0u : (int32_t)i == kick_at;
+        if (trig) pos = 0;
+        if (trig || (i & 15u) == 0u) {
+            if (pos < R) {
+                int32_t f = (int32_t)(((R - pos) << 15) / R), d = (f * f) >> 15;
+                g = 32767 - ((d * depth) >> 7);
+            } else g = 32767;
+        }
+        if (pos < R) pos++;
+        x[i] = (x[i] * g) >> 15;
+    }
+    sync_end(&c, st);
+    st->s[3] = (int32_t)pos;
+}
+
 static void other_block(uint32_t t, uint32_t type, pst_t *st, int16_t *b, const uint8_t *k, int32_t *x, uint32_t n)
 {
     uint32_t i, w = st->w;
@@ -569,6 +683,7 @@ static void other_block(uint32_t t, uint32_t type, pst_t *st, int16_t *b, const 
                 act = (r >> 24) < (uint32_t)k[0] * 2u;
                 if (act) { mode = (r >> 8) % 3u; st0 = gw - L; rp = 0; }
             }
+            if (!fxc_run) act = 0;              /* (stopped: no glitches) */
             if (act) {
                 uint32_t q = rp % L;
                 y = g[(st0 + (mode == 1u ? L - 1u - q : q)) & (GL_N - 1u)];
@@ -584,6 +699,145 @@ static void other_block(uint32_t t, uint32_t type, pst_t *st, int16_t *b, const 
     st->w = w; st->dl = pl; st->s[0] = lp; st->s[1] = lp2; st->s[2] = c3; st->s[3] = c4;
 }
 
+/* a pitch shifter in the slot's line: two read heads, half a window apart, sliding at the new speed, each faded in
+ * and out (a triangle) so that one is always in the middle of its window. ratio Q16 (65536 = as is) */
+#define PS_W (440 << 16)
+static const uint32_t SEMI_Q16[49] = {16384, 17358, 18390, 19484, 20643, 21870, 23170, 24548, 26008, 27554, 29193, 30929, 32768, 34716, 36781, 38968, 41285, 43740, 46341, 49097, 52016, 55109, 58386, 61858, 65536, 69433, 73562, 77936, 82570, 87480, 92682, 98193, 104032, 110218, 116772, 123715, 131072, 138866, 147123, 155872, 165140, 174960, 185364, 196386, 208064, 220436, 233544, 247431, 262144};   /* -24 .. +24 semitones */
+static int32_t shift_one(pst_t *st, const int16_t *b, uint32_t w, uint32_t ratio)
+{
+    int32_t d1 = (int32_t)st->ph, d2 = d1 + PS_W / 2, g1, y;
+    if (d2 >= PS_W) d2 -= PS_W;
+    g1 = d1 >> 16; g1 = g1 < 220 ? g1 : 440 - g1;
+    y = (tap(b, PB_N - 1u, w, (d1 >> 8) + 512) * g1 + tap(b, PB_N - 1u, w, (d2 >> 8) + 512) * (220 - g1)) / 220;
+    d1 += 65536 - (int32_t)ratio;
+    if (d1 < 0) d1 += PS_W;
+    if (d1 >= PS_W) d1 -= PS_W;
+    st->ph = (uint32_t)d1;
+    return y;
+}
+static void pitch_block(uint32_t type, pst_t *st, int16_t *b, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    static const int8_t IV[10] = {-12, -7, -5, -4, -3, 3, 4, 5, 7, 12};   /* HARMONIZER's intervals */
+    uint32_t i, w = st->w, ratio;
+    int32_t lp = st->s[0], kt = 32767, mx = 127, lv = 127;
+    if (type == PD_SHIFT) {                     /* SHIFTER: SEMI (-12..+12), OCTAVE (-2..+2), MIX */
+        int32_t sm = (int32_t)(k[0] % 25u) - 12 + 12 * ((int32_t)(k[1] % 5u) - 2);
+        ratio = SEMI_Q16[(sm < -24 ? -24 : sm > 24 ? 24 : sm) + 24]; mx = k[2];
+    } else if (type == PD_HARM) {               /* HARMONIZER: INTERVAL, LEVEL, TONE: a second voice beside the first */
+        ratio = SEMI_Q16[IV[k[0] % 10u] + 24]; lv = k[1]; kt = 4000 + (int32_t)k[2] * 220;
+    } else {                                    /* SHADOW: LEVEL, TONE, OCTAVE (-1, -2): quieter and darker, below */
+        ratio = k[2] % 2u ? 16384u : 32768u; lv = k[0]; kt = 1500 + (int32_t)k[1] * 120;
+    }
+    for (i = 0; i < n; i++) {
+        int32_t y;
+        b[w] = sat16(x[i]);
+        y = shift_one(st, b, w, ratio);
+        w = (w + 1u) & (PB_N - 1u);
+        if (type == PD_SHIFT) x[i] += ((y - x[i]) * mx) >> 7;
+        else { lp += ((y - lp) * kt) >> 15; x[i] += (lp * lv) >> 7; }
+    }
+    st->w = w; st->s[0] = lp;
+}
+
+static void lofi_block(uint32_t type, pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)   /* BITCRUSHER, LO-FI */
+{
+    uint32_t i, cnt = st->cnt;
+    int32_t hold = st->s[0], lp = st->s[1], sh, per, mx = 127, nz = 0, drop = 0;
+    if (type == PD_CRUSH) {                     /* BITS (16 .. 2), RATE (x1 .. x32 lower), MIX */
+        sh = (int32_t)k[0] * 14 / 127; per = 1 + (int32_t)k[1] * 31 / 127; mx = k[2];
+    } else {                                    /* LO-FI: RATE (x1 .. x8, a little unsteady), NOISE, DIRT (bits, dropouts) */
+        sh = 4 + (int32_t)k[2] * 6 / 127; per = 1 + (int32_t)k[0] * 7 / 127; nz = k[1]; drop = k[2];
+    }
+    for (i = 0; i < n; i++) {
+        if (++cnt >= (uint32_t)per) {           /* a new sample held: the rest of the period repeats it */
+            int32_t v = clampv(x[i], 32767);
+            cnt = 0;
+            if (type == PD_LOFI) {
+                uint32_t r = rnd_next(&st->rnd);
+                if (per > 1 && (r & 7u) == 0u) cnt = 1;   /* (the clock jitters) */
+                v += ((int32_t)(r >> 17) - 16384) * nz >> 11;   /* hiss */
+                if ((r >> 24) < (uint32_t)drop >> 3) v >>= 2;  /* a dropout */
+            }
+            hold = sh ? ((v + (1 << (sh - 1))) >> sh) << sh : v;   /* fewer bits (rounded: no offset) */
+        }
+        if (type == PD_LOFI) { lp += ((hold - lp) * 14000) >> 15; x[i] = lp; }   /* (and dulled, ~ 3 kHz) */
+        else x[i] += ((hold - x[i]) * mx) >> 7;
+    }
+    st->cnt = cnt; st->s[0] = hold; st->s[1] = lp;
+}
+
+static void slow_block(pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)   /* SLOW: RISE, DEPTH, SENS */
+{
+    uint32_t i;
+    int32_t fast = st->s[0], slw = st->s[1], g = st->s[2], armed = st->s[3];   /* (g: Q23) */
+    int32_t rise = (32767 << 8) / (2205 + (int32_t)k[0] * 500);   /* RISE: 50 ms .. 1.5 s to full */
+    int32_t floor_ = (32767 - (32767 * (int32_t)k[1]) / 127) << 8, th = 200 + (127 - (int32_t)k[2]) * 20;
+    if (!st->s[4]) { g = 32767 << 8; armed = 1; st->s[4] = 1; }
+    for (i = 0; i < n; i++) {
+        int32_t a = absv(x[i]);
+        fast += (a - fast) >> 4; slw += (a - slw) >> 10;
+        if (armed && fast > 2 * slw + th) { g = floor_; armed = 0; }   /* a new note: from (nearly) nothing ... */
+        else if (!armed && fast < slw + (slw >> 2)) armed = 1;
+        if ((i & 15u) == 0u && g < (32767 << 8)) { g += rise * 16; if (g > (32767 << 8)) g = 32767 << 8; }   /* ... it swells in */
+        x[i] = (x[i] * (g >> 8)) >> 15;
+    }
+    st->s[0] = fast; st->s[1] = slw; st->s[2] = g; st->s[3] = armed;
+}
+
+static void ghost_block(uint32_t t, pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)   /* GHOST: DELAY, LEVEL, DRIFT */
+{
+    int16_t *g = glbuf[t];
+    uint32_t i, w = st->w;
+    int32_t lp = st->s[0], d, sd, pl = st->dl, lv = k[1];
+    st->ph += LFO_INC[18] * n;                  /* it drifts a little: never quite in time, nor in tune */
+    d = ((900 + (int32_t)k[0] * 20) << 8) + ((sine(st->ph) * (int32_t)k[2]) >> 6);   /* (20 .. 80 ms, +- up to 6 ms: inside the line) */
+    if (!pl) pl = d;
+    sd = (d - pl) / (int32_t)n;
+    for (i = 0; i < n; i++) {
+        int32_t y;
+        g[w] = sat16(x[i]);
+        pl += sd;
+        y = tap(g, GL_N - 1u, w, pl);
+        w = (w + 1u) & (GL_N - 1u);
+        lp += ((y - lp) * 9000) >> 15;          /* softer and darker, a step behind */
+        x[i] += (lp * lv) >> 7;
+    }
+    st->w = w; st->s[0] = lp; st->dl = pl;
+}
+
+/* MUSIC BOX: DECAY, TONE, MIX. Each note the track starts plays a little plucked bell an octave up (a sine and a
+ * metallic partial at 2.75x that dies sooner), each a touch out of tune, of level, and late: the comb of a music box.
+ * The voices' states sit in the slot's line (it needs none): 4 x (age, envelope, two phases, increment, wait) */
+static void mbox_block(uint32_t t, pst_t *st, int16_t *b, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    int32_t *m = (int32_t *)(void *)b, mx = k[2], part = k[1], dec = 32767 - (135 - (int32_t)k[0]) * 3;
+    uint32_t i, v, nv = t < NSYN ? TRK[t].count : 0u;
+    for (v = 0; v < nv && v < 4u; v++) {        /* a note just started: pluck */
+        uint32_t vi = TRK[t].first + v, *mv = (uint32_t *)(m + v * 6);
+        if (vx[vi].gate && vx[vi].age != mv[0]) {
+            uint32_t r = rnd_next(&st->rnd), inc = vx[vi].inc << 1;
+            mv[0] = vx[vi].age;
+            m[v * 6 + 1] = 26000 + (int32_t)(r & 4095u) * 2;   /* (its level, a little uneven) */
+            mv[2] = mv[3] = 0;
+            mv[4] = inc + (uint32_t)((int32_t)(inc >> 10) * ((int32_t)((r >> 12) & 15u) - 8));   /* (a touch out of tune) */
+            mv[5] = (r >> 20) & 511u;           /* (and a hair late) */
+        }
+    }
+    for (i = 0; i < n; i++) {
+        int32_t y = 0;
+        for (v = 0; v < nv && v < 4u; v++) {
+            uint32_t *mv = (uint32_t *)(m + v * 6);
+            int32_t env = m[v * 6 + 1];
+            if (env < 64) continue;
+            if (mv[5]) { mv[5]--; continue; }
+            mv[2] += mv[4]; mv[3] += (mv[4] >> 2) * 11u;   /* (the partial: 2.75 x, without overflow) */
+            y += ((sine(mv[2]) * env) >> 18) + ((((sine(mv[3]) * ((env * env) >> 15)) >> 15) * part) >> 10);
+            if ((i & 15u) == 0u) m[v * 6 + 1] = (env * dec) >> 15;
+        }
+        x[i] += ((y - x[i]) * mx) >> 7;
+    }
+}
+
 static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, int32_t *x, uint32_t n)
 {
     pst_t *st = &pst[t][e];
@@ -593,6 +847,7 @@ static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, 
         uint8_t *z = (uint8_t *)st;
         for (i = 0; i < sizeof *st; i++) z[i] = 0;
         for (i = 0; i < PB_N; i++) b[i] = 0;
+        if (type == PD_GLITCH || type == PD_GHOST) for (i = 0; i < GL_N; i++) glbuf[t][i] = 0;   /* (the track's line) */
         st->type = (uint8_t)(type + 1u);
         st->rnd = 0x9E3779B9u * (t * NFX + e + 1u);
     }
@@ -600,20 +855,42 @@ static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, 
     if (type <= PD_FOLD) drive_block(type, st, k, x, n);
     else if (type <= PD_WAH) filter_block(type, st, k, x, n);
     else if (type == PD_TREM || type == PD_SLICE) amp_block(type, st, k, x, n);
+    else if (type == PD_PUMP) pump_block(st, k, x, n);
+    else if (type == PD_CRUSH || type == PD_LOFI) lofi_block(type, st, k, x, n);
+    else if (type == PD_SHIFT || type == PD_HARM || type == PD_SHADOW) pitch_block(type, st, pbuf[t][e], k, x, n);
+    else if (type == PD_SLOW) slow_block(st, k, x, n);
+    else if (type == PD_GHOST) ghost_block(t, st, k, x, n);
+    else if (type == PD_MBOX) mbox_block(t, st, pbuf[t][e], k, x, n);
+    else if (type == PD_BROKEN) {}              /* (BROKEN CLOCK changes when the track plays: gb_clock.h) */
     else if (type <= PD_UNI) mod_block(type, st, pbuf[t][e], k, x, n);
     else other_block(t, type, st, pbuf[t][e], k, x, n);
 }
 
+static void zero16(int16_t *p, uint32_t n) { while (n--) *p++ = 0; }
+static void fx_flush(void)                      /* the music stopped: every line, loop and state emptied */
+{
+    uint32_t k;
+    zero16(dly_buf, DLY_N); zero16(tape_buf, TAPE_N); zero16(rvd_buf, RVD_N); zero16(spr_line, SPR_N);
+    zero16(spr_apb, sizeof spr_apb / 2u); zero16(shm_ps, SHM_PS);
+    for (k = 0; k < 4u; k++) { zero16(REV_CB[k], REV_COMB[k]); zero16(SHM_CB[k], SHM_COMB[k]); rev_lp[k] = shm_lp[k] = 0; }
+    for (k = 0; k < 3u; k++) zero16(REV_AB[k], REV_AP[k]);
+    zero16(&pbuf[0][0][0], NTRK * NFX * PB_N); zero16(&glbuf[0][0], NTRK * GL_N);
+    { uint8_t *z = (uint8_t *)pst; for (k = 0; k < sizeof pst; k++) z[k] = 0; }   /* (each slot starts afresh) */
+    dly_lp = tape_lp = tape_lp2 = shm_last = shm_dc = spr_lp = rvd_acc = rvd_y0 = rvd_y1 = 0;
+    rvd_k = rvd_q = 0; rvd_cs = rvd_w;
+}
+
 static void fx_process(int32_t *out, uint32_t n)
 {
-    uint32_t i, t, e, b, used = 0;
+    uint32_t i, t, e, b, used = 0, flush = fx_flush_req;
+    int32_t *wet = &tb[0][0];                   /* (the shared pedals' sound, stereo: tb is free once mixed) */
     n &= ~1u;                                   /* (the reverb takes pairs; the block is 256) */
     for (t = 0; t < NTRK; t++) {                /* 1. each track through its own pedals, slot by slot, in place */
         uint32_t on = set.fx[t].on;
         int32_t gv = (int32_t)set.vol[t] * 4096 / 100;   /* the mixer: 100 = as is (Q12), 127 = x1.27, after the pedals */
         for (e = 0; e < NFX; e++) {
             uint32_t p = set.ped[t][e] % NPD;
-            if (on >> e & 1u && !PD_SPACE(p)) ped_insert(t, e, p, set.pk[t][e], tb[t], n);
+            if (on >> e & 1u && !PD_SPACE(p) && !(fx_quiet && (p == PD_GHOST || p == PD_GLITCH))) ped_insert(t, e, p, set.pk[t][e], tb[t], n);
             else pst[t][e].live = 0;
         }
         if (gv != 4096) {
@@ -621,16 +898,16 @@ static void fx_process(int32_t *out, uint32_t n)
             for (i = 0; i < n; i++) x[i] = (x[i] * gv) >> 12;
         }
     }
-    for (b = 0; b < NSPACE; b++) {              /* 2. the send buses, from the slots that use them only */
+    for (b = 0; b < NSPACE_ALL; b++) {          /* 2. the send buses, from the slots that use them only */
         int32_t *bus = fx_bus[b];
         uint32_t first = 1;
         for (t = 0; t < NTRK; t++)
             for (e = 0; e < NFX; e++) {
-                int32_t s = set.pk[t][e][0];
+                int32_t sv = set.pk[t][e][0];
                 const int32_t *x = tb[t];
-                if (!(set.fx[t].on >> e & 1u) || set.ped[t][e] % NPD != PD_REV + b || !s) continue;
-                if (first) { for (i = 0; i < n; i++) bus[i] = x[i] * s; first = 0; }
-                else for (i = 0; i < n; i++) bus[i] += x[i] * s;
+                if (!(set.fx[t].on >> e & 1u) || sp_of(set.ped[t][e] % NPD) != (int32_t)b || !sv || fx_quiet) continue;
+                if (first) { for (i = 0; i < n; i++) bus[i] = x[i] * sv; first = 0; }
+                else for (i = 0; i < n; i++) bus[i] += x[i] * sv;
             }
         if (!first) used |= 1u << b;
     }
@@ -639,8 +916,21 @@ static void fx_process(int32_t *out, uint32_t n)
         out[2u * i] += d;
         out[2u * i + 1u] += d;
     }
-    if (used >> SP_DLY & 1u) delay_block(fx_bus[SP_DLY], out, n, set.spk[SP_DLY][0], set.spk[SP_DLY][1]);   /* 4. the shared ones */
-    if (used >> SP_TAPE & 1u) tape_block(fx_bus[SP_TAPE], out, n, set.spk[SP_TAPE][0], set.spk[SP_TAPE][1]);
-    if (used >> SP_REV & 1u) reverb_block(fx_bus[SP_REV], out, n, set.spk[SP_REV][0], set.spk[SP_REV][1]);
-    if (used >> SP_SHIM & 1u) shimmer_block(fx_bus[SP_SHIM], out, n, set.spk[SP_SHIM][0], set.spk[SP_SHIM][1]);
+    for (i = 0; i < 2u * n; i++) wet[i] = 0;    /* 4. the shared ones, each in one go */
+    if (used >> SP_DLY & 1u) delay_block(fx_bus[SP_DLY], wet, n, set.spk[SP_DLY][0], set.spk[SP_DLY][1]);
+    if (used >> SP_TAPE & 1u) tape_block(fx_bus[SP_TAPE], wet, n, set.spk[SP_TAPE][0], set.spk[SP_TAPE][1]);
+    if (used >> SP_REVD & 1u) revdly_block(fx_bus[SP_REVD], wet, n, set.spk2[0][0], set.spk2[0][1]);
+    if (used >> SP_REV & 1u) reverb_block(fx_bus[SP_REV], wet, n, set.spk[SP_REV][0], set.spk[SP_REV][1]);
+    if (used >> SP_SHIM & 1u) shimmer_block(fx_bus[SP_SHIM], wet, n, set.spk[SP_SHIM][0], set.spk[SP_SHIM][1]);
+    if (used >> SP_SPRING & 1u) spring_block(fx_bus[SP_SPRING], wet, n, set.spk2[1][0], set.spk2[1][1]);
+    if (flush) {                                /* STOP: their tails fade out over this block, then all is emptied */
+        for (i = 0; i < n; i++) {
+            int32_t g = (int32_t)((n - i) * 32767u / n);
+            out[2u * i] += (int32_t)(((int64_t)wet[2u * i] * g) >> 15);
+            out[2u * i + 1u] += (int32_t)(((int64_t)wet[2u * i + 1u] * g) >> 15);
+        }
+        fx_flush();
+        fx_flush_req = 0;
+    } else if (used) for (i = 0; i < 2u * n; i++) out[i] += wet[i];
+    kick_at = -1;                               /* (this block's kick has been heard) */
 }
