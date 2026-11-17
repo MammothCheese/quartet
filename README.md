@@ -8,12 +8,19 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
 
 ## What it does
 
-- **Four tracks**: LEAD (4 voices), PAD/CHORDS (4 voices), BASS and DRUMS, each in its own colour.
-- **10 patterns per track** (A-J), 16 to 64 steps, with swing. A new pattern starts when the playing one comes round.
+- **Four tracks**: three synth slots, each a LEAD, PAD or BASS (they start as LEAD, BASS, PAD; two of a kind show as
+  L1 / L2), sharing nine voices, and DRUMS. Each type has its own colour.
+- **10 patterns per track** (A-J), 1 to 4 bars, every note with a length (1/16 to a whole bar) and a dynamic. A new
+  pattern starts when the playing one comes round.
 - **Step recorder and live recorder**: write notes step by step, or play them in while the music runs; live notes
   are placed on the beat.
-- **10 sounds per instrument**: piano, brass, Hammond, theremin, strings, choir, handpan, acid bass, Reese, wobble and more, from a 2-oscillator synth with a resonant filter, envelope and LFO. Every sound can be tweaked.
-- **10 drum kits**: Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi and Industrial: synthesised, with toms,
+- **72 sounds in banks**, 24 per type: ORIGINAL (piano, brass, Hammond, theremin, strings, choir, handpan, acid bass,
+  Reese, wobble ...), CLASSIC (Mini Lead, Sync Lead, Juno Strings, Solina, Moog Bass, 303 Line, DX Bass ...) and
+  EXPERIMENTAL (Glass Harp, Broken Radio, Frozen, Cathedral, Growl, Womp ...), from a 2-oscillator synth with pulse
+  width modulation, hard sync, FM, glide, a resonant filter, envelope and LFO. Every sound can be tweaked and **saved to
+  a USER bank** (8 per type, 4 drum kits).
+- **18 drum kits**: Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi, Industrial, ELECTRONIC (Electro,
+  Techno, Trap, Breaks) and EXPERIMENTAL (Metal, Glitch, Toy, Noise): synthesised, with toms,
   congas, shakers and more on PERC, and the LM-1 played from samples of a real Linn LM-1 (rossf, Sampling+ 1.0: see
   [LICENSING.md](LICENSING.md)).
 - **Four pedal slots** per track (tap FX, SEL, ENV, LFO: on / off), each holding any of **36 pedals**, drawn as stompboxes: drives (distortion, overdrive,
@@ -22,9 +29,8 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
   pitch (shifter, harmonizer) and oddities (cassette, vinyl, glitch, underwater, synth, lo-fi, slow, ghost, music box,
   broken clock, shadow).
 - **Arpeggiator** (rate, octaves, direction), locked to the beat, for the keys and for the recorded patterns.
-- **Sound editor** (EDIT): every synth's oscillators, filter, envelope and LFO, and each drum.
-- **Score view**: the pattern written as sheet music, two bars at a time, at real pitch (8va / 8vb) or centred on the
-  treble staff, on a dark or paper look.
+- **Sound editor** (EDIT): the slot's type, bank and sound (INSTR), every synth's oscillators, filter, envelope, LFO
+  and glide, each drum; REC twice saves to the USER bank.
 - **Dynamics on every note**: p, mp, mf, f or an accent, per note and per drum hit.
 - **Beat repeat**: hold GLO and the slice playing goes round (1/2 bar down to 1/32); let go and the music is where it
   would have been.

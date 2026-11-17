@@ -36,7 +36,7 @@ static const uint16_t KDEF[NDR] = {16, 64, 128, 16, 24, 48};
  * plays six samples of a real Linn LM-1 (rossf's, lm1_samples.h; CLAP and PERC play its low and high tom).
  * (The drum engine's changes come from SPLITMILK 0.10-0.13, the same author's firmware built on QUARTET.) */
 #include "lm1_samples.h"                       /* (firmware/gen: tools/samples2c.py) */
-#define NKIT 10u
+#define NKIT 18u                                /* the kits: 0..9 QUARTET's first ten (every older save's), then the later */
 #define KIT_ROCK 0u
 #define KIT_POPS 2u
 #define KIT_LM1 4u                              /* the LM-1: real samples, not synthesised */
@@ -51,8 +51,27 @@ static const dsnd_t KITS[NKIT][NDR] = {
     {{44, 110, 72}, {64, 64, 60}, {70, 50, 56}, {70, 80, 56}, {64, 70, 72}, {70, 82, 72}},     /* 808: a long low boom, a high tom */
     {{60, 72, 90}, {78, 70, 78}, {80, 48, 62}, {80, 80, 60}, {64, 64, 74}, {50, 70, 66}},      /* 909: a clicky punchy kick, a bright snare, crisp hats */
     {{56, 80, 76}, {56, 60, 70}, {50, 50, 56}, {50, 70, 56}, {56, 60, 64}, {44, 86, 74}},      /* LO-FI: lower, then crushed, a low tom */
-    {{54, 80, 92}, {60, 90, 86}, {64, 70, 64}, {60, 100, 62}, {50, 90, 80}, {36, 90, 80}}};    /* INDUSTRIAL: loud and long, crushed hard */
-static const char *const KIT_NAME[NKIT] = {"ROCK", "HIP-HOP", "MINI POPS", "CR-78", "LM-1", "606", "808", "909", "LO-FI", "INDUSTRIAL"};
+    {{54, 80, 92}, {60, 90, 86}, {64, 70, 64}, {60, 100, 62}, {50, 90, 80}, {36, 90, 80}},     /* INDUSTRIAL: loud and long, crushed hard */
+    /* ELECTRONIC */
+    {{48, 90, 88}, {74, 56, 74}, {84, 40, 58}, {84, 70, 56}, {70, 60, 76}, {64, 56, 62}},      /* ELECTRO: a deep kick, a tuned clap, a cowbell */
+    {{52, 84, 94}, {70, 66, 72}, {88, 34, 62}, {88, 64, 58}, {66, 56, 70}, {60, 50, 60}},      /* TECHNO: a driving clicky kick, full hats, a rim */
+    {{40, 122, 84}, {82, 50, 70}, {102, 22, 56}, {96, 50, 50}, {78, 46, 72}, {70, 40, 56}},    /* TRAP: a long sub boom, a tight snare, ticking hats */
+    {{60, 70, 86}, {88, 58, 80}, {76, 44, 58}, {76, 70, 56}, {70, 56, 66}, {56, 64, 64}},      /* BREAKS: a punchy kick, a cracking snare, gritty */
+    /* EXPERIMENTAL */
+    {{50, 90, 90}, {48, 100, 84}, {40, 90, 64}, {40, 110, 62}, {40, 100, 80}, {30, 100, 80}},  /* METAL: low clanging, everything rings */
+    {{70, 30, 80}, {96, 24, 70}, {112, 20, 56}, {110, 40, 52}, {100, 30, 66}, {90, 30, 60}},   /* GLITCH: tiny clicks and crushed blips */
+    {{90, 30, 60}, {100, 30, 56}, {112, 24, 50}, {110, 40, 46}, {96, 30, 52}, {84, 40, 56}},   /* TOY: high and soft, maracas, a guiro */
+    {{30, 110, 90}, {40, 110, 86}, {60, 90, 66}, {60, 120, 64}, {40, 110, 84}, {24, 110, 82}}};   /* NOISE: huge, long, crushed bursts */
+static const char *const KIT_NAME[NKIT] = {"ROCK", "HIP-HOP", "MINI POPS", "CR-78", "LM-1", "606", "808", "909", "LO-FI", "INDUSTRIAL",
+                                           "ELECTRO", "TECHNO", "TRAP", "BREAKS", "METAL", "GLITCH", "TOY", "NOISE"};
+static const char *const KBANK_NAME[4] = {"ORIGINAL", "ELECTRONIC", "EXPERIMENTAL", "USER"};
+#define KUID(u) (96u + (u))                     /* a USER kit's id */
+static uint32_t kit_bank(uint32_t id) { return id >= KUID(0) ? 3u : id >= 14u ? 2u : id >= 10u ? 1u : 0u; }
+static uint32_t kit_now(void)                   /* the kit the engine plays (a USER kit: the one it was made from) */
+{
+    uint32_t id = set.dkit;
+    return id >= KUID(0) && id < KUID(NUKIT) ? set.mu.ub.kit[id - KUID(0)].base % NKIT : id % NKIT;
+}
 /* how some drums are made, per kit: the kick's beater click (0 none, 1..4: how loud), the hats' noise (0 bright, the
  * change from sample to sample; 1 full, the noise itself; 2 soft, smoothed: MINI POPS' maracas), whether PITCH tunes
  * the clap (0: as designed; 1: pitch moves its noise band down / up), and what PERC is:
@@ -66,10 +85,12 @@ enum { P_SINE, P_TOM, P_CONGA, P_COWBELL, P_RIM, P_SHAKER, P_GUIRO, P_TAMB, NPER
 static const ktone_t KIT_TONE[NKIT] = {
     {1, 0, 0, 0, P_SINE}, {0, 0, 0, 0, P_SINE}, {0, 2, 0, 0, P_SHAKER}, {0, 0, 0, 0, P_CONGA},   /* ROCK, HIP-HOP, MINI POPS, CR-78 */
     {0, 0, 0, 0, P_SINE}, {0, 0, 0, 0, P_SHAKER}, {0, 0, 0, 0, P_TOM}, {1, 0, 0, 0, P_SINE},       /* LM-1, 606, 808, 909 */
-    {0, 0, 0, 0, P_TOM}, {0, 0, 0, 0, P_SINE}};                                                   /* LO-FI, INDUSTRIAL */
+    {0, 0, 0, 0, P_TOM}, {0, 0, 0, 0, P_SINE},                                                    /* LO-FI, INDUSTRIAL */
+    {1, 0, 0, 1, P_COWBELL}, {2, 1, 1, 0, P_RIM}, {0, 0, 0, 1, P_RIM}, {1, 0, 0, 0, P_CONGA},      /* ELECTRO, TECHNO, TRAP, BREAKS */
+    {3, 1, 1, 1, P_COWBELL}, {2, 0, 0, 1, P_RIM}, {0, 2, 2, 1, P_GUIRO}, {0, 1, 1, 0, P_TAMB}};    /* METAL, GLITCH, TOY, NOISE */
 /* the crushers: keep one sample in n (0: off) and round to steps of mask + 1 */
-static const uint8_t KIT_CRUSH_N[NKIT] = {0, 2, 0, 0, 0, 0, 0, 0, 3, 4};
-static const uint16_t KIT_CRUSH_M[NKIT] = {0, 255, 0, 0, 0, 0, 0, 0, 1023, 4095};
+static const uint8_t KIT_CRUSH_N[NKIT] = {0, 2, 0, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0, 2, 0, 4, 0, 3};
+static const uint16_t KIT_CRUSH_M[NKIT] = {0, 255, 0, 0, 0, 0, 0, 0, 1023, 4095, 0, 0, 0, 255, 0, 2047, 0, 4095};
 
 static struct { uint32_t ph, inc, end, cnt; int32_t amp, amp2, lp1, lp2; } dr[NDR];   /* interrupt only */
 static uint8_t dvel[NDR] = {128, 128, 128, 128, 128, 128};   /* each drum's last hit: how hard (Q7, 128 = as ever) */
@@ -84,7 +105,7 @@ static uint32_t scale_q12(uint32_t v, uint32_t m) { return (uint32_t)(((uint64_t
 
 static void drum_trigger(uint32_t d)
 {
-    uint32_t kit = set.dkit % NKIT, m = MULT[set.dsnd[d].pitch & 127u];
+    uint32_t kit = kit_now(), m = MULT[set.dsnd[d].pitch & 127u];
     if (d == DR_KICK && kick_at < 0) kick_at = (int32_t)blk_pos;
     dr[d].amp = AMP_FULL;
     dr[d].ph = 0;
@@ -137,7 +158,7 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
     static uint8_t hit_done[NDR];
     static uint32_t rnd = 22222u, crush_n;
     static int32_t crush_v;
-    uint32_t kit = set.dkit % NKIT, crush = KIT_CRUSH_N[kit], cmask = KIT_CRUSH_M[kit], pops = kit == KIT_POPS;
+    uint32_t kit = kit_now(), crush = KIT_CRUSH_N[kit], cmask = KIT_CRUSH_M[kit], pops = kit == KIT_POPS;
     const ktone_t *kt = &KIT_TONE[kit];
     static int32_t prev_noise;
     int32_t ca1 = 0, ca2 = 0;                   /* (a tuned clap: its band's two smoothing steps, Q12) */
