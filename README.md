@@ -23,7 +23,7 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
   Techno, Trap, Breaks) and EXPERIMENTAL (Metal, Glitch, Toy, Noise): synthesised, with toms,
   congas, shakers and more on PERC, and the LM-1 played from samples of a real Linn LM-1 (rossf, Sampling+ 1.0: see
   [LICENSING.md](LICENSING.md)).
-- **Four pedal slots** per track (tap FX, SEL, ENV, LFO: on / off), each holding any of **36 pedals**, drawn as stompboxes: drives (distortion, overdrive,
+- **Four pedal slots** per track (tap FX, SEL, ENV, LFO: on / off), each holding any of **36 pedals**, each with its own colour, three knobs and a footswitch that glows when on: drives (distortion, overdrive,
   fuzz, octave fuzz, gated fuzz, wavefolder, bitcrusher), filters (filter sequencer, wah), modulation (chorus, phaser,
   flanger, tremolo, slicer, vibrato, uni, pump), space (reverb, delay, tape echo, shimmer, reverse delay, spring reverb),
   pitch (shifter, harmonizer) and oddities (cassette, vinyl, glitch, underwater, synth, lo-fi, slow, ghost, music box,

@@ -7,8 +7,8 @@
 <meta name="description" content="Custom firmware that turns the M-VAVE FM-1 into a four-track groovebox: three synth slots and drums, 72 sounds in banks plus your own, 36 effects pedals, step and live recording and a song arranger.">
 <style>
 :root {
-  --bg: #0D0D11; --panel: #16161B; --card: #1C1C23; --line: #2C2C36; --txt: #E8E8EF; --sub: #A3A3B0; --dim: #6C6C7A;
-  --gold: #FFB824; --pad: #B27CFF; --bass: #24C6F0; --drums: #5CE268; --mute: #EE382E;
+  --bg: #0B0E17; --panel: #141A26; --card: #1C2335; --line: #283048; --txt: #E8E8EF; --sub: #A3A3B0; --dim: #6C6C7A;
+  --gold: #FF6B5E; --pad: #2EE0C8; --bass: #B57CFF; --drums: #3BA8FF; --mute: #5C647A;
   --narrow: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -78,7 +78,7 @@ footer a { color: var(--sub); }
 </head>
 <body id="top">
 <header><div class="wrap"><nav>
-  <a class="brand" href="#top"><span class="bars"><i style="background:#FFB824"></i><i style="background:#B27CFF"></i><i style="background:#24C6F0"></i><i style="background:#5CE268"></i></span>QUARTET</a>
+  <a class="brand" href="#top"><span class="bars"><i style="background:#FF6B5E"></i><i style="background:#2EE0C8"></i><i style="background:#B57CFF"></i><i style="background:#3BA8FF"></i></span>QUARTET</a>
   <ul>
     <li><a href="#start">Start</a></li>
     <li><a href="#controls">Controls</a></li>
@@ -157,7 +157,7 @@ footer a { color: var(--sub); }
 
 <section id="band">
   <h2>The band</h2>
-  <p class="sub">Four tracks, each drawn in the colour of what it plays. A muted track turns red.</p>
+  <p class="sub">Four tracks, each a card in the colour of what it plays: coral lead, teal pad, violet bass, blue drums. The chosen card glows; a muted track turns grey.</p>
   <div class="split">
     <div>
       <table class="t">
@@ -178,7 +178,7 @@ footer a { color: var(--sub); }
         <div class="card"><h4>KNOB 1</h4><p>The tempo. (The sound itself is shaped in <kbd>EDIT</kbd>.)</p></div>
         <div class="card"><h4>PLAY</h4><p>Every track starts together from step one, or stops.</p></div>
       </div>
-      <p><b>A&gt;C</b> on a row means pattern C is queued after A: it starts when A comes round. The bottom line shows the sound and its bank.</p>
+      <p>Each card shows the track's sound, the steps of its pattern (the one playing white) and the pattern in a pill. <b>A&gt;C</b> means pattern C is queued after A: it starts when A comes round. The bottom line shows the chosen track's four pedals, glowing in their colours when on.</p>
     </div>
     <div>
       <div class="shot"><img src="guide/slots.png" alt="The home screen with two leads, L1 and L2"><p>Two leads: the PAD slot switched to LEAD.</p></div>
@@ -221,7 +221,7 @@ footer a { color: var(--sub); }
       <p><b>Waves:</b> sine, triangle, saw, square, noise, FM, <b>pulse</b> (set the LFO target to PWM and its width sways) and <b>sync</b> (wave 2 only: hard sync, swept by the filter envelope for that screaming lead). <b>Glide</b> slides each note from the one before, from off up to about half a second.</p>
       <p><b>Drums:</b> the first page is <b>KIT</b> (bank, kit, USER slot), then a page per drum (BD SD HH OH CP PC) with its pitch, decay and level on <kbd>KNOB 1&ndash;3</kbd>.</p>
       <h3>The signal chain (<kbd>EDIT</kbd> twice)</h3>
-      <p>The track's sound and its four pedals, top to bottom in the order the sound flows through them, then <b>OUT</b> (the track's level). A red lamp means the pedal is on. <kbd>SELECT</kbd> moves down the chain and the chosen pedal opens with its three knobs on <kbd>KNOB 2&ndash;4</kbd>; <kbd>KNOB 1</kbd> switches it on or off, and <kbd>PRESETS</kbd> swaps it for another pedal from the whole library, category by category. <kbd>EDIT</kbd> once more goes home.</p>
+      <p>The track's four pedals as cards, in the order the sound flows through them (FX, SEL, then ENV, LFO), each with its power sign, three small knobs and their values. A pedal that is off is grey; the chosen card glows. <kbd>SELECT</kbd> moves between them, <kbd>KNOB 2&ndash;4</kbd> turn the chosen pedal's knobs (named on the bottom line); <kbd>KNOB 1</kbd> switches it on or off, and <kbd>PRESETS</kbd> swaps it for another pedal from the whole library, category by category. <kbd>EDIT</kbd> once more goes home.</p>
       <h3>Saving your own sound</h3>
       <p>Tweak the sound, go to <b>INSTR</b> (or <b>KIT</b>), choose a USER slot with <kbd>KNOB 4</kbd> and press <kbd>REC</kbd> <b>twice</b> (the bottom line asks first). <b>SAVED USER 3</b> shows, and the track now plays your sound from the USER bank. Saving over a used slot replaces it. The USER bank is kept with your work and inside each saved project, and <i>clear all</i> leaves it alone.</p>
     </div>

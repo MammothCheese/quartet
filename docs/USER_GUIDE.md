@@ -9,15 +9,15 @@ Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72
 
 ## Instruments and home screen
 
-**Lead** (gold) plays melodies; **pads** (violet) plays pads and chords; **bass** (cyan) plays basslines; **drums** (green) has six percussion voices. Muted instruments appear red.
+**Lead** (coral) plays melodies; **pads** (teal) plays pads and chords; **bass** (violet) plays basslines; **drums** (blue) has six percussion voices. Muted instruments turn grey.
 
 Turn **ALGORITHM** to choose an instrument and **SELECT** to choose its sound or drum kit (one click per choice, through every bank in turn; the new sound's name shows, without playing a test note). Play the keys; for drums, the first six white keys play the six sounds. **OCT− / OCT+** change octave and **MASTER** sets overall volume. **PLAY** starts or stops all instruments from step one.
 
-The **home screen** shows the selected instrument and pattern (A–J), tempo, beat lights, octave and four pattern rows. The playing step is highlighted; the bottom line shows the sound and knob settings. **A > C** means pattern C is queued after A.
+The **home screen** shows the selected instrument and pattern (A–J), tempo, beat lights and octave, then a card per track: its badge, its sound, the steps of its pattern (the playing step white) and its pattern. The chosen card glows. The bottom line shows the chosen track's four pedals, glowing in their colours when on. **A > C** means pattern C is queued after A.
 
 ![Quartet screens](overhaul_mockup.png)
 
-On the home screen, **KNOB1** sets tempo; the sound itself is shaped in **EDIT**, and the bottom line shows the sound and its bank. **PRESETS** chooses patterns, **SEQ** opens the sequencer (and SUPER SEQ), **EDIT** opens the sound editor, **GLO** opens the mixer and **SAVE** opens project storage. **HOME** always returns here.
+On the home screen, **KNOB1** sets tempo; the sound itself is shaped in **EDIT**. **PRESETS** chooses patterns, **SEQ** opens the sequencer (and SUPER SEQ), **EDIT** opens the sound editor, **GLO** opens the mixer and **SAVE** opens project storage. **HOME** always returns here.
 
 ## How the controls work
 
@@ -121,7 +121,7 @@ The drum kits are synthesised, except the **LM-1**, which plays samples of a rea
 
 OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose width the LFO can move: set the LFO target to **PWM**) and **sync** (wave 2 only: a saw restarted by wave 1, hard sync; the filter envelope sweeps it). For drums the first page is **KIT** (KNOB2 bank, KNOB3 kit, KNOB4 USER slot, REC twice saves the kit), then a tab per drum (BD SD HH OH CP PC): **SELECT** chooses the page, **KNOB1–3** the drum's pitch, decay and level.
 
-**The signal chain (EDIT twice).** The track's sound and its four pedals, top to bottom in the order the sound flows through them, then **OUT** (the track's level from the mixer). A red lamp means the pedal is on. **SELECT** moves down the chain and the chosen pedal opens with its three knobs on **KNOB2–4**; **KNOB1** switches it on or off; **PRESETS** swaps it for another pedal from the whole library, category by category (one already in another slot is skipped, and a pedal that would overload the chip stays off: **CPU FULL**).
+**The signal chain (EDIT twice).** The track's four pedals as cards, in the order the sound flows through them (FX, SEL, then ENV, LFO), each with its power sign, three small knobs and their values; one that is off is grey, the chosen one glows. **SELECT** moves between them and **KNOB2–4** turn the chosen pedal's knobs (named on the bottom line); **KNOB1** switches it on or off; **PRESETS** swaps it for another pedal from the whole library, category by category (one already in another slot is skipped, and a pedal that would overload the chip stays off: **CPU FULL**).
 
 ![Signal chain](guide/chain.png)
 
