@@ -29,8 +29,13 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
   pitch (shifter, harmonizer) and oddities (cassette, vinyl, glitch, underwater, synth, lo-fi, slow, ghost, music box,
   broken clock, shadow).
 - **Arpeggiator** (rate, octaves, direction), locked to the beat, for the keys and for the recorded patterns.
-- **Sound editor** (EDIT): the slot's type, bank and sound (INSTR), every synth's oscillators, filter, envelope, LFO
-  and glide, each drum; REC twice saves to the USER bank.
+- **Sound editor** (EDIT): the slot's type, bank and sound on a menu page (INSTR), every synth's oscillators, filter,
+  envelope, LFO and glide, each drum; REC twice saves to the USER bank. EDIT again: the **signal chain**, the sound
+  and its four pedals in order, each switched, swapped and tuned from one page.
+- **Copy a pattern** from any synth slot into another (hold SEQ in the step recorder), so the pads can take the lead's
+  tune.
+- **The same controls everywhere**: ALGORITHM the track, SELECT moves within a page, KNOB1 the on/off switch, a tap or a
+  hold, REC twice to confirm.
 - **Dynamics on every note**: p, mp, mf, f or an accent, per note and per drum hit.
 - **Beat repeat**: hold GLO and the slice playing goes round (1/2 bar down to 1/32); let go and the music is where it
   would have been.
