@@ -4,5 +4,6 @@
   "kinds": ["groove"],
   "play": "https://joakimeriksson.github.io/fm1-emu/?fw=quartet&mhz=60",
   "image": "docs/card.png",
-  "color": "#FFB824"
+  "color": "#FFB824",
+  "cheat": "https://mammothcheese.github.io/quartet/"
 }
