@@ -833,46 +833,6 @@ static void glyph4(uint32_t kind, int32_t x, int32_t y, int32_t w, int32_t h, ui
              disc(x + w / 2, y + h * 3 / 4, w / 5, c); disc(x + w * 9 / 10, y + h * 4 / 5, w / 10, c); break;
     }
 }
-static void art4(uint32_t kind, int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *rgb)
-{                                               /* a picture tile in a colour: 0 mountains, 1 rings, 2 blocks, 3 dots */
-    static const uint8_t R1[7] = {100, 35, 70, 20, 62, 30, 55}, R2[6] = {100, 55, 85, 45, 70, 100};   /* the ridges (% down) */
-    uint16_t base = rgbm(rgb, 30), lo = rgbm(rgb, 62), md = rgbk(rgb, 100), hi = rgbl(rgb, 30);
-    int32_t i, k, x0 = x + 3, y0 = y + 3, x1 = x + w - 3, y1 = y + h - 3;
-    cv_rrect(x, y, w, h, 9, base);
-    switch (kind & 3u) {
-    case 0:                                     /* two ridges of mountains, the near one brighter */
-        for (i = x0; i < x1; i++) {
-            int32_t f = (i - x0) * 6 * 256 / (x1 - x0), s = f >> 8, r = f & 255, t1, t2;
-            if (s > 5) s = 5;
-            t1 = R1[s] + ((R1[s + 1] - R1[s]) * r >> 8);
-            f = (i - x0) * 5 * 256 / (x1 - x0); s = f >> 8; r = f & 255;
-            if (s > 4) s = 4;
-            t2 = R2[s] + ((R2[s + 1] - R2[s]) * r >> 8);
-            cv_rect(i, y0 + (y1 - y0) * t1 / 100, 1, (y1 - y0) * (100 - t1) / 100, lo);
-            cv_rect(i, y0 + (y1 - y0) * t2 / 100, 1, (y1 - y0) * (100 - t2) / 100, md);
-        }
-        break;
-    case 1:                                     /* three rings rising from the bottom */
-        for (k = 0; k < 3; k++)
-            disc_clip(x + w / 2, y1, (x1 - x0) * (62 - k * 16) / 100, x0, y0, x1, y1, k == 0 ? lo : k == 1 ? md : hi);
-        break;
-    case 2: {                                   /* blocks on a 4 x 4 grid */
-        static const uint8_t B[6][3] = {{0, 3, 0}, {1, 2, 1}, {2, 1, 2}, {3, 0, 1}, {1, 3, 0}, {2, 2, 0}};
-        int32_t q = (x1 - x0) / 4, r = (y1 - y0) / 4;
-        for (k = 0; k < 6; k++) cv_rrect(x0 + B[k][0] * q, y0 + B[k][1] * r, q, r, 2, B[k][2] == 0 ? lo : B[k][2] == 1 ? md : hi);
-        break;
-    }
-    default: {                                  /* dots of all sizes */
-        int32_t ww = x1 - x0, hh = y1 - y0, m = ww < hh * 2 ? ww : hh * 2;
-        disc(x0 + ww * 28 / 100, y0 + hh * 34 / 100, m * 13 / 100, md);
-        disc(x0 + ww * 72 / 100, y0 + hh * 30 / 100, m * 9 / 100, hi);
-        disc(x0 + ww * 50 / 100, y0 + hh * 68 / 100, m * 15 / 100, md);
-        disc(x0 + ww * 86 / 100, y0 + hh * 76 / 100, m * 6 / 100, lo);
-        disc(x0 + ww * 14 / 100, y0 + hh * 78 / 100, m * 6 / 100, hi);
-        break;
-    }
-    }
-}
 static void disc(int32_t cx, int32_t cy, int32_t r, uint16_t c)   /* a filled circle */
 {
     int32_t dy;
@@ -970,27 +930,7 @@ static const uint8_t *ped_rgb(const pdef_t *d)  /* a pedal's colour for the scre
     static const uint8_t LIGHT[3] = {200, 206, 220};
     return d->rgb[0] + d->rgb[1] + d->rgb[2] < 150u ? LIGHT : d->rgb;
 }
-static void bottom_pedals(uint32_t trk)         /* home's bottom line: the chosen track's four pedals, glowing when on */
-{
-    uint32_t e;
-    cv_begin(240, H_BOT, C_BG);
-    for (e = 0; e < NPED_SLOTS; e++) {
-        const pdef_t *d = &PDEF[set.ped[trk][e] % NPD];
-        uint32_t on = set.fx[trk].on >> e & 1u, n = 0;
-        int32_t x = 1 + (int32_t)e * 60, w = 58;
-        const char *nm = (d->name);
-        char sh[14];
-        while (nm[n] && n < 13u) { sh[n] = nm[n]; n++; }
-        sh[n] = 0;
-        while (n > 1u && text_w(&FONT_S, sh) > w - 1) sh[--n] = 0;   /* (as much of the name as fits) */
-        {
-            uint16_t pc = on ? rgbk(ped_rgb(d), 100) : RGB(34, 34, 42);   /* (on: filled with the pedal's colour) */
-            cv_rrect(x, 3, w, 19, 9, pc);
-            cv_text_bg(x + w / 2 - text_w(&FONT_S, sh) / 2, 4, &FONT_S, sh, on ? C_BG : RGB(90, 90, 104), pc);
-        }
-    }
-    cv_blit(0, Y_BOT);
-}
+static void bottom_pedals(uint32_t trk);       /* home's bottom line (with the pedal pages) */
 static void bottom_bar(const char *s, uint16_t dot)   /* the bottom bar: the text centred, a dot when there is room */
 {
     int32_t w = text_w(&FONT_S, s), x = 120 - w / 2;
@@ -1139,7 +1079,8 @@ static uint32_t syn_covers(uint32_t t, uint32_t pt, uint32_t s, uint32_t len)   
  * its pattern. The chosen track's pill is bright and opens out with the 16 steps of the page it is on (the step playing
  * white); the others are slim, with a little strip of their steps. A muted track turns red */
 static uint32_t slot_nth(uint32_t t);
-#define H_HOME 152                              /* home's pills: down to the bottom bar (two halves of 76) */
+#define Y_HOME 62                               /* home's pills: from under the info line... */
+#define H_HOME 154                              /* ...to the bottom bar (two halves of 77), black space above the pedals */
 static void draw_home(uint32_t sel, uint32_t run)
 {
     uint32_t r, s, half;
@@ -1153,7 +1094,7 @@ static void draw_home(uint32_t sel, uint32_t run)
             const uint8_t *rgb = trk_rgb(t);
             uint16_t col = rgbk(rgb, 100), bg = me ? col : rgbm(rgb, 34), ink = me ? C_BG : col;
             uint16_t sub = me ? rgbm(rgb, 22) : rgbl(rgb, 35);
-            int32_t h = me ? 62 : 26, pw, nx, lim;
+            int32_t h = me ? 62 : 25, pw, nx, lim;
             char lt[4], *q;
             q = put_pat(lt, t); *q = 0;
             cv_rrect(4, y, 232, h, 10, bg);
@@ -1181,7 +1122,7 @@ static void draw_home(uint32_t sel, uint32_t run)
             y += h + 4;
         }
         cv_oy = 0;
-        cv_blit(0, Y_VIEW + half * (H_HOME / 2));
+        cv_blit(0, Y_HOME + half * (H_HOME / 2));
     }
 }
 
@@ -1313,63 +1254,712 @@ static void lcd_value(int32_t cx, int32_t y, int32_t w, const char *s, uint16_t 
     cv_text_bg(cx - text_w(&FONT_S, s) / 2, y + 1, &FONT_S, s, c, C_LCD);
 }
 
-/* ---- a stompbox (the pedals, the arpeggiator): its painted case with a light top edge and a dark bottom one, four
- * screws, the red ON lamp, the name plate, three arc knobs with their names and values (in pills), the chrome
- * footswitch, QUARTET on the case; when on, a faint glow round it. 240 x 164 under the top bar, drawn in two halves
- * (the canvas holds 240 x 128) */
+/* ---- a pedal page (each pedal, the arpeggiator): drawn like a screen-printed boutique pedal. Each has its own art
+ * across the whole case (a storm, a lighthouse, a melting clock...), its name lettered (Noto Serif Bold, or the plain
+ * face for the digital ones), three knobs (KNOB2-4: knurled coloured caps or black skirted ones) with their names and
+ * values, an LED that glows when it is on (dark, with OFF beside it, when off) and often a footswitch.
+ * Everything is lines, polygons and circles, in screen coordinates: the case is 6..234 x 44..208, drawn in two halves */
+#include "serif_font.h"
 typedef struct { const char *name; uint32_t v, mx; const char *val; } kview_t;
-static void draw_stomp(const uint8_t *rgb, int dark, const char *title, uint32_t on, const kview_t *k, uint32_t nk,
-                       const char *msg)
+
+static int32_t ab_x0, ab_y0, ab_x1, ab_y1;      /* the art's clip box: the case */
+static void ap(int32_t x, int32_t y, uint16_t c) { if (x >= ab_x0 && x < ab_x1 && y >= ab_y0 && y < ab_y1) cv_pset(x, y, c); }
+static void arow(int32_t x0, int32_t x1, int32_t y, uint16_t c)   /* a row x0..x1, clipped to the case */
 {
-    static const int16_t SCREW[4][2] = {{20, 15}, {220, 15}, {20, 149}, {220, 149}};
-    static const uint8_t LIGHT[3] = {200, 200, 210};
-    const uint8_t *gc = rgb[0] + rgb[1] + rgb[2] < 150u ? LIGHT : rgb;   /* (the glow of a black pedal: light grey) */
-    uint16_t body = rgbk(rgb, 100), hi = rgbl(rgb, 35), lo = rgbk(rgb, 50), plate = RGB(14, 14, 17);
-    uint16_t ink = dark ? RGB(14, 14, 16) : RGB(246, 246, 250), screw = dark ? rgbk(rgb, 70) : rgbl(rgb, 55);
-    uint16_t lit = dark ? RGB(14, 14, 16) : RGB(255, 255, 255);
-    int32_t pw = text_w(&FONT_S, title) + 18, px = 214 - pw;
+    if (y < ab_y0 || y >= ab_y1) return;
+    if (x0 < ab_x0) x0 = ab_x0;
+    if (x1 >= ab_x1) x1 = ab_x1 - 1;
+    if (x1 >= x0) cv_rect(x0, y, x1 - x0 + 1, 1, c);
+}
+static int32_t row_vis(int32_t y) { return y + cv_oy >= 0 && y + cv_oy < (int32_t)cv_h; }
+static uint16_t cv_get(int32_t x, int32_t y)
+{
+    x += cv_ox;
+    y += cv_oy;
+    if ((uint32_t)x < cv_w && (uint32_t)y < cv_h) return swap16(cv_px[(uint32_t)y * cv_w + (uint32_t)x]);
+    return C_BG;
+}
+static uint16_t mix565(uint16_t a, uint16_t b, int32_t k)   /* a, k % of the way to b */
+{
+    int32_t r = a >> 11, g = (a >> 5) & 63, bl = a & 31;
+    r += ((int32_t)(b >> 11) - r) * k / 100;
+    g += ((int32_t)((b >> 5) & 63) - g) * k / 100;
+    bl += ((int32_t)(b & 31) - bl) * k / 100;
+    return (uint16_t)((r << 11) | (g << 5) | bl);
+}
+#define K_BLACK RGB(0, 0, 0)
+#define K_WHITE RGB(255, 255, 255)
+static int32_t acs(int32_t deg, int32_t r)   /* r cos(deg), r sin(deg): screen degrees, clockwise from east */
+{
+    uint32_t ph = (uint32_t)((deg % 360 + 360) % 360) * 11930465u;
+    return r * sine(ph + 0x40000000u) / 32767;
+}
+static int32_t asn(int32_t deg, int32_t r)
+{
+    uint32_t ph = (uint32_t)((deg % 360 + 360) % 360) * 11930465u;
+    return r * sine(ph) / 32767;
+}
+static void aplot(int32_t x, int32_t y, uint16_t c, int32_t w)
+{
+    ap(x, y, c);
+    if (w >= 2) { ap(x + 1, y, c); ap(x, y + 1, c); }
+    if (w >= 3) { ap(x - 1, y, c); ap(x, y - 1, c); ap(x + 1, y + 1, c); }
+}
+static void aline(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c, int32_t w)   /* a line w pixels wide */
+{
+    int32_t dx = x1 > x0 ? x1 - x0 : x0 - x1, sx = x0 < x1 ? 1 : -1;
+    int32_t dy = y1 > y0 ? y0 - y1 : y1 - y0, sy = y0 < y1 ? 1 : -1;
+    int32_t err = dx + dy, guard = 2000;
+    while (guard--) {
+        int32_t e2 = 2 * err;
+        aplot(x0, y0, c, w);
+        if (x0 == x1 && y0 == y1) break;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+}
+static void aoutline(const int16_t *p, uint32_t n, uint16_t c, int32_t w)   /* a closed outline */
+{
+    uint32_t i;
+    for (i = 0; i < n; i++) aline(p[2 * i], p[2 * i + 1], p[2 * ((i + 1) % n)], p[2 * ((i + 1) % n) + 1], c, w);
+}
+static void afill(const int16_t *p, uint32_t n, uint16_t c, int32_t gap, int32_t dx8)
+{                                               /* a filled polygon, or hatched: lines gap px apart, leaning dx8 / 8 px a row */
+    int32_t y, y0 = 9999, y1 = -9999, xs[16];
+    uint32_t i, j, m;
+    for (i = 0; i < n; i++) { if (p[2 * i + 1] < y0) y0 = p[2 * i + 1]; if (p[2 * i + 1] > y1) y1 = p[2 * i + 1]; }
+    if (y0 < ab_y0) y0 = ab_y0;
+    if (y1 > ab_y1 - 1) y1 = ab_y1 - 1;
+    if (y0 < -cv_oy) y0 = -cv_oy;
+    if (y1 > (int32_t)cv_h - cv_oy - 1) y1 = (int32_t)cv_h - cv_oy - 1;
+    for (y = y0; y <= y1; y++) {
+        m = 0;
+        for (i = 0; i < n; i++) {
+            int32_t xa = p[2 * i], ya = p[2 * i + 1], xb = p[2 * ((i + 1) % n)], yb = p[2 * ((i + 1) % n) + 1];
+            if (((ya <= y && yb > y) || (yb <= y && ya > y)) && m < 16u) xs[m++] = xa + (y - ya) * (xb - xa) / (yb - ya);
+        }
+        for (i = 1; i < m; i++)
+            for (j = i; j > 0 && xs[j - 1] > xs[j]; j--) { int32_t t = xs[j]; xs[j] = xs[j - 1]; xs[j - 1] = t; }
+        for (i = 0; i + 1 < m; i += 2) {
+            int32_t x, g8 = gap * 8;
+            if (!gap) { arow(xs[i], xs[i + 1], y, c); continue; }
+            for (x = xs[i]; x <= xs[i + 1]; x++) { int32_t t = (x * 8 - y * dx8) % g8; if (t < 0) t += g8; if (t < 8) ap(x, y, c); }
+        }
+    }
+}
+#define NPT(a) (sizeof(a) / sizeof(a[0]) / 2u)
+static void aell(int32_t cx, int32_t cy, int32_t rx, int32_t ry, uint16_t c)   /* a filled ellipse (rx = ry: a disc) */
+{
+    int32_t dy;
+    for (dy = -ry; dy <= ry; dy++) if (row_vis(cy + dy)) { int32_t h = rx * isqrt_small(ry * ry - dy * dy) / (ry ? ry : 1); arow(cx - h, cx + h, cy + dy, c); }
+}
+static void adisc(int32_t cx, int32_t cy, int32_t r, uint16_t c) { aell(cx, cy, r, r, c); }
+static void aring(int32_t cx, int32_t cy, int32_t r, int32_t w, uint16_t c)   /* a circle outline, w px thick */
+{
+    int32_t dy, ri = r - w;
+    for (dy = -r; dy <= r; dy++) {
+        int32_t ho;
+        if (!row_vis(cy + dy)) continue;
+        ho = isqrt_small(r * r - dy * dy);
+        if (ri > 0 && dy * dy < ri * ri) { int32_t hi = isqrt_small(ri * ri - dy * dy); arow(cx - ho, cx - hi - 1, cy + dy, c); arow(cx + hi + 1, cx + ho, cy + dy, c); }
+        else arow(cx - ho, cx + ho, cy + dy, c);
+    }
+}
+static void aarc(int32_t cx, int32_t cy, int32_t rx, int32_t ry, int32_t d0, int32_t d1, uint16_t c, int32_t w)
+{                                               /* an arc from d0 to d1 degrees */
+    int32_t d, x = cx + acs(d0, rx), y = cy + asn(d0, ry);
+    for (d = d0 + 6; ; d += 6) {
+        int32_t dd = d > d1 ? d1 : d, nx = cx + acs(dd, rx), ny = cy + asn(dd, ry);
+        aline(x, y, nx, ny, c, w);
+        x = nx; y = ny;
+        if (dd == d1) break;
+    }
+}
+static void astars(uint32_t seed, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t n, uint16_t c)
+{                                               /* a scatter of dots, little crosses and diamonds */
+    uint32_t s = seed, i, k;
+    for (i = 0; i < n; i++) {
+        int32_t x, y;
+        s = s * 1664525u + 1013904223u; x = x0 + (int32_t)((s >> 16) % (uint32_t)(x1 - x0));
+        s = s * 1664525u + 1013904223u; y = y0 + (int32_t)((s >> 16) % (uint32_t)(y1 - y0));
+        s = s * 1664525u + 1013904223u; k = (s >> 16) % 20u;
+        if (k < 11u) { ap(x, y, c); if (k < 3u) ap(x + 1, y, c); }
+        else if (k < 16u) { aline(x - 2, y, x + 2, y, c, 1); aline(x, y - 2, x, y + 2, c, 1); }
+        else { ap(x, y - 2, c); ap(x + 1, y - 1, c); ap(x + 2, y, c); ap(x + 1, y + 1, c); ap(x, y + 2, c); ap(x - 1, y + 1, c); ap(x - 2, y, c); ap(x - 1, y - 1, c); }
+    }
+}
+static uint32_t rnd_n(uint32_t *s, uint32_t n) { *s = *s * 1664525u + 1013904223u; return (*s >> 16) % n; }
+static int32_t atext(int32_t x, int32_t y, const felucca_font_t *f, const char *s, uint16_t c, int32_t sp)
+{                                               /* text blended onto whatever is under it, sp more px between letters */
+    for (; *s; s++) {
+        uint32_t gi = glyph(f, (uint8_t)*s), gx, gy, w = f->bw[gi], bpr = (w + 1u) / 2u;
+        const uint8_t *gd = f->data + f->off[gi];
+        for (gy = 0; gy < f->h; gy++) {
+            int32_t yy = y + (int32_t)gy;
+            if (!row_vis(yy)) continue;
+            for (gx = 0; gx < w; gx++) {
+                uint32_t v = gd[gy * bpr + gx / 2u];
+                int32_t xx = x - f->pad + (int32_t)gx;
+                v = (gx & 1u) ? (v & 15u) : (v >> 4);
+                if (v) cv_pset(xx, yy, v == 15u ? c : mix565(cv_get(xx, yy), c, (int32_t)v * 100 / 15));
+            }
+        }
+        x += f->adv[gi] + sp;
+    }
+    return x - sp;
+}
+static int32_t atext_halo(int32_t x, int32_t y, const felucca_font_t *f, const char *s, uint16_t c, uint16_t halo, int32_t sp)
+{                                               /* text with a thin outline in the case's colour, to read over the art */
+    atext(x - 1, y, f, s, halo, sp); atext(x + 1, y, f, s, halo, sp); atext(x, y - 1, f, s, halo, sp); atext(x, y + 1, f, s, halo, sp);
+    return atext(x, y, f, s, c, sp);
+}
+static int32_t atext_w(const felucca_font_t *f, const char *s, int32_t sp)
+{
+    int32_t n = 0;
+    const char *p;
+    for (p = s; *p; p++) n++;
+    return text_w(f, s) + (n ? (n - 1) * sp : 0);
+}
+static void knob_knurl(int32_t cx, int32_t cy, uint32_t pm, uint16_t cap, uint16_t ptr, int32_t r)
+{                                               /* a coloured knurled cap, a white line for its pointer; pm 0..1000 */
+    int32_t i, deg = 135 + (int32_t)(pm * 270u / 1000u);
+    adisc(cx + 1, cy + 2, r + 1, mix565(cap, K_BLACK, 70));
+    adisc(cx, cy, r + 1, mix565(cap, K_BLACK, 25));
+    for (i = 0; i < 360; i += 15) ap(cx + acs(i, r + 1), cy + asn(i, r + 1), mix565(cap, K_BLACK, 55));
+    adisc(cx, cy, r - 2, cap);
+    adisc(cx - 3, cy - 4, r > 9 ? r - 8 : 1, mix565(cap, K_WHITE, 18));
+    aline(cx + acs(deg, r / 4), cy + asn(deg, r / 4), cx + acs(deg, r - 3), cy + asn(deg, r - 3), ptr, 2);
+}
+static void knob_skirt(int32_t cx, int32_t cy, uint32_t pm, uint16_t cap, uint16_t ptr, int32_t r)
+{                                               /* a black skirted knob with a pointer */
+    int32_t i, deg = 135 + (int32_t)(pm * 270u / 1000u);
+    adisc(cx + 1, cy + 2, r + 1, K_BLACK);
+    adisc(cx, cy, r, cap);
+    for (i = 0; i < 16; i++) aline(cx + acs(i * 45 / 2, r - 4), cy + asn(i * 45 / 2, r - 4), cx + acs(i * 45 / 2, r - 1), cy + asn(i * 45 / 2, r - 1), mix565(cap, K_WHITE, 12), 1);
+    adisc(cx, cy, r - 5, mix565(cap, K_WHITE, 6));
+    aline(cx + acs(deg, 2), cy + asn(deg, 2), cx + acs(deg, r - 1), cy + asn(deg, r - 1), ptr, 2);
+}
+static void foot_hex(int32_t cx, int32_t cy)   /* the chrome footswitch in its hex nut */
+{
+    int16_t h[12], s[12];
+    uint32_t i;
+    for (i = 0; i < 6u; i++) {
+        h[2 * i] = (int16_t)(cx + acs(30 + 60 * (int32_t)i, 13)); h[2 * i + 1] = (int16_t)(cy + asn(30 + 60 * (int32_t)i, 13));
+        s[2 * i] = (int16_t)(h[2 * i] + 1); s[2 * i + 1] = (int16_t)(h[2 * i + 1] + 2);
+    }
+    afill(s, 6, K_BLACK, 0, 0);
+    afill(h, 6, RGB(150, 150, 158), 0, 0);
+    adisc(cx, cy, 10, RGB(96, 96, 104));
+    adisc(cx, cy, 8, RGB(196, 196, 204));
+    adisc(cx - 2, cy - 2, 3, RGB(240, 240, 246));
+}
+static void led_lamp(int32_t cx, int32_t cy, uint32_t on, uint16_t col)   /* the LED: glowing, or dark */
+{
+    int32_t k;
+    if (!on) { adisc(cx, cy, 3, mix565(col, K_BLACK, 70)); return; }
+    for (k = 5; k >= 1; k--) aring(cx, cy, 3 + k, 1, mix565(col, K_BLACK, 55 + 8 * k));
+    adisc(cx, cy, 3, col);
+    ap(cx - 1, cy - 1, RGB(255, 255, 240));
+}
+static void mask_corners(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r)   /* round the case's corners again */
+{
+    int32_t i;
+    for (i = 0; i < r; i++) {
+        int32_t d = r - 1 - i, ins = r - isqrt_small(r * r - d * d);
+        cv_rect(x, y + i, ins, 1, C_BG); cv_rect(x + w - ins, y + i, ins, 1, C_BG);
+        cv_rect(x, y + h - 1 - i, ins, 1, C_BG); cv_rect(x + w - ins, y + h - 1 - i, ins, 1, C_BG);
+    }
+}
+
+/* the looks: the name as lettered, colours (case, name, knob names, values, caps, pointers, LED), the art, flags, where
+ * the name (baseline), the knob row, the LED and the footswitch (fx 0: none) sit, and the name's letter spacing */
+enum { LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FOLD, LK_CRUSH, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE,
+       LK_VIB, LK_PUMP, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_REVD, LK_SPRING, LK_SHIFT, LK_HARM, LK_OLDM, LK_GLITCH,
+       LK_WATER, LK_SYNTH, LK_LOFI, LK_LOOSE, LK_MBOX, LK_ARP, NLOOK };
+enum { L_SANS = 1, L_LOWER = 2, L_PCT = 4, L_SKIRT = 8, L_SIDES = 16, L_CENTRE = 32 };
+typedef struct {
+    const char *title;
+    uint16_t body, tc, lab, val, cap, ptr, led;
+    uint8_t fl, tx, ty, ky, lx, ly, fx, fy;
+    int8_t sp;
+} plook_t;
+#define W_ RGB(250, 250, 250)
+static const plook_t PLOOK[NLOOK] = {
+    {"distortion", RGB(196, 40, 44), RGB(246, 222, 180), RGB(246, 222, 180), RGB(255, 240, 220), RGB(24, 24, 26), W_, RGB(255, 60, 50), L_SKIRT | L_LOWER, 18, 200, 66, 216, 196, 190, 170, 0},
+    {"overdrive", RGB(70, 150, 84), RGB(240, 230, 190), RGB(24, 60, 32), RGB(16, 40, 20), RGB(24, 24, 26), W_, RGB(255, 70, 50), L_SKIRT | L_LOWER, 18, 200, 66, 216, 196, 196, 168, 0},
+    {"fuzz", RGB(132, 146, 92), RGB(238, 232, 206), RGB(34, 40, 26), RGB(20, 24, 16), RGB(24, 24, 26), W_, RGB(180, 255, 120), L_SKIRT | L_LOWER, 28, 200, 66, 196, 176, 120, 186, 0},
+    {"OCTAVE FUZZ", RGB(120, 24, 44), RGB(250, 200, 190), RGB(250, 200, 190), RGB(255, 236, 228), RGB(244, 228, 200), RGB(120, 24, 44), RGB(255, 60, 50), 0, 18, 62, 84, 216, 56, 120, 190, 0},
+    {"WAVEFOLDER", RGB(20, 36, 56), RGB(250, 140, 40), RGB(250, 200, 150), RGB(255, 240, 220), RGB(250, 150, 50), W_, RGB(255, 160, 60), L_SANS | L_PCT, 18, 60, 84, 216, 56, 120, 182, 1},
+    {"BITCRUSHER", RGB(14, 8, 20), RGB(240, 80, 190), RGB(240, 80, 190), RGB(255, 220, 245), RGB(230, 70, 180), W_, RGB(255, 90, 200), L_SANS | L_PCT, 18, 60, 84, 216, 56, 214, 150, 1},
+    {"FILTER SEQ", RGB(12, 30, 34), RGB(80, 230, 190), RGB(80, 230, 190), RGB(220, 255, 245), RGB(60, 200, 170), W_, RGB(100, 255, 200), L_SANS | L_PCT, 18, 60, 84, 216, 56, 0, 0, 1},
+    {"WAH", RGB(34, 34, 38), RGB(250, 210, 60), RGB(250, 210, 60), RGB(255, 245, 210), RGB(30, 30, 32), RGB(250, 210, 60), RGB(255, 60, 50), L_SKIRT, 18, 62, 84, 216, 56, 0, 0, 3},
+    {"chorus", RGB(190, 168, 236), RGB(64, 40, 120), RGB(64, 40, 120), RGB(90, 60, 160), RGB(250, 248, 255), RGB(64, 40, 120), RGB(190, 120, 255), 0, 18, 62, 84, 216, 56, 80, 186, 0},
+    {"phaser", RGB(248, 110, 30), RGB(30, 14, 6), RGB(30, 14, 6), RGB(60, 30, 10), RGB(24, 24, 26), W_, RGB(255, 240, 120), L_SKIRT | L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"FLANGER", RGB(196, 206, 218), RGB(30, 46, 80), RGB(30, 46, 80), RGB(20, 30, 60), RGB(40, 60, 110), W_, RGB(255, 60, 50), 0, 18, 62, 84, 216, 56, 120, 190, 1},
+    {"TREMOLO", RGB(246, 220, 160), RGB(50, 30, 20), RGB(50, 30, 20), RGB(120, 40, 30), RGB(220, 60, 50), W_, RGB(255, 60, 50), 0, 18, 62, 84, 216, 56, 190, 186, 1},
+    {"SLICER", RGB(20, 20, 20), RGB(250, 214, 40), RGB(250, 214, 40), RGB(255, 250, 220), RGB(250, 210, 40), RGB(20, 20, 20), RGB(255, 220, 60), L_SANS | L_PCT, 18, 60, 84, 216, 56, 0, 0, 1},
+    {"vibrato", RGB(200, 222, 244), RGB(30, 70, 140), RGB(30, 70, 140), RGB(20, 50, 110), RGB(60, 130, 220), W_, RGB(80, 150, 255), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"PUMP", RGB(18, 34, 20), RGB(170, 236, 70), RGB(170, 236, 70), RGB(230, 255, 200), RGB(150, 220, 60), RGB(18, 34, 20), RGB(170, 255, 80), L_SANS | L_PCT, 18, 60, 84, 216, 56, 0, 0, 1},
+    {"REVERB", RGB(22, 52, 92), RGB(150, 214, 246), RGB(150, 214, 246), RGB(230, 244, 255), RGB(40, 140, 220), W_, RGB(255, 236, 150), 0, 18, 64, 88, 216, 58, 196, 190, 1},
+    {"DELAY", RGB(18, 70, 80), RGB(110, 220, 210), RGB(110, 220, 210), RGB(226, 250, 246), RGB(240, 228, 196), RGB(18, 70, 80), RGB(120, 255, 230), L_PCT, 18, 62, 82, 216, 56, 120, 186, 2},
+    {"TAPE ECHO", RGB(226, 180, 76), RGB(70, 40, 20), RGB(70, 40, 20), RGB(40, 20, 8), RGB(60, 34, 18), RGB(250, 230, 190), RGB(255, 90, 40), L_SKIRT | L_CENTRE, 120, 62, 82, 120, 160, 0, 0, 1},
+    {"SHIM|MER", RGB(10, 10, 12), RGB(80, 196, 240), RGB(80, 196, 240), RGB(220, 240, 255), RGB(52, 150, 236), W_, RGB(255, 60, 50), L_SIDES | L_PCT, 18, 68, 0, 120, 60, 200, 180, 0},
+    {"REVERSE DELAY", RGB(52, 24, 64), RGB(240, 120, 200), RGB(240, 120, 200), RGB(255, 220, 245), RGB(230, 110, 190), W_, RGB(255, 120, 220), L_SANS | L_PCT, 18, 60, 84, 216, 56, 0, 0, 1},
+    {"SPRING REVERB", RGB(44, 58, 66), RGB(200, 220, 226), RGB(200, 220, 226), RGB(240, 250, 252), RGB(180, 190, 196), RGB(44, 58, 66), RGB(255, 60, 50), 0, 18, 62, 84, 216, 56, 120, 196, 0},
+    {"SHIFTER", RGB(16, 28, 60), RGB(80, 210, 240), RGB(80, 210, 240), RGB(220, 250, 255), RGB(60, 190, 230), W_, RGB(100, 230, 255), L_SANS | L_PCT, 18, 60, 84, 216, 56, 0, 0, 1},
+    {"harmonizer", RGB(20, 52, 40), RGB(226, 244, 230), RGB(226, 244, 230), RGB(200, 240, 210), RGB(236, 244, 238), RGB(20, 52, 40), RGB(120, 255, 160), L_LOWER | L_PCT, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"OLD MEDIA", RGB(110, 66, 40), RGB(246, 226, 186), RGB(246, 226, 186), RGB(255, 244, 220), RGB(50, 28, 16), RGB(246, 226, 186), RGB(255, 60, 50), L_SKIRT, 18, 62, 84, 216, 56, 40, 182, 1},
+    {"", RGB(246, 236, 226), 0, RGB(40, 52, 80), RGB(200, 80, 140), RGB(240, 168, 214), W_, RGB(255, 80, 120), L_PCT, 0, 0, 86, 212, 150, 212, 186, 0},   /* GLITCH: its name is part of the art */
+    {"underwater", RGB(14, 40, 84), RGB(150, 220, 250), RGB(150, 220, 250), RGB(220, 244, 255), RGB(60, 190, 210), W_, RGB(120, 230, 255), 0, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"SYNTH", RGB(24, 10, 30), RGB(255, 70, 90), RGB(255, 70, 90), RGB(255, 220, 225), RGB(230, 60, 80), W_, RGB(255, 90, 100), L_PCT, 18, 62, 84, 216, 56, 0, 0, 3},
+    {"lo-fi", RGB(214, 200, 170), RGB(60, 46, 34), RGB(60, 46, 34), RGB(90, 70, 50), RGB(24, 24, 26), W_, RGB(255, 120, 40), L_SKIRT | L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"loose", RGB(226, 190, 120), RGB(80, 50, 26), RGB(80, 50, 26), RGB(120, 80, 40), RGB(110, 70, 36), RGB(250, 236, 200), RGB(255, 110, 40), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"music box", RGB(250, 196, 214), RGB(140, 50, 90), RGB(140, 50, 90), RGB(180, 80, 120), RGB(255, 250, 252), RGB(140, 50, 90), RGB(255, 90, 160), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"ARPEGGIATOR", RGB(14, 40, 46), RGB(90, 220, 220), RGB(90, 220, 220), RGB(220, 255, 255), RGB(70, 200, 200), W_, RGB(100, 255, 240), L_SANS, 18, 60, 84, 216, 56, 0, 0, 1},
+};
+static const uint8_t PD_LOOK[NPD] = {           /* by PD_ number; those no longer offered borrow a look (and keep their name) */
+    LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FUZZ, LK_FOLD, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE, LK_VIB,
+    LK_VIB, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_OLDM, LK_OLDM, LK_GLITCH, LK_WATER, LK_SYNTH, LK_PUMP, LK_CRUSH, LK_REVD,
+    LK_SPRING, LK_SHIFT, LK_HARM, LK_LOFI, LK_TREM, LK_LOOSE, LK_MBOX, LK_LOOSE, LK_REV, LK_LOOSE, LK_OLDM};
+
+static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs and the name */
+{
+    uint32_t s, i;
+    int32_t k;
+    switch (lk) {
+    case LK_DIST: {
+        static const int16_t CL[6][3] = {{60, 150, 28}, {96, 136, 30}, {140, 142, 30}, {180, 152, 26}, {40, 172, 20}, {210, 170, 22}};
+        static const int16_t LOW[] = {6, 150, 234, 150, 234, 210, 6, 210};
+        static const int16_t BOLT[] = {126, 120, 102, 166, 122, 166, 108, 206, 148, 152, 126, 152, 142, 120};
+        for (i = 0; i < 6u; i++) adisc(CL[i][0], CL[i][1], CL[i][2], RGB(110, 16, 22));
+        afill(LOW, NPT(LOW), RGB(110, 16, 22), 3, -5);
+        afill(BOLT, NPT(BOLT), RGB(246, 222, 180), 0, 0);
+        aoutline(BOLT, NPT(BOLT), RGB(60, 10, 14), 1);
+        break;
+    }
+    case LK_OD: {
+        static const int16_t HILL[] = {6, 210, 6, 180, 50, 164, 110, 186, 170, 160, 234, 178, 234, 210};
+        adisc(120, 190, 46, RGB(240, 230, 190));
+        for (k = 0; k < 13; k++) aline(120 + acs(180 + k * 15, 52), 190 + asn(180 + k * 15, 52), 120 + acs(180 + k * 15, 74), 190 + asn(180 + k * 15, 74), RGB(240, 230, 190), 2);
+        afill(HILL, NPT(HILL), RGB(24, 60, 32), 0, 0);
+        afill(HILL, NPT(HILL), body, 3, 4);
+        break;
+    }
+    case LK_FUZZ: {
+        static const int16_t MT[] = {6, 210, 76, 150, 100, 156, 120, 140, 140, 156, 164, 150, 234, 210};
+        static const int16_t LIT[] = {76, 150, 100, 156, 120, 140, 140, 156, 164, 150, 234, 210, 150, 210};
+        afill(MT, NPT(MT), RGB(34, 40, 26), 0, 0);
+        afill(LIT, NPT(LIT), RGB(238, 232, 206), 3, 3);
+        for (k = 0; k < 9; k++) aline(120 + acs(-90 + (k - 4) * 16, 8), 136 + asn(-90 + (k - 4) * 16, 6), 120 + acs(-90 + (k - 4) * 16, 22), 136 + asn(-90 + (k - 4) * 16, 14), RGB(238, 232, 206), 2);
+        s = 5;
+        for (i = 0; i < 18u; i++) { int32_t x = 60 + (int32_t)rnd_n(&s, 120), y = 112 + (int32_t)rnd_n(&s, 14); adisc(x, y, 1, RGB(34, 40, 26)); }
+        break;
+    }
+    case LK_OCTF: {
+        int32_t y;
+        uint16_t pk = RGB(250, 200, 190);
+        adisc(78, 162, 30, pk);
+        for (y = 150; y < 192; y++) { int32_t h = isqrt_small(900 - (y - 162) * (y - 162)), x; for (x = 78 - h; x <= 78 + h; x++) if (!(x & 3)) ap(x, y, RGB(70, 10, 24)); }
+        aring(78, 162, 30, 2, pk);
+        aline(36, 174, 120, 150, pk, 2);
+        aring(172, 150, 15, 2, pk); adisc(172, 150, 7, pk);
+        aline(148, 158, 196, 142, pk, 1);
+        astars(21, 10, 120, 230, 206, 26, pk);
+        break;
+    }
+    case LK_FOLD: {
+        static const int16_t XS[8] = {6, 40, 74, 108, 142, 176, 210, 234};
+        for (i = 0; i < 7u; i++) {
+            int32_t up = !(i & 1u), y0 = up ? 136 : 196, y1 = up ? 196 : 136;
+            int16_t p[8] = {XS[i], (int16_t)y0, XS[i + 1], (int16_t)y1, XS[i + 1], 210, XS[i], 210};
+            afill(p, 4, up ? RGB(250, 140, 40) : RGB(180, 80, 20), 0, 0);
+        }
+        for (i = 0; i < 7u; i++) aline(XS[i], i & 1u ? 196 : 136, XS[i + 1], i & 1u ? 136 : 196, RGB(255, 220, 170), 1);
+        break;
+    }
+    case LK_CRUSH: {
+        int32_t gx, gy;
+        for (gy = 0; gy < 7; gy++) {
+            if (gy == 2 || gy == 4 || gy == 6) continue;
+            for (gx = -8; gx <= 8; gx++) if (gx * gx + gy * gy <= 56) cv_rect(120 + gx * 6, 170 - gy * 6, 5, 5, mix565(RGB(240, 80, 190), RGB(255, 200, 60), gy * 100 / 7));
+        }
+        for (gy = 0; gy < 6; gy++)
+            for (gx = 0; gx < 38; gx++) if (!((gx + gy) & 1)) cv_rect(6 + gx * 6, 176 + gy * 6, 5, 5, mix565(RGB(240, 80, 190), body, 55 + gy * 7));
+        break;
+    }
+    case LK_FSEQ: {
+        static const uint8_t H[14] = {30, 14, 22, 44, 10, 26, 18, 38, 12, 30, 20, 34, 16, 24};
+        uint16_t mi = RGB(80, 230, 190);
+        for (i = 0; i < 14u; i++) {
+            int32_t x = 10 + (int32_t)i * 16, top = 196 - H[i], wy;
+            cv_rect(x, top, 13, 208 - top, mix565(mi, body, i == 3u ? 0 : 55));
+            for (wy = top + 6; wy < 206; wy += 6) { ap(x + 4, wy, mix565(mi, body, 10)); ap(x + 9, wy, mix565(mi, body, 30)); }
+        }
+        astars(31, 10, 130, 230, 150, 18, mi);
+        break;
+    }
+    case LK_WAH: {
+        uint16_t ye = RGB(250, 210, 60);
+        for (k = 0; k < 10; k++) {
+            int32_t th = -166 + k * 17;
+            int16_t p[8] = {120, 196, (int16_t)(120 + acs(th - 10, 30)), (int16_t)(196 + asn(th - 10, 30)), (int16_t)(120 + acs(th, 54)), (int16_t)(196 + asn(th, 54)),
+                            (int16_t)(120 + acs(th + 10, 30)), (int16_t)(196 + asn(th + 10, 30))};
+            aoutline(p, 4, ye, 1);
+        }
+        adisc(120, 196, 10, ye);
+        for (k = 0; k < 3; k++) aring(120, 196, 64 + k * 9, 1, mix565(ye, body, 40 + k * 20));
+        break;
+    }
+    case LK_CHO:
+        adisc(192, 158, 20, mix565(body, RGB(250, 246, 255), 60));
+        adisc(200, 152, 18, body);
+        for (k = 0; k < 12; k++) {
+            int32_t x0 = 6, y0 = 150 + k * 5 + asn(k * 29, 6 * (100 - k * 4) / 100);
+            for (i = 2; i <= 100u; i += 2) {
+                int32_t x1 = 6 + (int32_t)i * 228 / 100, y1 = 150 + k * 5 + asn((int32_t)i * 5 + k * 29, 6 * (100 - k * 4) / 100);
+                aline(x0, y0, x1, y1, mix565(RGB(64, 40, 120), body, k * 5), 1);
+                x0 = x1; y0 = y1;
+            }
+        }
+        break;
+    case LK_PHS:
+        for (k = 0; k < 8; k++) { aring(100, 196, 4 + k * 7, 2, RGB(30, 14, 6)); aring(144, 190, 4 + k * 7, 2, RGB(30, 14, 6)); }
+        break;
+    case LK_FLG: {
+        static const int16_t PL1[] = {150, 120, 196, 136, 160, 150}, PL2[] = {150, 120, 160, 150, 166, 140};
+        uint16_t nb = RGB(30, 46, 80);
+        for (k = 0; k < 9; k++) aline(10, 150 + k * 6, 150 - k * 6, 120 + k * 6, mix565(nb, body, 20 + k * 7), 1);
+        afill(PL1, NPT(PL1), nb, 0, 0);
+        afill(PL2, NPT(PL2), mix565(nb, body, 40), 0, 0);
+        break;
+    }
+    case LK_TREM: {
+        static const int16_t B1[] = {120, 146, 240, 120, 240, 172}, B2[] = {120, 146, 0, 124, 0, 168};
+        static const int16_t TW[] = {110, 210, 114, 150, 126, 150, 130, 210}, ROOM[] = {108, 150, 132, 150, 130, 138, 110, 138};
+        uint16_t ik = RGB(50, 30, 20), rr = RGB(210, 50, 40);
+        afill(B1, NPT(B1), RGB(252, 240, 200), 0, 0);
+        afill(B2, NPT(B2), RGB(252, 240, 200), 0, 0);
+        afill(TW, NPT(TW), ik, 0, 0);
+        for (k = 164; k <= 200; k += 18) { int16_t p[8] = {113, (int16_t)k, 127, (int16_t)k, 128, (int16_t)(k + 7), 112, (int16_t)(k + 7)}; afill(p, 4, rr, 0, 0); }
+        afill(ROOM, NPT(ROOM), rr, 0, 0);
+        adisc(120, 138, 5, RGB(255, 240, 150));
+        for (k = 0; k < 5; k++) aline(6 + k * 46, 206, 30 + k * 46, 206, ik, 1);
+        break;
+    }
+    case LK_SLICE: {
+        int32_t y;
+        for (i = 0; i < 12u; i++) {
+            int32_t x = 54 + (int32_t)i * 11, cy = 182 + (int32_t)(i & 1u) * 6 - 3;
+            for (y = cy - 44; y <= cy + 44; y++) {
+                int32_t h = isqrt_small(44 * 44 - (y - cy) * (y - cy)), a = 120 - h > x ? 120 - h : x, b = 120 + h < x + 8 ? 120 + h : x + 8;
+                if (b >= a && row_vis(y)) arow(a, b, y, RGB(250, 214, 40));
+            }
+        }
+        break;
+    }
+    case LK_VIB: {
+        uint16_t db = RGB(30, 70, 140);
+        aline(120, 210, 120, 184, db, 3); aline(110, 184, 110, 140, db, 3); aline(130, 184, 130, 140, db, 3); aline(110, 184, 130, 184, db, 3);
+        for (k = 0; k < 4; k++) {
+            aarc(100, 160, 14 + k * 10, 14 + k * 10, 150, 210, mix565(db, body, k * 20), 2);
+            aarc(140, 160, 14 + k * 10, 14 + k * 10, -30, 30, mix565(db, body, k * 20), 2);
+        }
+        break;
+    }
+    case LK_PUMP: {
+        static const int16_t ECG[] = {6, 190, 60, 190, 68, 182, 76, 198, 84, 160, 92, 204, 100, 190, 140, 190, 148, 182, 156, 198, 164, 160, 172, 204, 180, 190, 234, 190};
+        uint16_t li = RGB(170, 236, 70);
+        int32_t x0 = 0, y0 = 0;
+        for (k = 0; k <= 72; k++) {
+            int32_t d = k * 5, sn = asn(d, 1000), x, y;
+            x = 120 + 22 * (sn * sn / 1000 * sn / 1000) / 1000;
+            y = 168 - 20 * (13 * acs(d, 1000) - 5 * acs(2 * d, 1000) - 2 * acs(3 * d, 1000) - acs(4 * d, 1000)) / 16000;
+            if (k) aline(x0, y0, x, y, li, 2);
+            x0 = x; y0 = y;
+        }
+        for (i = 0; i + 1 < NPT(ECG); i++) aline(ECG[2 * i], ECG[2 * i + 1], ECG[2 * i + 2], ECG[2 * i + 3], mix565(li, body, 35), 1);
+        break;
+    }
+    case LK_REV: {
+        static const int16_t BEAM[] = {78, 150, 234, 108, 234, 196};
+        uint16_t lb = RGB(70, 170, 232), pale = RGB(150, 214, 246);
+        afill(BEAM, NPT(BEAM), mix565(body, pale, 55), 0, 0);
+        for (k = 0; k < 9; k++) {           /* the swirl: spirals, wider and paler outwards */
+            int32_t r0 = 2 + k * 16 / 5, r1 = 9 + k * 13 / 2, a, x0 = 0, y0 = 0;
+            for (a = 0; a <= 576; a += 12) {
+                int32_t r = r0 + (r1 - r0) * a / 576, x = 34 + acs(a + k * 40, r), y = 148 + asn(a + k * 40, r) * 85 / 100;
+                if (a) aline(x0, y0, x, y, mix565(lb, body, k * 6), 1);
+                x0 = x; y0 = y;
+            }
+        }
+        for (k = 0; k < 16; k++) {          /* the hair-like flow beside it */
+            int32_t x0 = 6, y0 = 120 + k * 6 + asn(k * 57, 6), j;
+            for (j = 1; j < 30; j++) {
+                int32_t x = 6 + j * 92 / 29, y = 120 + k * 6 + asn(j * 172 / 29 + k * 23, 18) * j / 29 + j * 30 / 29;
+                aline(x0, y0, x, y, mix565(lb, body, 15 + (k % 3) * 15), 1);
+                x0 = x; y0 = y;
+            }
+        }
+        astars(4, 100, 52, 230, 205, 40, pale);
+        break;
+    }
+    case LK_DLY: {
+        static const int16_t DROP[] = {120, 128, 126, 142, 120, 148, 114, 142};
+        uint16_t aq = RGB(110, 220, 210);
+        for (k = 0; k < 7; k++) aring(120, 168, 8 + k * 12, k & 1 ? 1 : 2, mix565(aq, body, k * 10));
+        afill(DROP, NPT(DROP), aq, 0, 0);
+        break;
+    }
+    case LK_TAPE: {
+        static const int16_t PATH[] = {70, 190, 120, 202, 170, 190};
+        uint16_t br = RGB(70, 40, 20);
+        for (k = 70; k <= 170; k += 100) {
+            int32_t j;
+            for (j = 0; j < 4; j++) aring(k, 160, 12 + j * 4, 1, mix565(br, body, 55));
+            aring(k, 160, 30, 2, br);
+            aring(k, 160, 7, 1, br);
+            for (j = 0; j < 3; j++) aline(k + acs(j * 120 + 23, 7), 160 + asn(j * 120 + 23, 7), k + acs(j * 120 + 23, 26), 160 + asn(j * 120 + 23, 26), br, 1);
+        }
+        aline(PATH[0], PATH[1], PATH[2], PATH[3], br, 1); aline(PATH[2], PATH[3], PATH[4], PATH[5], br, 1);
+        aring(120, 202, 4, 1, br);
+        break;
+    }
+    case LK_SHIM: {
+        uint16_t cy = RGB(80, 196, 240);
+        s = 7;
+        for (i = 0; i < 70u; i++) {         /* the comet's tail: fine lines falling from its head */
+            int32_t sx = 116 + (int32_t)rnd_n(&s, 9), th = 62 + (int32_t)rnd_n(&s, 57), L = 60 + (int32_t)rnd_n(&s, 71), bend = (int32_t)rnd_n(&s, 21) - 10;
+            uint16_t c = mix565(cy, body, (int32_t)rnd_n(&s, 50));
+            int32_t x0 = sx, y0 = 96, j;
+            for (j = 1; j <= 10; j++) {
+                int32_t x = sx + acs(th, L * j / 10) + bend * j * j / 25, y = 96 + asn(th, L * j / 10);
+                aline(x0, y0, x, y, c, 1);
+                x0 = x; y0 = y;
+            }
+        }
+        aring(120, 96, 9, 1, cy); adisc(120, 96, 4, cy);
+        for (k = 0; k < 14; k++) ap(120 + acs(k * 360 / 14, 13), 96 + asn(k * 360 / 14, 13), cy);
+        astars(9, 160, 120, 228, 205, 26, cy);
+        break;
+    }
+    case LK_REVD: {
+        static const int16_t HEAD[] = {84, 146, 92, 140, 90, 152};
+        uint16_t pi = RGB(240, 120, 200);
+        aring(120, 170, 32, 2, pi);
+        for (k = 0; k < 12; k++) aline(120 + acs(k * 30, 27), 170 + asn(k * 30, 27), 120 + acs(k * 30, 31), 170 + asn(k * 30, 31), pi, 1);
+        aline(120, 170, 120, 148, pi, 2); aline(120, 170, 104, 178, pi, 2);
+        aarc(120, 170, 44, 44, 200, 320, pi, 1);
+        afill(HEAD, NPT(HEAD), pi, 0, 0);
+        break;
+    }
+    case LK_SPRING: {
+        uint16_t sc = RGB(200, 220, 226);
+        int32_t x0 = 14, y0 = 172;
+        for (k = 1; k < 240; k++) {
+            int32_t x = 14 + k * 9 / 10, y = 172 + asn(k * 2865 / 100, 18);
+            aline(x0, y0, x, y, acs(k * 2865 / 100, 10) > 0 ? sc : mix565(sc, body, 60), 1);
+            x0 = x; y0 = y;
+        }
+        adisc(14, 172, 4, sc); adisc(229, 172, 4, sc);
+        break;
+    }
+    case LK_SHIFT: {
+        uint16_t cn = RGB(80, 210, 240);
+        for (k = 0; k < 7; k++) {
+            int32_t x = 30 + k * 26, y = 200 - k * 10;
+            cv_rect(x, y, 26, 10, mix565(cn, body, 10 + k * 8));
+            cv_rect(x, y + 10, 26, 208 - y - 10, mix565(cn, body, 70));
+        }
+        aline(40, 186, 40, 170, cn, 1); aline(40, 170, 34, 176, cn, 1); aline(40, 170, 46, 176, cn, 1);
+        break;
+    }
+    case LK_HARM: {
+        static const int16_t BIRD[3][2] = {{70, 1}, {120, 3}, {170, 2}};
+        uint16_t hw = RGB(226, 244, 230);
+        for (k = 0; k < 5; k++) aline(6, 154 + k * 9, 234, 142 + k * 9, mix565(hw, body, 45), 1);
+        for (i = 0; i < 3u; i++) {
+            int32_t bx = BIRD[i][0], by = 148 + BIRD[i][1] * 9 - (bx - 6) * 12 / 228;
+            int16_t beak[6] = {(int16_t)(bx + 9), (int16_t)(by - 5), (int16_t)(bx + 13), (int16_t)(by - 4), (int16_t)(bx + 9), (int16_t)(by - 3)};
+            int16_t tail[6] = {(int16_t)(bx - 6), (int16_t)by, (int16_t)(bx - 13), (int16_t)(by + 4), (int16_t)(bx - 5), (int16_t)(by + 3)};
+            adisc(bx, by, 6, hw); adisc(bx + 6, by - 5, 3, hw);
+            afill(beak, 3, RGB(250, 190, 60), 0, 0);
+            afill(tail, 3, hw, 0, 0);
+        }
+        break;
+    }
+    case LK_OLDM: {
+        static const int16_t BASE[] = {70, 196, 176, 196, 186, 206, 60, 206}, HORN[] = {150, 166, 194, 134, 216, 154};
+        uint16_t ce = RGB(246, 226, 186), dk = RGB(50, 28, 16);
+        afill(BASE, NPT(BASE), dk, 0, 0);
+        aell(110, 192, 31, 7, ce); aell(110, 192, 30, 6, dk);
+        aline(140, 192, 150, 166, ce, 2);
+        afill(HORN, NPT(HORN), ce, 0, 0);
+        aoutline(HORN, NPT(HORN), dk, 1);
+        for (k = 0; k < 3; k++) aline(150, 166, 194 + k * 11, 134 + k * 10, dk, 1);
+        break;
+    }
+    case LK_GLITCH: {
+        static const uint16_t PAL[6] = {RGB(244, 92, 80), RGB(166, 196, 60), RGB(98, 196, 200), RGB(240, 120, 170), RGB(250, 196, 60), RGB(40, 60, 100)};
+        static const char WORD[] = "GLITCH";
+        int32_t gx = 26;
+        s = 11;
+        for (i = 0; i < 46u; i++) {         /* the confetti, kept off the knobs, the name and the footswitch */
+            int32_t x = 10 + (int32_t)rnd_n(&s, 220), y = 48 + (int32_t)rnd_n(&s, 158), r = 3 + (int32_t)rnd_n(&s, 2);
+            uint32_t sh = rnd_n(&s, 6);
+            uint16_t c = PAL[rnd_n(&s, 6)];
+            if ((y > 66 && y < 130) || (y > 136 && x > 190) || (y > 140 && y < 176 && x < 180)) continue;
+            if (sh == 0u) { int16_t t[6] = {(int16_t)x, (int16_t)(y - r), (int16_t)(x + r), (int16_t)(y + r), (int16_t)(x - r), (int16_t)(y + r)}; afill(t, 3, c, 0, 0); }
+            else if (sh == 1u) { int16_t q[8] = {(int16_t)(x - r), (int16_t)(y - r), (int16_t)(x + r), (int16_t)(y - r), (int16_t)(x + r), (int16_t)(y + r), (int16_t)(x - r), (int16_t)(y + r)}; aoutline(q, 4, c, 1); }
+            else if (sh == 2u) aring(x, y, r, 1, c);
+            else if (sh == 3u) { aline(x - r, y, x + r, y, c, 2); aline(x, y - r, x, y + r, c, 2); }
+            else if (sh == 4u) { aline(x - r, y + r, x - r / 3, y - r, c, 1); aline(x - r / 3, y - r, x + r / 3, y + r, c, 1); aline(x + r / 3, y + r, x + r, y - r, c, 1); }
+            else adisc(x, y, 2, c);
+        }
+        for (i = 0; WORD[i]; i++) {         /* the name: big outlined letters, each its own colour */
+            char ch[2] = {WORD[i], 0};
+            uint16_t c = PAL[i == 5u ? 0 : i];
+            int32_t dx, dy;
+            for (dy = -1; dy <= 1; dy++)
+                for (dx = -1; dx <= 1; dx++) if (dx || dy) atext(gx + dx, 141 + dy, &FONT_L, ch, c, 0);
+            atext(gx, 141, &FONT_L, ch, body, 0);
+            gx += text_w(&FONT_L, ch) + 1;
+        }
+        break;
+    }
+    case LK_WATER: {
+        static const int16_t KX[5] = {22, 40, 196, 214, 226}, FISH[] = {96, 168, 124, 156, 140, 168, 124, 180}, TAIL[] = {96, 168, 86, 160, 86, 176};
+        uint16_t bu = RGB(150, 220, 250);
+        for (i = 0; i < 5u; i++) {
+            int32_t x0 = KX[i] + asn((int32_t)i * 57, 6), y0 = 210, j;
+            for (j = 1; j < 18; j++) { int32_t x = KX[i] + asn(j * 29 + (int32_t)i * 57, 6), y = 210 - j * 5; aline(x0, y0, x, y, RGB(40, 120, 120), 2); x0 = x; y0 = y; }
+        }
+        s = 3;
+        for (i = 0; i < 22u; i++) { int32_t x = 60 + (int32_t)rnd_n(&s, 120), y = 130 + (int32_t)rnd_n(&s, 76); aring(x, y, 2 + (int32_t)rnd_n(&s, 3), 1, bu); }
+        aoutline(FISH, NPT(FISH), bu, 1);
+        aoutline(TAIL, NPT(TAIL), bu, 1);
+        ap(130, 166, bu); ap(131, 166, bu);
+        break;
+    }
+    case LK_SYNTH: {
+        uint16_t sr = RGB(255, 70, 90), sy = RGB(255, 190, 80);
+        for (k = 0; k < 15; k++) {
+            int32_t yy = 139 + k * 2, h = isqrt_small(900 - (yy - 168) * (yy - 168));
+            if (k % 3 != 2) { arow(120 - h, 120 + h, yy, mix565(sy, sr, k * 100 / 13)); arow(120 - h, 120 + h, yy + 1, mix565(sy, sr, k * 100 / 13)); }
+        }
+        for (k = -6; k <= 6; k++) aline(120 + k * 6, 168, 120 + k * 34, 210, mix565(sr, body, 30), 1);
+        for (k = 0; k < 5; k++) arow(6, 234, 172 + k * k * 12 / 5, mix565(sr, body, 30));
+        break;
+    }
+    case LK_LOFI: {
+        uint16_t rb = RGB(60, 46, 34);
+        cv_rrect(60, 150, 120, 54, 8, rb);
+        cv_rrect(68, 158, 60, 38, 4, mix565(rb, body, 30));
+        s = 5;
+        for (i = 0; i < 160u; i++) { int32_t x = 70 + (int32_t)rnd_n(&s, 56), y = 160 + (int32_t)rnd_n(&s, 34); ap(x, y, rnd_n(&s, 10) < 6u ? body : rb); }
+        adisc(154, 166, 7, body); adisc(154, 188, 7, body);
+        aline(80, 150, 66, 128, rb, 2); aline(160, 150, 176, 124, rb, 2);
+        break;
+    }
+    case LK_LOOSE: {
+        static const int16_t DRIP[] = {170, 196, 176, 196, 174, 208, 172, 208};
+        uint16_t lb = RGB(80, 50, 26), cr = RGB(250, 236, 200);
+        int16_t p[80];
+        aline(30, 190, 210, 190, lb, 2); aline(200, 190, 200, 210, lb, 2);
+        for (k = 0; k < 40; k++) {          /* the melting clock: an oval, its right side sliding off the table */
+            int32_t x = 80 + acs(k * 9, 60), sn = asn(k * 9, 28), y = 160 + (sn < 0 ? sn : sn / 2);
+            if (x > 130) y += (x - 130) * 9 / 10;
+            p[2 * k] = (int16_t)x; p[2 * k + 1] = (int16_t)y;
+        }
+        afill(p, 40, cr, 0, 0);
+        aoutline(p, 40, lb, 1);
+        aline(84, 166, 84, 146, lb, 2); aline(84, 166, 100, 170, lb, 2);
+        afill(DRIP, NPT(DRIP), cr, 0, 0);
+        aoutline(DRIP, NPT(DRIP), lb, 1);
+        break;
+    }
+    case LK_MBOX: {
+        static const int16_t NOTE[4][2] = {{40, 150}, {60, 136}, {76, 158}, {210, 140}}, BOX[] = {98, 168, 120, 168, 120, 184, 98, 184};
+        uint16_t md = RGB(140, 50, 90);
+        astars(8, 10, 120, 230, 206, 20, K_WHITE);
+        aring(150, 176, 14, 2, md); aring(178, 176, 14, 2, md);
+        aline(118, 176, 136, 176, md, 3);
+        aoutline(BOX, NPT(BOX), md, 2);
+        for (i = 0; i < 4u; i++) {
+            int32_t x = NOTE[i][0], y = NOTE[i][1];
+            adisc(x, y, 4, md); aline(x + 4, y, x + 4, y - 14, md, 1); aline(x + 4, y - 14, x + 9, y - 10, md, 1);
+        }
+        break;
+    }
+    case LK_ARP: {
+        uint16_t aa = RGB(90, 220, 220);
+        adisc(206, 160, 12, mix565(aa, K_WHITE, 50));
+        adisc(212, 156, 11, body);
+        for (k = 0; k < 9; k++) { int32_t x = 24 + k * 20, y = 200 - k * 8 - (k % 3) * 4; cv_rrect(x, y, 14, 5, 2, mix565(aa, body, k == 4 ? 0 : 50)); }
+        astars(12, 10, 126, 190, 160, 16, aa);
+        break;
+    }
+    default: break;
+    }
+}
+
+static void draw_pedal_page(uint32_t lk, const char *name, uint32_t on, const kview_t *kv, uint32_t nk, const char *msg)
+{
+    const plook_t *L = &PLOOK[lk % NLOOK];
+    const felucca_font_t *tf = L->fl & L_SANS ? &FONT_S : &FONT_T;
+    int32_t base = L->fl & L_SANS ? 12 : 17;   /* the name font's baseline, from its top */
+    const char *ttl = name ? name : L->title;
     uint32_t half, i;
+    char pv[3][8], nm[3][12];
+    for (i = 0; i < nk; i++) {                  /* the values (% where the pedal is digital) and the knobs' names */
+        const char *src = kv[i].name;
+        uint32_t n = 0;
+        if (L->fl & L_PCT && kv[i].mx == 127u) { char *p = put_num(pv[i], (kv[i].v * 100u + 63u) / 127u, 1); *p++ = '%'; *p = 0; }
+        else { const char *v = kv[i].val; while (v[n] && n < 7u) { pv[i][n] = v[n]; n++; } pv[i][n] = 0; }
+        for (n = 0; src[n] && n < 11u; n++) nm[i][n] = L->fl & L_LOWER && src[n] >= 'A' && src[n] <= 'Z' ? (char)(src[n] + 32) : src[n];
+        nm[i][n] = 0;
+    }
     for (half = 0; half < 2u; half++) {
         cv_begin(240, H_PEDAL / 2, C_BG);
-        cv_oy = -(int32_t)half * (H_PEDAL / 2);  /* (drawn in pedal coordinates; the canvas is this half) */
-        if (on) { cv_rrect(3, 0, 234, H_PEDAL, 14, rgbm(gc, 12)); cv_rrect(4, 1, 232, H_PEDAL - 2, 13, rgbm(gc, 30)); }
-        cv_rrect(6, 2, 228, H_PEDAL - 4, 12, lo);   /* the case */
-        cv_rrect(6, 2, 228, H_PEDAL - 7, 12, hi);
-        cv_rrect(8, 4, 224, H_PEDAL - 10, 11, body);
-        for (i = 0; i < 4u; i++) { disc(SCREW[i][0], SCREW[i][1], 3, screw); cv_rect(SCREW[i][0] - 2, SCREW[i][1], 5, 1, lo); }
-        if (on) { disc(40, 22, 7, RGB(115, 18, 18)); disc(40, 22, 5, RGB(255, 70, 60)); cv_rect(38, 20, 2, 2, RGB(255, 200, 190)); }
-        else disc(40, 22, 5, RGB(84, 22, 20));
-        cv_text_bg(52, 14, &FONT_S, on ? "ON" : "OFF", ink, body);
-        cv_rrect(px, 12, pw, 20, 10, plate);    /* the name plate */
-        cv_text_bg(px + 9, 14, &FONT_S, title, RGB(246, 246, 250), plate);
-        if (msg) cv_text_bg(120 - text_w(&FONT_S, msg) / 2, 70, &FONT_S, msg, ink, body);
-        for (i = 0; i < nk; i++) {              /* the knobs, KNOB2-4 */
-            int32_t cx = 46 + 74 * (int32_t)i, j, x0, y0, x1, y1, deg;
-            uint32_t v = k[i].v > k[i].mx ? k[i].mx : k[i].v, mx = k[i].mx ? k[i].mx : 1u;
-            for (j = 0; j <= 27; j++) {         /* its arc of dots, lit up to the value */
-                knob_xy(cx, 66, -135 + j * 10, 22, &x0, &y0);
-                cv_rrect(x0 - 2, y0 - 2, 4, 4, 2, (uint32_t)j * mx <= v * 27u && v ? (on ? lit : rgbl(rgb, 20)) : lo);
-            }
-            disc(cx, 66, 16, RGB(12, 12, 16));  /* a black knob with a white line */
-            disc(cx, 66, 14, RGB(46, 46, 54));
-            disc(cx, 66, 12, RGB(30, 30, 36));
-            deg = -135 + (int32_t)(270u * v / mx);
-            knob_xy(cx, 66, deg, 4, &x0, &y0); knob_xy(cx, 66, deg, 12, &x1, &y1);
-            cv_line(x0, y0, x1, y1, C_WHITE); cv_line(x0 + 1, y0, x1 + 1, y1, C_WHITE);
-            cv_text_bg(cx - text_w(&FONT_S, k[i].name) / 2, 92, &FONT_S, k[i].name, ink, body);
-            cv_rrect(cx - 28, 111, 56, 18, 9, C_LCD);
-            cv_text_bg(cx - text_w(&FONT_S, k[i].val) / 2, 112, &FONT_S, k[i].val, RGB(240, 240, 246), C_LCD);
+        cv_oy = -Y_PEDAL - (int32_t)half * (H_PEDAL / 2);   /* drawn in screen coordinates */
+        cv_rect(6, Y_PEDAL, 228, H_PEDAL, L->body);
+        ab_x0 = 6; ab_y0 = Y_PEDAL; ab_x1 = 234; ab_y1 = Y_PEDAL + H_PEDAL;
+        pedal_art(lk, L->body);
+        mask_corners(6, Y_PEDAL, 228, H_PEDAL, 12);
+        if (*ttl) {                             /* the name; "A|B" is split either side of the LED */
+            const char *bar = ttl;
+            while (*bar && *bar != '|') bar++;
+            if (*bar) {
+                char left[16];
+                uint32_t n = 0;
+                while (ttl + n < bar && n < 15u) { left[n] = ttl[n]; n++; }
+                left[n] = 0;
+                atext(L->tx, L->ty - base, tf, left, L->tc, L->sp);
+                atext(240 - L->tx - atext_w(tf, bar + 1, L->sp), L->ty - base, tf, bar + 1, L->tc, L->sp);
+            } else
+                atext(L->fl & L_CENTRE ? L->tx - atext_w(tf, ttl, L->sp) / 2 : L->tx, L->ty - base, tf, ttl, L->tc, L->sp);
         }
-        disc(120, 145, 15, RGB(40, 40, 46));    /* the footswitch */
-        disc(120, 144, 13, RGB(150, 150, 160));
-        disc(120, 144, 9, RGB(206, 206, 216));
-        disc(117, 141, 3, RGB(250, 250, 255));
-        cv_text_bg(32, 137, &FONT_S, "QUARTET", lo, body);
+        if (msg) atext_halo(120 - text_w(&FONT_S, msg) / 2, L->ky - 8, &FONT_S, msg, L->lab, L->body, 0);
+        for (i = 0; i < nk; i++) {              /* the knobs, their names and values */
+            static const int16_t SIDE[3][2] = {{40, 88}, {200, 88}, {40, 154}};
+            int32_t cx = L->fl & L_SIDES ? SIDE[i][0] : 46 + 74 * (int32_t)i, cy = L->fl & L_SIDES ? SIDE[i][1] : L->ky, r = L->fl & L_SIDES ? 13 : 14;
+            uint32_t pm = (kv[i].v > kv[i].mx ? kv[i].mx : kv[i].v) * 1000u / (kv[i].mx ? kv[i].mx : 1u);
+            const char *n = text_fit(nm[i], 72);
+            if (L->fl & L_SKIRT) knob_skirt(cx, cy, pm, L->cap, L->ptr, r);
+            else knob_knurl(cx, cy, pm, L->cap, L->ptr, r);
+            atext_halo(cx - text_w(&FONT_S, n) / 2, cy + 17, &FONT_S, n, L->lab, L->body, 0);
+            atext_halo(cx - text_w(&FONT_S, pv[i]) / 2, cy + 32, &FONT_S, pv[i], L->val, L->body, 0);
+        }
+        led_lamp(L->lx, L->ly, on, L->led);
+        if (!on) {                              /* OFF beside the dark LED, on a little dark tag */
+            int32_t w = text_w(&FONT_S, "OFF"), tx = L->lx - 9 - w;
+            cv_rrect(tx - 3, L->ly - 9, w + 6, 17, 5, mix565(L->body, K_BLACK, 45));
+            cv_text_bg(tx, L->ly - 8, &FONT_S, "OFF", C_SUB, mix565(L->body, K_BLACK, 45));
+        }
+        if (L->fx && !msg) foot_hex(L->fx, L->fy);
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
     }
 }
-
 /* ---- the pedal screen: the chosen track in the top bar (the pedal's category beside it), under it the pedal */
 static void draw_pedal_head(uint32_t trk, int32_t e)   /* e < 0: no badge (the arpeggiator) */
 {
@@ -1414,14 +2004,82 @@ static void ped_vals(uint32_t trk, uint32_t e, pknob_t pk[3], char val[3][8])   
 }
 static void draw_pedal(uint32_t trk, uint32_t e)
 {
-    const pdef_t *d = &PDEF[set.ped[trk][e] % NPD];
+    uint32_t pd = set.ped[trk][e] % NPD, k;
+    const pdef_t *d = &PDEF[pd];
     char val[3][8];
     kview_t kv[3];
     pknob_t pk[3];
-    uint32_t k;
     ped_vals(trk, e, pk, val);
     for (k = 0; k < 3u; k++) kv[k] = (kview_t){pk[k].name, *pk[k].v, pk[k].max ? pk[k].max : 1u, val[k]};
-    draw_stomp(d->rgb, d->dark, d->name, set.fx[trk].on >> e & 1u, kv, 3, 0);
+    draw_pedal_page(PD_LOOK[pd], ped_shown(pd) ? 0 : d->name, set.fx[trk].on >> e & 1u, kv, 3, 0);
+}
+
+/* where each look's art is most itself: the middle of the window shown on home's chips and the signal chain's cards */
+static const uint8_t PL_FOCUS[NLOOK][2] = {
+    {125, 165}, {120, 175}, {120, 160}, {100, 160}, {120, 170}, {120, 175}, {110, 185}, {120, 180}, {180, 160}, {122, 180},
+    {140, 140}, {120, 160}, {120, 180}, {120, 165}, {120, 175}, {62, 150}, {120, 160}, {120, 165}, {120, 130}, {120, 165},
+    {120, 172}, {110, 180}, {120, 165}, {160, 165}, {100, 158}, {120, 170}, {120, 170}, {120, 170}, {100, 170}, {140, 170},
+    {120, 175}};
+static void art_window(uint32_t lk, int32_t dx, int32_t dy, int32_t w, int32_t h, int32_t r)
+{                                               /* a window of a pedal's art (round its focus) at dx, dy, w x h */
+    int32_t ox = cv_ox, oy = cv_oy, wx = PL_FOCUS[lk % NLOOK][0] - w / 2, wy = PL_FOCUS[lk % NLOOK][1] - h / 2;
+    if (wx > 234 - w) wx = 234 - w;
+    if (wx < 6) wx = 6;
+    if (wy > Y_PEDAL + H_PEDAL - h) wy = Y_PEDAL + H_PEDAL - h;
+    if (wy < Y_PEDAL) wy = Y_PEDAL;
+    cv_rect(dx, dy, w, h, PLOOK[lk % NLOOK].body);
+    cv_ox = ox + dx - wx; cv_oy = oy + dy - wy;
+    ab_x0 = wx; ab_y0 = wy; ab_x1 = wx + w; ab_y1 = wy + h;
+    pedal_art(lk % NLOOK, PLOOK[lk % NLOOK].body);
+    cv_ox = ox; cv_oy = oy;
+    ab_x0 = dx; ab_y0 = dy; ab_x1 = dx + w; ab_y1 = dy + h;   /* (what is drawn on it next stays on it) */
+    if (r) mask_corners(dx, dy, w, h, r);
+}
+static void dim_rect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t k)   /* darken what is there, k % to the background */
+{
+    int32_t i, j;
+    for (j = y; j < y + h; j++) if (row_vis(j)) for (i = x; i < x + w; i++) cv_pset(i, j, mix565(cv_get(i, j), C_BG, k));
+}
+static void rr_line(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint16_t c)   /* a round-cornered outline */
+{
+    int32_t sx0 = ab_x0, sy0 = ab_y0, sx1 = ab_x1, sy1 = ab_y1;
+    ab_x0 = 0; ab_y0 = 0; ab_x1 = 240; ab_y1 = 400;
+    cv_rect(x + r, y, w - 2 * r, 1, c); cv_rect(x + r, y + h - 1, w - 2 * r, 1, c);
+    cv_rect(x, y + r, 1, h - 2 * r, c); cv_rect(x + w - 1, y + r, 1, h - 2 * r, c);
+    aarc(x + r, y + r, r, r, 180, 270, c, 1); aarc(x + w - 1 - r, y + r, r, r, 270, 360, c, 1);
+    aarc(x + r, y + h - 1 - r, r, r, 90, 180, c, 1); aarc(x + w - 1 - r, y + h - 1 - r, r, r, 0, 90, c, 1);
+    ab_x0 = sx0; ab_y0 = sy0; ab_x1 = sx1; ab_y1 = sy1;
+}
+static const char *ped_title(uint32_t pd)       /* a pedal's name as lettered on it (its plain name when the look has none) */
+{
+    const char *t = PLOOK[PD_LOOK[pd]].title, *p;
+    if (!ped_shown(pd) || !*t) return PDEF[pd].name;
+    for (p = t; *p; p++) if (*p == '|') return PDEF[pd].name;
+    return t;
+}
+
+/* home's bottom line: the chosen track's four pedals, each a slice of its case and art with its LED (dark when off) */
+static void bottom_pedals(uint32_t trk)
+{
+    uint32_t e;
+    cv_begin(240, H_BOT, C_BG);
+    cv_oy = 0;
+    for (e = 0; e < NPED_SLOTS; e++) {
+        uint32_t pd = set.ped[trk][e] % NPD, lk = PD_LOOK[pd], on = set.fx[trk].on >> e & 1u, n = 0;
+        const plook_t *L = &PLOOK[lk];
+        const char *nm = PDEF[pd].name;
+        int32_t x = 1 + (int32_t)e * 60, w = 58;
+        char sh[14];
+        while (nm[n] && n < 13u) { sh[n] = nm[n]; n++; }
+        sh[n] = 0;
+        while (n > 1u && atext_w(&FONT_S, sh, -1) > w - 8) sh[--n] = 0;   /* (as much of the name as fits beside the LED) */
+        art_window(lk, x, 2, w, 20, 7);
+        if (!on) dim_rect(x, 2, w, 20, 62);
+        atext_halo(x + 2, 4, &FONT_S, sh, on ? L->lab : RGB(120, 120, 132), on ? L->body : RGB(24, 24, 30), -1);
+        adisc(x + w - 4, 12, 2, on ? L->led : RGB(70, 34, 34));   /* a small LED */
+        mask_corners(x, 2, w, 20, 7);
+    }
+    cv_blit(0, Y_BOT);
 }
 
 /* ---- the signal chain (EDIT twice): the track's four pedals as cards, in order (FX SEL ENV LFO, left to right, top
@@ -1437,48 +2095,45 @@ static void draw_chain(uint32_t trk, uint32_t sl)
         cv_oy = -(int32_t)half * (H_PEDAL / 2);
         for (pass = 0; pass < 2u; pass++)
             for (e = 0; e < NPED_SLOTS; e++) {
-                const pdef_t *d = &PDEF[set.ped[trk][e] % NPD];
-                const uint8_t *rgb = ped_rgb(d);
-                uint32_t on = set.fx[trk].on >> e & 1u, me = e == sl, n = 0;
+                uint32_t pd = set.ped[trk][e] % NPD, lk = PD_LOOK[pd], on = set.fx[trk].on >> e & 1u, me = e == sl;
+                const plook_t *L = &PLOOK[lk];
+                const char *nm = ped_title(pd);
+                const felucca_font_t *f = &FONT_T;
                 int32_t x = 4 + (int32_t)(e % 2u) * 118, y = 2 + (int32_t)(e / 2u) * 81, w = 114, h = 77;
-                uint16_t bg = me ? C_PANEL2 : C_PANEL, pc = on ? rgbk(rgb, 100) : C_DIMC;
-                const char *nm = (d->name);
-                char sh[16];
+                uint16_t halo = mix565(L->body, K_BLACK, 35);
                 if (me != pass) continue;
-                if (me) glow_card(x, y, w, h, 8, rgb, bg);
-                else cv_rrect(x, y, w, h, 8, bg);
-                disc(x + 12, y + 11, 6, pc);    /* the power sign */
-                disc(x + 12, y + 11, 4, bg);
-                cv_rect(x + 10, y + 3, 5, 6, bg);
-                cv_rect(x + 11, y + 4, 2, 7, pc);
-                while (nm[n] && n < 15u) { sh[n] = nm[n]; n++; }
-                sh[n] = 0;
-                while (n > 1u && text_w(&FONT_S, sh) > w - 28) sh[--n] = 0;
-                cv_text_bg(x + 22, y + 3, &FONT_S, sh, on ? C_TXT : C_SUB, bg);
+                art_window(lk, x, y, w, h, 9);  /* the pedal itself: its art, its name, its knobs, its LED */
+                if (atext_w(f, nm, 0) > w - 26) { f = &FONT_S; nm = text_fit(nm, w - 26); }
+                atext_halo(x + 6, f == &FONT_T ? y + 1 : y + 4, f, nm, L->tc ? L->tc : L->lab, halo, 0);
                 ped_vals(trk, e, pk, val);
                 for (k = 0; k < 3u; k++) {
                     int32_t cx = x + 19 + (int32_t)k * 38;
-                    mini_knob(cx, y + 38, *pk[k].v, pk[k].max ? pk[k].max : 1u, pc, C_KEYCAP);
-                    cv_text_bg(cx - text_w(&FONT_S, val[k]) / 2, y + 55, &FONT_S, val[k], on ? C_TXT : C_DIMC, bg);
+                    uint32_t mx = pk[k].max ? pk[k].max : 1u, v = *pk[k].v > mx ? mx : *pk[k].v;
+                    if (L->fl & L_SKIRT) knob_skirt(cx, y + 38, v * 1000u / mx, L->cap, L->ptr, 9);
+                    else knob_knurl(cx, y + 38, v * 1000u / mx, L->cap, L->ptr, 9);
+                    atext_halo(cx - text_w(&FONT_S, val[k]) / 2, y + 52, &FONT_S, val[k], L->val, halo, 0);
                 }
+                if (!on) dim_rect(x, y, w, h, 55);
+                led_lamp(x + w - 11, y + 11, on, L->led);
+                mask_corners(x, y, w, h, 9);
+                if (me) { rr_line(x - 1, y - 1, w + 2, h + 2, 10, C_WHITE); rr_line(x - 2, y - 2, w + 4, h + 4, 11, C_WHITE); }
             }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
     }
 }
 
-/* the arpeggiator, a stompbox too: the lamp (hold ARP), RATE, OCTAVES, DIR */
+/* the arpeggiator: its own page, notes climbing to the moon; RATE, OCTAVES, DIR */
 static void draw_arp(uint32_t trk)
 {
-    static const uint8_t BODY[3] = {20, 110, 120};
     if (trk < NSYN) {
         static const char *const DIR_NAME[3] = {"UP", "DOWN", "RANDOM"};
         static const char *const OCT_NAME[4] = {"1", "2", "3", "4"};
         uint32_t rate = set.arp_rate[trk] & 3u, oct = set.arp_oct[trk] & 3u, dir = set.arp_dir[trk] % 3u;
         kview_t kv[3] = {{"RATE", rate, 3, ARP_NAME[rate]}, {"OCTAVES", oct, 3, OCT_NAME[oct]}, {"DIR", dir, 2, DIR_NAME[dir]}};
-        draw_stomp(BODY, 0, "ARPEGGIATOR", set.arp_on >> trk & 1u, kv, 3, 0);
+        draw_pedal_page(LK_ARP, 0, set.arp_on >> trk & 1u, kv, 3, 0);
     } else
-        draw_stomp(BODY, 0, "ARPEGGIATOR", 0, 0, 0, "FOR LEAD, PAD, BASS");
+        draw_pedal_page(LK_ARP, 0, 0, 0, 0, "FOR LEAD, PAD, BASS");
 }
 
 /* the mixer: four channel strips, LEAD PAD BASS DRUMS (KNOB1-4): a header in the track's colour, a knob, its value, a
@@ -1501,15 +2156,16 @@ static void draw_mixer(void)
             cv_rrect(x + 2, 0, 56, H_PEDAL, 8, C_PANEL);
             cv_rrect(x + 4, 4, 52, 18, 9, col); /* the name, in a pill */
             cv_text_bg(cx - text_w(&FONT_S, tn) / 2, 5, &FONT_S, tn, C_BG, col);
-            for (i = 0; i < 9u; i++) cv_rect(x + 10, 31 + (int32_t)i * 12, 7, 1, C_DIMC);   /* the scale */
-            cv_rrect(cx - 3, 30, 7, 100, 3, C_BG);   /* the fader: its slot, filled to the level, its cap */
-            if (fh > 0) cv_rrect(cx - 3, 130 - fh, 7, fh, 3, col);
-            cv_rrect(cx - 13, 124 - fh, 27, 12, 4, RGB(215, 220, 232));
-            cv_rect(cx - 9, 129 - fh, 19, 1, RGB(150, 156, 172));
-            cv_text_bg(cx - text_w(&FONT_S, muted ? "MUTE" : val) / 2, 133, &FONT_S, muted ? "MUTE" : val, muted ? C_MUTE : C_TXT, C_PANEL);
-            cv_rrect(cx - 25, 148, 50, 15, 7, C_KEYCAP);
-            disc(cx - 16, 155, 3, muted ? C_MUTE : col);
-            cv_text_bg(cx + 6 - text_w(&FONT_S, MUTE_BTN_NAME[r]) / 2, 147, &FONT_S, MUTE_BTN_NAME[r], C_TXT, C_KEYCAP);   /* (centred right of the dot) */
+            ab_x0 = x + 2; ab_y0 = 0; ab_x1 = x + 58; ab_y1 = H_PEDAL;
+            knob_knurl(cx, 50, v * 1000u / 127u, muted ? mix565(col, C_PANEL, 60) : col, C_WHITE, 16);   /* its knob */
+            cv_text_bg(cx - text_w(&FONT_S, muted ? "MUTE" : val) / 2, 72, &FONT_S, muted ? "MUTE" : val, muted ? C_MUTE : C_TXT, C_PANEL);
+            for (i = 0; i < 10u; i++) {         /* the level, in LEDs: amber then red at the top */
+                uint16_t lc = i >= 9u ? RGB(255, 90, 60) : i >= 7u ? RGB(255, 196, 60) : col;
+                cv_rrect(cx - 8, 133 - (int32_t)i * 5, 16, 3, 1, i < n && !muted ? lc : mix565(lc, C_PANEL, 82));
+            }
+            led_lamp(x + 15, 154, !muted, muted ? C_MUTE : col);   /* playing: lit; muted: dark, the button's name red */
+            cv_text_bg(x + 25, 146, &FONT_S, MUTE_BTN_NAME[r], muted ? C_MUTE : C_TXT, C_PANEL);
+            (void)fh;
         }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
@@ -1766,6 +2422,53 @@ static void menu_row(int32_t y, const char *k, const char *lab, const char *val,
 }
 /* INSTR (drums: KIT), the SOUND page's first: a menu, a row a knob. KNOB1 the type, KNOB2 the bank, KNOB3 the sound
  * (the bank's sounds listed, the one playing lit), KNOB4 the USER slot REC (twice) saves to */
+/* the sound browser's picture of the type, screen-printed in two inks like a pedal, its name lettered on it:
+ * lead: mountains under a sun, bass: stacked blocks, pad: rings rising, drums: confetti dots */
+static void art_print(uint32_t kind, int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *rgb)
+{
+    static const char *const NM[4] = {"lead", "bass", "pad", "drums"};
+    uint16_t base = rgbk(rgb, 77), dk = rgbk(rgb, 27), ink = rgbk(rgb, 100), cr = rgbl(rgb, 70);
+    int32_t i, k;
+    cv_rect(x, y, w, h, base);
+    ab_x0 = x; ab_y0 = y; ab_x1 = x + w; ab_y1 = y + h;
+    switch (kind & 3u) {
+    case 0: {
+        int16_t mt[16] = {0, 62, 0, 44, 22, 18, 34, 32, 46, 12, 64, 40, 86, 30, 86, 62}, lit[14] = {22, 18, 34, 32, 46, 12, 64, 40, 86, 30, 86, 62, 40, 62};
+        adisc(x + 63, y + 41, 15, cr);
+        for (k = 0; k < 9; k++) aline(x + 63 + acs(180 + k * 45 / 2, 19), y + 41 + asn(180 + k * 45 / 2, 19), x + 63 + acs(180 + k * 45 / 2, 27), y + 41 + asn(180 + k * 45 / 2, 27), cr, 2);
+        for (i = 0; i < 16; i += 2) { mt[i] = (int16_t)(mt[i] + x); mt[i + 1] = (int16_t)(mt[i + 1] + y); }
+        for (i = 0; i < 14; i += 2) { lit[i] = (int16_t)(lit[i] + x); lit[i + 1] = (int16_t)(lit[i + 1] + y); }
+        afill(mt, 8, dk, 0, 0);
+        afill(lit, 7, ink, 3, 6);
+        for (i = 0; i < 14; i++) ap(x + 8 + i * 11 / 2, y + 22 + i * 37 % 9, cr);
+        break;
+    }
+    case 2:
+        for (k = 0; k < 6; k++) aring(x + w / 2, y + h, 10 + k * 9, k & 1 ? 1 : 2, k & 1 ? cr : dk);
+        astars(7, x + 4, y + 22, x + w - 4, y + h - 30, 10, cr);
+        break;
+    case 1:
+        for (k = 0; k < 5; k++) {
+            int16_t b[8] = {(int16_t)(x + 6 + k * 15), (int16_t)(y + h - 12 - k * 8), (int16_t)(x + 22 + k * 15), (int16_t)(y + h - 12 - k * 8),
+                            (int16_t)(x + 22 + k * 15), (int16_t)(y + h), (int16_t)(x + 6 + k * 15), (int16_t)(y + h)};
+            afill(b, 4, dk, 0, 0);
+            afill(b, 4, ink, 3, 6);
+            cv_rect(x + 6 + k * 15, y + h - 12 - k * 8, 16, 2, cr);
+        }
+        break;
+    default: {
+        uint32_t sd = 5;
+        for (i = 0; i < 22; i++) {
+            int32_t cx = x + 6 + (int32_t)rnd_n(&sd, (uint32_t)w - 12), cy = y + 22 + (int32_t)rnd_n(&sd, (uint32_t)h - 28), r = 1 + (int32_t)rnd_n(&sd, 5);
+            uint32_t c = rnd_n(&sd, 3);
+            adisc(cx, cy, r, c == 0u ? dk : c == 1u ? ink : cr);
+        }
+        break;
+    }
+    }
+    mask_corners(x, y, w, h, 9);
+    atext_halo(x + 6, y + 1, &FONT_T, NM[kind & 3u], cr, dk, 0);
+}
 static void draw_instr(uint32_t trk)
 {
     static const char *const TAB[NPAGE + 1u] = {"INSTR", "MAIN", "OSC", "ENV", "LFO"};
@@ -1797,7 +2500,7 @@ static void draw_instr(uint32_t trk)
             cv_rrect(tx + 1, 2, tw - 3, 20, 10, i == 0u ? col : dim);
             cv_text_bg(tx + tw / 2 - 1 - text_w(&FONT_S, tn) / 2, 4, &FONT_S, tn, i == 0u ? C_BG : C_SUB, i == 0u ? col : dim);
         }
-        art4(TTYPE(trk), 4, 26, 86, 62, rgb);  /* the type's picture */
+        art_print(TTYPE(trk), 4, 26, 86, 62, rgb);   /* the type's picture */
         cv_rrect(4, 92, 86, 18, 9, rgbm(rgb, 30));   /* K1 the type, K2 the group */
         cv_text_bg(47 - text_w(&FONT_S, ty) / 2, 93, &FONT_S, ty, trk < NSYN ? col : rgbl(rgb, 30), rgbm(rgb, 30));
         cv_rrect(4, 113, 86, 18, 9, col);
@@ -3181,7 +3884,11 @@ static void app_main(void)
             view_drawn = st;
             static uint32_t home_tall;          /* home filled the strip under the view: clear it for the others */
             if (!drum_edit && !syn_edit && !live_mode) home_tall = 1;
-            else if (home_tall) { home_tall = 0; cv_begin(240, H_HOME - H_VIEW, C_BG); cv_blit(0, Y_VIEW + H_VIEW); }
+            else if (home_tall) {               /* (above and below the view) */
+                home_tall = 0;
+                cv_begin(240, Y_HOME + H_HOME - Y_VIEW - H_VIEW, C_BG); cv_blit(0, Y_VIEW + H_VIEW);
+                cv_begin(240, Y_VIEW - Y_HOME, C_BG); cv_blit(0, Y_HOME);
+            }
             if (drum_edit) draw_grid(pt, drum, dpage, play, len);
             else if (syn_edit) draw_roll(trk, pt, cur[trk], play, len, vpage);
             else if (live_mode) {               /* live recording: the pattern playing, as the step recorder shows it */

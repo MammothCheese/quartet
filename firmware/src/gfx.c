@@ -20,6 +20,7 @@ typedef struct {               /* proportional, see tools/gen_font.py */
 static uint16_t cv_px[CV_MAX] __attribute__((section(".pool")));
 static uint32_t cv_w, cv_h;
 static int32_t cv_oy;            /* y offset for graph drawing */
+static int32_t cv_ox;            /* x offset (a window of a picture drawn somewhere else) */
 
 #define RGB(r, g, b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 #define C_BLACK 0x0000u
@@ -79,6 +80,7 @@ static void cv_blit_from(uint32_t x, uint32_t y, uint32_t r0)
 
 static inline void cv_pset(int32_t x, int32_t y, uint16_t c)
 {
+    x += cv_ox;
     y += cv_oy;
     if ((uint32_t)x < cv_w && (uint32_t)y < cv_h)
         cv_px[(uint32_t)y * cv_w + (uint32_t)x] = swap16(c);
@@ -86,8 +88,9 @@ static inline void cv_pset(int32_t x, int32_t y, uint16_t c)
 
 static void cv_rect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c)
 {
-    int32_t x1 = x + w, y1 = y + h + cv_oy, i;
+    int32_t x1 = x + w + cv_ox, y1 = y + h + cv_oy, i;
     uint16_t sc = swap16(c);
+    x += cv_ox;
     y += cv_oy;                             /* clipped once, then filled row by row */
     if (x < 0)
         x = 0;
