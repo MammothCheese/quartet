@@ -9,11 +9,11 @@ Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72
 
 ## Instruments and home screen
 
-**Lead** (gold) plays melodies; **pads** (violet) plays pads and chords; **bass** (cyan) plays basslines; **drums** (green) has six percussion voices. Each home card shows its instrument (keys, waves, a bass guitar, a drum). Muted instruments turn red.
+**Lead** (gold) plays melodies; **pads** (violet) plays pads and chords; **bass** (cyan) plays basslines; **drums** (green) has six percussion voices. Each home pill shows its sign (a sawtooth, an arch, a square wave, dots). Muted instruments turn red.
 
 Turn **SELECT** to choose an instrument and **ALGORITHM** to choose its sound or drum kit (one click per choice, through every group in turn; the new sound's name shows, without playing a test note). Play the keys; for drums, the first six white keys play the six sounds. **OCT− / OCT+** change octave (held half a second they move the whole pattern you're editing down or up an octave) and **MASTER** sets overall volume. **PLAY** starts or stops all instruments from step one.
 
-The **home screen** shows the selected instrument and pattern (A–J), tempo, beat lights and octave, then a card per track: its badge, its sound, the steps of its pattern (the playing step white) and its pattern. The chosen card glows. The bottom line shows the chosen track's four pedals, glowing in their colours when on. **A > C** means pattern C is queued after A.
+The **home screen** shows the selected instrument and pattern (A–J), tempo, beat lights and octave, then a pill per track in its colour: its sign, its name, its sound and its pattern. The chosen track's pill lights up and opens out with the 16 steps of the page it is playing (the playing step white); the others show theirs as a thin strip. The bottom line shows the chosen track's four pedals, filled with their colours when on. **A > C** means pattern C is queued after A.
 
 ![Quartet screens](screens.png)
 
@@ -104,7 +104,7 @@ Each type has its own sounds: a slot switched to BASS chooses from the bass soun
 
 The drum kits are synthesised, except the **LM-1**, which plays samples of a real Linn LM-1; on it the CLAP and PERC keys are its **low and high toms** (TL / TH on the drum grid). PERC is a different instrument per kit: a conga on CR-78, a shaker on Mini Pops and 606, a high tom on 808 and a low tom on Lo-Fi.
 
-**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, with the track's slot on top (**SLOT 1–4**, as on the home screen, its type beside it): a sound browser with the type at the top left (**KNOB1**: lead, pad or bass), the groups under it (**KNOB2**; an empty USER group is dimmed), the chosen group's sounds on the right (**KNOB3**) with the one playing glowing, and the USER slot to save to underneath (**KNOB4**). **SELECT** moves to another instrument's page, **ALGORITHM** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
+**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, with the track's slot on top (**SLOT 1–4**, as on the home screen, its type beside it): a sound browser with a picture for the type on the left (mountains for lead, rings for pad, blocks for bass, dots for drums), under it the type (**KNOB1**: lead, pad or bass) and the group (**KNOB2**) as pills and the USER slot to save to (**KNOB4**); on the right the group's sounds as pills (**KNOB3**), the one playing filled in the track's colour. **SELECT** moves to another instrument's page, **ALGORITHM** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
 
 | Page | KNOB1 | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|

@@ -790,6 +790,89 @@ static void logo4(int32_t x, int32_t y)          /* QUARTET's mark: four slanted
     for (i = 0; i < 4u; i++)
         for (r = 0; r < 14; r++) cv_rect(x + (int32_t)i * 6 + (13 - r) / 3, y + r, 3, 1, rgbk(TRK_RGB[ORD[i]], 100));
 }
+static const char *text_fit(const char *s, int32_t maxw)   /* s cut to fit maxw pixels (FONT_S) */
+{
+    static char b[4][24];
+    static uint32_t n;
+    char *o = b[n++ & 3u];
+    uint32_t i = 0;
+    while (s[i] && i < 23u) { o[i] = s[i]; i++; }
+    o[i] = 0;
+    while (i > 1u && text_w(&FONT_S, o) > maxw) o[--i] = 0;
+    return o;
+}
+static void disc(int32_t cx, int32_t cy, int32_t r, uint16_t c);
+static void disc_clip(int32_t cx, int32_t cy, int32_t r, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c)
+{                                               /* a filled circle, only what falls inside x0..x1, y0..y1 */
+    int32_t dy;
+    for (dy = -r; dy <= r; dy++) {
+        int32_t yy = cy + dy, h, a, b;
+        if (yy < y0 || yy >= y1) continue;
+        h = isqrt_small(r * r - dy * dy);
+        a = cx - h < x0 ? x0 : cx - h;
+        b = cx + h >= x1 ? x1 - 1 : cx + h;
+        if (b >= a) cv_rect(a, yy, b - a + 1, 1, c);
+    }
+}
+static void thick(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c)   /* a line two pixels wide */
+{
+    cv_line(x0, y0, x1, y1, c); cv_line(x0 + 1, y0, x1 + 1, y1, c); cv_line(x0, y0 + 1, x1, y1 + 1, c);
+}
+static void glyph4(uint32_t kind, int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c, uint16_t bg)
+{                                               /* a type's sign: 0 a sawtooth, 1 an arch, 2 a square wave, 3 dots */
+    int32_t a = w * 3 / 10, b = w * 65 / 100;
+    switch (kind & 3u) {
+    case 0: thick(x, y + h, x + a, y, c); thick(x + a, y, x + a, y + h, c); thick(x + a, y + h, x + b, y, c);
+            thick(x + b, y, x + b, y + h, c); thick(x + b, y + h, x + w, y, c); break;
+    case 1: disc_clip(x + w / 2, y + h, w / 2, x - 1, y - 1, x + w + 2, y + h, c);
+            disc_clip(x + w / 2, y + h, w / 2 - 2, x - 1, y - 1, x + w + 2, y + h, bg); break;
+    case 2: a = w / 3; b = w * 2 / 3;
+            thick(x, y + h, x, y, c); thick(x, y, x + a, y, c); thick(x + a, y, x + a, y + h, c); thick(x + a, y + h, x + b, y + h, c);
+            thick(x + b, y + h, x + b, y, c); thick(x + b, y, x + w, y, c); thick(x + w, y, x + w, y + h, c); break;
+    default: disc(x + w / 5, y + h / 3, w / 6, c); disc(x + w * 3 / 4, y + h / 4, w / 8, c);
+             disc(x + w / 2, y + h * 3 / 4, w / 5, c); disc(x + w * 9 / 10, y + h * 4 / 5, w / 10, c); break;
+    }
+}
+static void art4(uint32_t kind, int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *rgb)
+{                                               /* a picture tile in a colour: 0 mountains, 1 rings, 2 blocks, 3 dots */
+    static const uint8_t R1[7] = {100, 35, 70, 20, 62, 30, 55}, R2[6] = {100, 55, 85, 45, 70, 100};   /* the ridges (% down) */
+    uint16_t base = rgbm(rgb, 30), lo = rgbm(rgb, 62), md = rgbk(rgb, 100), hi = rgbl(rgb, 30);
+    int32_t i, k, x0 = x + 3, y0 = y + 3, x1 = x + w - 3, y1 = y + h - 3;
+    cv_rrect(x, y, w, h, 9, base);
+    switch (kind & 3u) {
+    case 0:                                     /* two ridges of mountains, the near one brighter */
+        for (i = x0; i < x1; i++) {
+            int32_t f = (i - x0) * 6 * 256 / (x1 - x0), s = f >> 8, r = f & 255, t1, t2;
+            if (s > 5) s = 5;
+            t1 = R1[s] + ((R1[s + 1] - R1[s]) * r >> 8);
+            f = (i - x0) * 5 * 256 / (x1 - x0); s = f >> 8; r = f & 255;
+            if (s > 4) s = 4;
+            t2 = R2[s] + ((R2[s + 1] - R2[s]) * r >> 8);
+            cv_rect(i, y0 + (y1 - y0) * t1 / 100, 1, (y1 - y0) * (100 - t1) / 100, lo);
+            cv_rect(i, y0 + (y1 - y0) * t2 / 100, 1, (y1 - y0) * (100 - t2) / 100, md);
+        }
+        break;
+    case 1:                                     /* three rings rising from the bottom */
+        for (k = 0; k < 3; k++)
+            disc_clip(x + w / 2, y1, (x1 - x0) * (62 - k * 16) / 100, x0, y0, x1, y1, k == 0 ? lo : k == 1 ? md : hi);
+        break;
+    case 2: {                                   /* blocks on a 4 x 4 grid */
+        static const uint8_t B[6][3] = {{0, 3, 0}, {1, 2, 1}, {2, 1, 2}, {3, 0, 1}, {1, 3, 0}, {2, 2, 0}};
+        int32_t q = (x1 - x0) / 4, r = (y1 - y0) / 4;
+        for (k = 0; k < 6; k++) cv_rrect(x0 + B[k][0] * q, y0 + B[k][1] * r, q, r, 2, B[k][2] == 0 ? lo : B[k][2] == 1 ? md : hi);
+        break;
+    }
+    default: {                                  /* dots of all sizes */
+        int32_t ww = x1 - x0, hh = y1 - y0, m = ww < hh * 2 ? ww : hh * 2;
+        disc(x0 + ww * 28 / 100, y0 + hh * 34 / 100, m * 13 / 100, md);
+        disc(x0 + ww * 72 / 100, y0 + hh * 30 / 100, m * 9 / 100, hi);
+        disc(x0 + ww * 50 / 100, y0 + hh * 68 / 100, m * 15 / 100, md);
+        disc(x0 + ww * 86 / 100, y0 + hh * 76 / 100, m * 6 / 100, lo);
+        disc(x0 + ww * 14 / 100, y0 + hh * 78 / 100, m * 6 / 100, hi);
+        break;
+    }
+    }
+}
 static void disc(int32_t cx, int32_t cy, int32_t r, uint16_t c)   /* a filled circle */
 {
     int32_t dy;
@@ -900,9 +983,11 @@ static void bottom_pedals(uint32_t trk)         /* home's bottom line: the chose
         while (nm[n] && n < 13u) { sh[n] = nm[n]; n++; }
         sh[n] = 0;
         while (n > 1u && text_w(&FONT_S, sh) > w - 1) sh[--n] = 0;   /* (as much of the name as fits) */
-        if (on) glow_card(x, 3, w, 19, 7, ped_rgb(d), C_PANEL2);   /* (on: it glows in the pedal's colour) */
-        else cv_rrect(x, 3, w, 19, 7, C_PANEL);
-        cv_text_bg(x + w / 2 - text_w(&FONT_S, sh) / 2, 4, &FONT_S, sh, on ? C_TXT : C_DIMC, on ? C_PANEL2 : C_PANEL);
+        {
+            uint16_t pc = on ? rgbk(ped_rgb(d), 100) : RGB(34, 34, 42);   /* (on: filled with the pedal's colour) */
+            cv_rrect(x, 3, w, 19, 9, pc);
+            cv_text_bg(x + w / 2 - text_w(&FONT_S, sh) / 2, 4, &FONT_S, sh, on ? C_BG : RGB(90, 90, 104), pc);
+        }
     }
     cv_blit(0, Y_BOT);
 }
@@ -1050,76 +1135,53 @@ static uint32_t syn_covers(uint32_t t, uint32_t pt, uint32_t s, uint32_t len)   
     return 0;
 }
 
-/* the home view: a card a track, LEAD PAD BASS DRUMS: a badge in its colour (its short name), its sound, the steps of
- * the page it is on (the step playing white), its pattern in a pill. The chosen card glows; a muted one is grey */
-static void icon_inst(int32_t x, int32_t y, uint32_t ty, uint16_t c)   /* an instrument, 16 x 14, in colour c */
-{
-    static const int8_t WAVE[15] = {0, 1, 2, 2, 2, 1, 0, -1, -2, -2, -2, -1, 0, 1, 2};
-    int32_t i;
-    switch (ty) {
-    case T_LEAD:                                /* a keyboard: four white keys, three black ones over them */
-        for (i = 0; i < 4; i++) cv_rect(x + 1 + i * 4, y + 2, 3, 11, c);
-        break;
-    case T_PAD:                                 /* two waves */
-        for (i = 0; i < 15; i++) { cv_rect(x + 1 + i, y + 4 + WAVE[i], 1, 2, c); cv_rect(x + 1 + i, y + 10 + WAVE[(i + 3) % 15], 1, 2, c); }
-        break;
-    case T_BASS:                                /* a bass guitar: the neck, the body */
-        cv_line(x + 14, y + 1, x + 6, y + 9, c); cv_line(x + 15, y + 1, x + 7, y + 9, c);
-        cv_rect(x + 13, y, 3, 2, c);
-        disc(x + 5, y + 10, 4, c); disc(x + 8, y + 8, 3, c);
-        break;
-    default:                                    /* a drum: the shell, two sticks over it */
-        cv_rrect(x + 2, y + 6, 13, 8, 3, c);
-        cv_line(x + 2, y + 1, x + 8, y + 6, c); cv_line(x + 15, y + 1, x + 9, y + 6, c);
-        break;
-    }
-}
+/* the home view: a pill a track, LEAD PAD BASS DRUMS (as on the screen) in its colour: its sign, its name, its sound,
+ * its pattern. The chosen track's pill is bright and opens out with the 16 steps of the page it is on (the step playing
+ * white); the others are slim, with a little strip of their steps. A muted track turns red */
 static uint32_t slot_nth(uint32_t t);
-#define H_HOME 152                              /* home's cards: down to the bottom bar (two halves of 76) */
+#define H_HOME 152                              /* home's pills: down to the bottom bar (two halves of 76) */
 static void draw_home(uint32_t sel, uint32_t run)
 {
-    uint32_t r, s, pass, half;
+    uint32_t r, s, half;
     for (half = 0; half < 2u; half++) {
-    cv_begin(240, H_HOME / 2, C_BG);
-    cv_oy = -(int32_t)half * (H_HOME / 2);
-    for (pass = 0; pass < 2u; pass++)           /* (the chosen card last: its glow over the gap) */
+        int32_t y = 0;
+        cv_begin(240, H_HOME / 2, C_BG);
+        cv_oy = -(int32_t)half * (H_HOME / 2);
         for (r = 0; r < NTRK; r++) {
             uint32_t t = SEQ_ORDER[r], me = t == sel;
-            int32_t y = (int32_t)r * 38 + 2, pw, sw, x0 = 38, x1;
             uint32_t pt = play_pat[t] % NPAT, len = pat_len(t, pt), pos = trk_pos[t], page = run ? pos / PAGE : 0u;
             const uint8_t *rgb = trk_rgb(t);
-            uint16_t col = rgbk(rgb, 100), card = me ? C_PANEL2 : C_PANEL, bdg = me ? col : rgbm(rgb, 55);
-            const char *nm = (t < NSYN ? sound_name(TTYPE(t), set.snd[t].preset) : kit_name());
+            uint16_t col = rgbk(rgb, 100), bg = me ? col : rgbm(rgb, 34), ink = me ? C_BG : col;
+            uint16_t sub = me ? rgbm(rgb, 22) : rgbl(rgb, 35);
+            int32_t h = me ? 62 : 26, pw, nx, lim;
             char lt[4], *q;
-            if (me != pass) continue;
             q = put_pat(lt, t); *q = 0;
-            if (me) glow_card(4, y, 232, 34, 8, rgb, card);
-            else cv_rrect(4, y, 232, 34, 8, card);
-            cv_rrect(9, y + 5, 24, 24, 6, bdg);
-            icon_inst(13, y + 10, TTYPE(t), C_BG);   /* (what it plays) */
-            if (slot_nth(t)) {                  /* two of a kind: L1, L2 before the sound */
-                int32_t nx = cv_text_bg(x0, y + 3, &FONT_S, slot_short(t), col, card);
-                cv_text_bg(nx + 5, y + 3, &FONT_S, nm, me ? C_TXT : C_SUB, card);
-            } else cv_text_bg(x0, y + 3, &FONT_S, nm, me ? C_TXT : C_SUB, card);
+            cv_rrect(4, y, 232, h, 10, bg);
+            glyph4(TTYPE(t), 11, y + 7, 18, 12, ink, bg);
+            nx = cv_text_bg(36, y + 5, &FONT_S, slot_name(t), ink, bg);
             pw = text_w(&FONT_S, lt) + 12;
             if (pw < 26) pw = 26;
-            cv_rrect(231 - pw, y + 6, pw, 22, 8, C_BG);
-            cv_text_bg(231 - pw / 2 - text_w(&FONT_S, lt) / 2, y + 9, &FONT_S, lt, col, C_BG);
-            x1 = 231 - pw - 6;
-            sw = (x1 - x0) / 16;
-            for (s = 0; s < PAGE; s++) {        /* the page's 16 steps, a little bar each */
+            lim = me ? 231 - pw - 6 : 145;
+            cv_text_bg(nx + 8, y + 5, &FONT_S, text_fit(t < NSYN ? sound_name(TTYPE(t), set.snd[t].preset) : kit_name(), lim - nx - 8),
+                       sub, bg);
+            cv_rrect(231 - pw, y + 4, pw, 18, 7, me ? C_BG : rgbm(rgb, 18));
+            cv_text_bg(231 - pw / 2 - text_w(&FONT_S, lt) / 2, y + 5, &FONT_S, lt, col, me ? C_BG : rgbm(rgb, 18));
+            if (me) cv_rrect(10, y + 28, 220, 29, 7, rgbm(rgb, 24));   /* (the chosen: its steps, big) */
+            for (s = 0; s < PAGE; s++) {
                 uint32_t st = page * PAGE + s, on = 0;
                 uint16_t sc;
                 if (st >= len) continue;
                 if (t == T_DRUMS) { uint32_t d; for (d = 0; d < NDR; d++) on |= dbit(pt, d, st); on *= 2u; }
                 else on = syn_covers(t, pt, st, len);
-                sc = on == 2u ? (me ? col : rgbm(rgb, 75)) : on == 1u ? rgbm(rgb, me ? 40u : 30u) : s % 4u ? C_EMPTY : C_EMPTY4;
-                if (run && st == pos) sc = on ? C_WHITE : C_HEADC;
-                cv_rrect(x0 + (int32_t)s * sw, y + 23, sw - 2, 7, 2, sc);
+                sc = on == 2u ? col : on == 1u ? rgbm(rgb, 60) : rgbm(rgb, me ? 42u : 55u);
+                if (run && st == pos) sc = C_WHITE;
+                if (me) cv_rrect(14 + (int32_t)(s * 27u / 2u), y + 33, 11, 19, 3, sc);
+                else cv_rect(148 + (int32_t)s * 3, y + 9, 2, 8, on || (run && st == pos) ? sc : rgbm(rgb, 58));
             }
+            y += h + 4;
         }
-    cv_oy = 0;
-    cv_blit(0, Y_VIEW + half * (H_HOME / 2));
+        cv_oy = 0;
+        cv_blit(0, Y_VIEW + half * (H_HOME / 2));
     }
 }
 
@@ -1708,58 +1770,48 @@ static void draw_instr(uint32_t trk)
 {
     static const char *const TAB[NPAGE + 1u] = {"INSTR", "MAIN", "OSC", "ENV", "LFO"};
     static const char *const DTAB[NDR + 1u] = {"KIT", "BD", "SD", "HH", "OH", "CP", "PC"};
-
     static const uint16_t YEL = RGB(255, 200, 60);
     const uint8_t *rgb = trk_rgb(trk);
-    uint16_t col = rgbk(rgb, 100);
+    uint16_t col = rgbk(rgb, 100), dim = RGB(28, 28, 34);
     uint8_t ids[40], sub[40];
-    uint32_t now = trk < NSYN ? set.snd[trk].preset : set.dkit, bk = id_bank(trk, now), n, m = 0, at = 0, i, half, top, b;
-    uint32_t ntab = trk < NSYN ? NPAGE + 1u : NDR + 1u, inb[NBANK] = {0, 0, 0, 0, 0};
+    uint32_t now = trk < NSYN ? set.snd[trk].preset : set.dkit, bk = id_bank(trk, now), n, m = 0, at = 0, i, half, top;
+    uint32_t ntab = trk < NSYN ? NPAGE + 1u : NDR + 1u;
     const char *const *bkn = trk < NSYN ? BANK_NAME[TTYPE(trk)] : KBANK_NAME;
     uint32_t used = trk < NSYN ? set.mu.ub.snd[TTYPE(trk)][usr_slot % NUSND].preset != 0u : set.mu.ub.kit[usr_slot % NUKIT].used != 0u;
-    char ty[16], us[16], *p;
+    char ty[16], gr[20], us[16], *p;
     n = trk < NSYN ? sound_list(TTYPE(trk), ids, now) : kit_list(ids, now);
-    for (i = 0; i < n; i++) {
-        if (id_bank(trk, ids[i]) < NBANK) inb[id_bank(trk, ids[i])]++;
-        if (id_bank(trk, ids[i]) == bk) { if (ids[i] == now) at = m; sub[m++] = ids[i]; }
-    }
-    top = at > 2u ? at - 2u : 0u;               /* the list: seven of the bank's sounds, the one playing among them */
-    if (m >= 7u && top + 7u > m) top = m - 7u;
-    if (m < 7u) top = 0;
-    if (trk < NSYN) { p = put(ty, "< "); p = put(p, (TYPE_NAME[TTYPE(trk)])); *put(p, " >") = 0; } else *put(ty, "DRUMS") = 0;
+    for (i = 0; i < n; i++) if (id_bank(trk, ids[i]) == bk) { if (ids[i] == now) at = m; sub[m++] = ids[i]; }
+    top = at > 2u ? at - 2u : 0u;               /* the list: six of the group's sounds, the one playing among them */
+    if (m >= 6u && top + 6u > m) top = m - 6u;
+    if (m < 6u) top = 0;
+    if (trk < NSYN) { p = put(ty, "< "); p = put(p, TYPE_NAME[TTYPE(trk)]); *put(p, " >") = 0; } else *put(ty, "DRUMS") = 0;
+    p = put(gr, "< "); p = put(p, bk < NBANK ? bkn[bk] : "OLDER"); *put(p, " >") = 0;
     if (usr_ask) { p = put(us, "SAVE U"); *p++ = (char)('1' + usr_slot); *p++ = '?'; *p = 0; }
-    else { p = put(us, "U"); *p++ = (char)('1' + usr_slot); p = put(p, used ? " USED" : " EMPTY"); *p = 0; }
+    else { p = put(us, "SAVE U"); *p++ = (char)('1' + usr_slot); p = put(p, used ? " *" : ""); *p = 0; }
     for (half = 0; half < 2u; half++) {
         cv_begin(240, H_PEDAL / 2, C_BG);
         cv_oy = -(int32_t)half * (H_PEDAL / 2);
         for (i = 0; i < ntab; i++) {            /* the pages, as pills, INSTR lit */
             int32_t tw = 232 / (int32_t)ntab, tx = 4 + (int32_t)i * tw;
             const char *tn = trk < NSYN ? TAB[i] : DTAB[i];
-            cv_rrect(tx + 1, 2, tw - 3, 20, 10, i == 0u ? col : C_PANEL);
-            cv_text_bg(tx + tw / 2 - 1 - text_w(&FONT_S, tn) / 2, 4, &FONT_S, tn, i == 0u ? C_BG : C_SUB, i == 0u ? col : C_PANEL);
+            cv_rrect(tx + 1, 2, tw - 3, 20, 10, i == 0u ? col : dim);
+            cv_text_bg(tx + tw / 2 - 1 - text_w(&FONT_S, tn) / 2, 4, &FONT_S, tn, i == 0u ? C_BG : C_SUB, i == 0u ? col : dim);
         }
-        cv_rrect(4, 28, 80, 134, 8, C_PANEL);   /* the banks (K2); the type (K1); the USER slot (K4) */
-        cv_rrect(8, 32, 72, 16, 8, C_BG);        /* K1: the type */
-        cv_text_bg(44 - text_w(&FONT_S, ty) / 2, 32, &FONT_S, ty, trk < NSYN ? C_TXT : C_SUB, C_BG);
-        for (b = 0; b < NBANK; b++) {           /* K2: the groups, then USER */
-            int32_t y = 53 + (int32_t)b * 18;
-            uint32_t me = b == bk;
-            if (me) glow_card(8, y, 72, 16, 6, rgb, C_PANEL2);
-            cv_text_bg(44 - text_w(&FONT_S, bkn[b]) / 2, y, &FONT_S, bkn[b], me ? C_TXT : inb[b] ? C_SUB : C_DIMC, me ? C_PANEL2 : C_PANEL);
-        }
-        cv_rrect(8, 146, 72, 16, 8, usr_ask ? YEL : C_BG);
-        cv_text_bg(44 - text_w(&FONT_S, us) / 2, 146, &FONT_S, us, usr_ask ? C_BG : used ? C_TXT : C_SUB, usr_ask ? YEL : C_BG);
-        cv_rrect(88, 28, 148, 134, 8, C_PANEL); /* the bank's sounds (K3) */
-        for (i = 0; i < 7u && top + i < m; i++) {
+        art4(TTYPE(trk), 4, 26, 86, 62, rgb);  /* the type's picture */
+        cv_rrect(4, 92, 86, 18, 9, rgbm(rgb, 30));   /* K1 the type, K2 the group */
+        cv_text_bg(47 - text_w(&FONT_S, ty) / 2, 93, &FONT_S, ty, trk < NSYN ? col : rgbl(rgb, 30), rgbm(rgb, 30));
+        cv_rrect(4, 113, 86, 18, 9, col);
+        cv_text_bg(47 - text_w(&FONT_S, text_fit(gr, 82)) / 2, 114, &FONT_S, text_fit(gr, 82), C_BG, col);
+        cv_rrect(4, 136, 86, 22, 11, usr_ask ? YEL : C_BG);   /* K4 the USER slot (REC twice: save) */
+        if (!usr_ask) { cv_rrect(4, 136, 86, 22, 11, col); cv_rrect(5, 137, 84, 20, 10, C_BG); }
+        cv_text_bg(47 - text_w(&FONT_S, us) / 2, 139, &FONT_S, us, usr_ask ? C_BG : col, usr_ask ? YEL : C_BG);
+        for (i = 0; i < 6u && top + i < m; i++) {   /* K3: the group's sounds */
             uint32_t id = sub[top + i], me = top + i == at;
-            int32_t y = 33 + (int32_t)i * 18;
-            const char *nm = (trk < NSYN ? sound_name(TTYPE(trk), id) : kit_name_id(id));
-            if (me) {
-                glow_card(92, y, 140, 17, 5, rgb, C_PANEL2);
-                cv_line(212, y + 9, 215, y + 4, col); cv_line(215, y + 4, 218, y + 13, col);   /* (a little wave) */
-                cv_line(218, y + 13, 221, y + 5, col); cv_line(221, y + 5, 224, y + 9, col);
-            }
-            cv_text_bg(100, y, &FONT_S, nm, me ? C_TXT : C_SUB, me ? C_PANEL2 : C_PANEL);
+            int32_t y = 26 + (int32_t)i * 22;
+            const char *nm = trk < NSYN ? sound_name(TTYPE(trk), id) : kit_name_id(id);
+            cv_rrect(94, y, 142, 20, 10, me ? col : dim);
+            cv_text_bg(104, y + 2, &FONT_S, text_fit(nm, me ? 104 : 124), me ? C_BG : RGB(200, 200, 212), me ? col : dim);
+            if (me) glyph4(TTYPE(trk), 213, y + 6, 15, 8, C_BG, col);
         }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
