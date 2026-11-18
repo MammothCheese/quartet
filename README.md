@@ -2,7 +2,7 @@
 
 # QUARTET
 
-A four-track groovebox for the M-VAVE FM-1 built around traditional instruments and effects pedals that simulates a four-piece band: lead, pads, bass and drums. Featuring 46 sounds and 15 drum kits (plus your own), ten patterns per instrument, 30 pedals, live recording, and a song sequencer where each instrument follows its own arrangement.
+A four-track groovebox for the M-VAVE FM-1 built around traditional instruments and effects pedals that simulates a four-piece band: lead, pads, bass and drums. Featuring 72 sounds and 23 drum kits (plus your own), ten patterns per instrument, 30 pedals, live recording, and a song sequencer where each instrument follows its own arrangement.
 
 <p align="center"><img src="docs/screens.png" width="900" alt="QUARTET's screens: home, the sound browser, the signal chain, a pedal, the step recorder, the drum grid, the mixer, SUPER SEQ"></p>
 
@@ -14,13 +14,13 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
   pattern starts when the playing one comes round.
 - **Step recorder and live recorder**: write notes step by step, or play them in while the music runs; live notes
   are placed on the beat.
-- **46 sounds**, grouped by what they are: lead KEYS (piano, music box ...), BAND (Hammond, brass, guitar), SYNTH
+- **72 sounds**, six in each of four groups per type: lead KEYS (piano, music box ...), BAND (Hammond, brass, guitar), SYNTH
   (Mini Lead, Sync Lead ...) and ODD (theremin, glass harp); pad STRINGS, KEYS, SYNTH and ATMOS; bass ACOUSTIC (upright,
   slap ...), ANALOG (Moog, 303 line ...), DIGITAL (DX, Reese) and WILD (fuzz, wobble, growl). From a 2-oscillator synth with pulse
   width modulation, hard sync, FM, glide, a resonant filter, envelope and LFO. Every sound can be tweaked and **saved to
   a USER bank** (8 per type, 4 drum kits).
-- **15 drum kits**: GROOVE (Rock, Hip-Hop, Lo-Fi, Breaks), MACHINES (CR-78, Mini Pops, LM-1, 606, 808, 909), ELECTRO
-  (Electro, Techno, Trap) and ODD (Toy, Glitch): synthesised, with toms,
+- **23 drum kits**: GROOVE (Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk), MACHINES (CR-78, Mini Pops, LM-1, 606, 808, 909),
+  ELECTRO (Electro, Techno, Trap, House, Dub, Industrial) and ODD (Toy, Glitch, Metal, Noise, Kitchen): synthesised, with toms,
   congas, shakers and more on PERC, and the LM-1 played from samples of a real Linn LM-1 (rossf, Sampling+ 1.0: see
   [LICENSING.md](LICENSING.md)).
 - **Four pedal slots** per track (tap FX, SEL, ENV, LFO: on / off), each holding any of **30 pedals**, drawn as stompboxes: drives (distortion, overdrive,
@@ -33,7 +33,7 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
   and its four pedals in order, each switched, swapped and tuned from one page.
 - **Copy a pattern** from any synth slot into another (hold SEQ in the step recorder), so the pads can take the lead's
   tune.
-- **The same controls everywhere**: ALGORITHM the track, SELECT moves within a page, KNOB1 the on/off switch, a tap or a
+- **The same controls everywhere**: SELECT the track, ALGORITHM moves within a page, KNOB1 the on/off switch, a tap or a
   hold, REC twice to confirm.
 - **Dynamics on every note**: p, mp, mf, f or an accent, per note and per drum hit.
 - **Beat repeat**: hold GLO and the slice playing goes round (1/2 bar down to 1/32); let go and the music is where it

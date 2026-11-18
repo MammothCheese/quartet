@@ -3,7 +3,7 @@
 
 **Four instruments. One little band.**
 
-Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 46 sounds and 15 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 30 pedals, live recording and a song arranger.
+Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 23 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 30 pedals, live recording and a song arranger.
 
 > **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, go to the **home screen**, **hold REC for one second** until **CLEAR ALL?** appears, then **press REC again within three seconds** (any other button cancels). This erases the demo groove for good, but not your four saved projects.
 
@@ -11,7 +11,7 @@ Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 46
 
 **Lead** (gold) plays melodies; **pads** (violet) plays pads and chords; **bass** (cyan) plays basslines; **drums** (green) has six percussion voices. Each home card shows its instrument (keys, waves, a bass guitar, a drum). Muted instruments turn red.
 
-Turn **ALGORITHM** to choose an instrument and **SELECT** to choose its sound or drum kit (one click per choice, through every group in turn; the new sound's name shows, without playing a test note). Play the keys; for drums, the first six white keys play the six sounds. **OCT− / OCT+** change octave and **MASTER** sets overall volume. **PLAY** starts or stops all instruments from step one.
+Turn **SELECT** to choose an instrument and **ALGORITHM** to choose its sound or drum kit (one click per choice, through every group in turn; the new sound's name shows, without playing a test note). Play the keys; for drums, the first six white keys play the six sounds. **OCT− / OCT+** change octave and **MASTER** sets overall volume. **PLAY** starts or stops all instruments from step one.
 
 The **home screen** shows the selected instrument and pattern (A–J), tempo, beat lights and octave, then a card per track: its badge, its sound, the steps of its pattern (the playing step white) and its pattern. The chosen card glows. The bottom line shows the chosen track's four pedals, glowing in their colours when on. **A > C** means pattern C is queued after A.
 
@@ -23,12 +23,12 @@ On the home screen, **KNOB1** sets tempo; the sound itself is shaped in **EDIT**
 
 The same rules hold on every page:
 
-- **ALGORITHM** is always the track. **PRESETS** is the pattern, or the page's own thing (the pedal on a pedal page or the signal chain, the song in SUPER SEQ).
-- **SELECT** moves within the page (cursor, tab, slot, box) and never takes you to another page.
+- **SELECT** is always the track. **PRESETS** is the pattern, or the page's own thing (the pedal on a pedal page or the signal chain, the song in SUPER SEQ).
+- **ALGORITHM** moves within the page (cursor, tab, slot, box) and never takes you to another page.
 - **KNOB1–4** are the four settings shown, left to right. Where a page has an on/off switch (pedals, the arpeggiator, SUPER SEQ), it is **KNOB1**.
 - **Tap or hold:** a tap switches something or opens it, a half-second hold does the other. Pedal buttons and **ARP**: tap on/off, hold for the page. **GLO**: tap the mixer, hold beat repeat. **SEQ** in the step recorder: tap SUPER SEQ, hold the copy page.
 - **REC twice** confirms anything that keeps or replaces work: saving a sound or a project, copying a pattern, clearing everything. Holding **REC** clears a pattern only on the step recorder and live pages, where you can see it.
-- A page's own button again moves on or closes it (**EDIT**: sound → chain → home; **SEQ**: recorder → SUPER SEQ → home; **GLO**: mixer → KEY → home; **SAVE**: closes). **HOME** always goes home.
+- A page's own button again moves on or closes it (**EDIT**: sound → chain → home; **SEQ**: recorder ↔ SUPER SEQ; **GLO**: mixer → KEY → home; **SAVE**: closes). **HOME** always goes home.
 
 ## Patterns and step recording
 
@@ -38,7 +38,7 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 
 | Control | Step recorder (synths) | Step recorder (drums) |
 |---|---|---|
-| **SELECT** | The cursor, through every bar | — |
+| **ALGORITHM** | The cursor, through every bar | — |
 | **KNOB1** | **BARS**: pattern length, 1–4 bars | Same |
 | **KNOB2** | **LEN**: note length, **1/16, 1/8, dotted 1/8, 1/4, dotted 1/4, 1/2, dotted 1/2, whole**: the note at the cursor, and the notes you write next | — |
 | **KNOB3** | **DYN**: the dynamic, **p / mp / mf / f / ACC** (see below) | Same, for new hits (or a held hit) |
@@ -53,7 +53,7 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 
 While the music plays, a pattern longer than 16 steps is followed page by page on the display, unless you edit or change pages; it resumes following after three seconds.
 
-**Copying a pattern** (from Conductor). Hold **SEQ** in the step recorder or the live page for the copy page: every track's patterns A–J, a pattern with notes tinted, an empty one dark, and the pattern you are editing framed white (the copy goes there). **ALGORITHM** picks the track to copy from (synth slots copy from each other, so the pads can take the lead's tune; drums from drums) and **PRESETS** or **SELECT** the pattern. **REC** asks, **REC** again copies (notes, lengths, dynamics and pattern length) and takes you back; **SEQ** goes back without copying.
+**Copying a pattern** (from Conductor). Hold **SEQ** in the step recorder or the live page for the copy page: every track's patterns A–J, a pattern with notes tinted, an empty one dark, and the pattern you are editing framed white (the copy goes there). **SELECT** picks the track to copy from (synth slots copy from each other, so the pads can take the lead's tune; drums from drums) and **PRESETS** or **ALGORITHM** the pattern. **REC** asks, **REC** again copies (notes, lengths, dynamics and pattern length) and takes you back; **SEQ** goes back without copying.
 
 ![Copy page](guide/copy.png)
 
@@ -81,16 +81,16 @@ Each player's sounds come in **four groups**, by what they are, then **USER** (u
 
 | Lead | | Pads | | Bass | | Drums | |
 |---|---|---|---|---|---|---|---|
-| **KEYS** | Piano, Xylophone, Music Box, FM Bell | **STRINGS** | Strings, Solina, Choir, Acoustic Guitar | **ACOUSTIC** | Upright, Slap, Plucked, Tuba | **GROOVE** | Rock, Hip-Hop, Lo-Fi, Breaks |
-| **BAND** | Hammond, Brass, Electric Guitar | **KEYS** | Electric Piano, DX Piano, Organ, Handpan | **ANALOG** | Moog Bass, 303 Line, Sub Bass, Synth Bass | **MACHINES** | CR-78, Mini Pops, LM-1, 606, 808, 909 |
-| **SYNTH** | Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune | **SYNTH** | Juno Strings, Poly Synth, PWM Pad, Prophet Brass | **DIGITAL** | DX Bass, Reese, Electro Bass | **ELECTRO** | Electro, Techno, Trap |
-| **ODD** | Theremin, Glass Harp, Laser | **ATMOS** | Drone, Frozen, Cathedral, Sweep | **WILD** | Fuzz, Wobble, Growl, Bubble | **ODD** | Toy, Glitch |
+| **KEYS** | Piano, Xylophone, Music Box, FM Bell, Tine Keys, Clavinet | **STRINGS** | Strings, Solina, Choir, Acoustic Guitar, Harp, Digital Choir | **ACOUSTIC** | Upright, Slap, Plucked, Tuba, Fretless, Picked | **GROOVE** | Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk |
+| **BAND** | Hammond, Brass, Electric Guitar, Synth Brass, Flute, Harmonica | **KEYS** | Electric Piano, DX Piano, Organ, Handpan, Vibes, Marimba | **ANALOG** | Moog Bass, 303 Line, Sub Bass, Synth Bass, Rubber Bass, Slide Sub | **MACHINES** | CR-78, Mini Pops, LM-1, 606, 808, 909 |
+| **SYNTH** | Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead | **SYNTH** | Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth | **DIGITAL** | DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck | **ELECTRO** | Electro, Techno, Trap, House, Dub, Industrial |
+| **ODD** | Theremin, Glass Harp, Laser, Bowed Metal, Sine Swarm, Stepper | **ATMOS** | Drone, Frozen, Cathedral, Sweep, Glass Pad, Tidal | **WILD** | Fuzz, Wobble, Growl, Bubble, Womp, Dirt Bass | **ODD** | Toy, Glitch, Metal, Noise, Kitchen |
 
-Each type has its own sounds: a slot switched to BASS chooses from the bass sounds. On the home screen, turn **SELECT** to step through every sound of the slot's type, group after group (in the step recorder it moves the cursor instead). Selecting another sound loads its settings, replacing your tweaks. A sound or kit from an older save that is no longer on the list still loads and plays as it did, and shows at the top of the list while it is chosen.
+Each type has its own sounds: a slot switched to BASS chooses from the bass sounds. On the home screen, turn **ALGORITHM** to step through every sound of the slot's type, group after group (in the step recorder it moves the cursor instead). Selecting another sound loads its settings, replacing your tweaks. A sound or kit from an older save that is no longer on the list still loads and plays as it did, and shows at the top of the list while it is chosen.
 
 The drum kits are synthesised, except the **LM-1**, which plays samples of a real Linn LM-1; on it the CLAP and PERC keys are its **low and high toms** (TL / TH on the drum grid). PERC is a different instrument per kit: a conga on CR-78, a shaker on Mini Pops and 606, a high tom on 808 and a low tom on Lo-Fi.
 
-**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, a sound browser: the groups on the left (an empty USER group is dimmed), the chosen group's sounds on the right with the one playing glowing, and underneath the type and the USER slot to save to. **ALGORITHM** moves to another instrument's page, **SELECT** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
+**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, with the track's slot on top (**SLOT 1–4**, as on the home screen, its type beside it): a sound browser with the type at the top left (**KNOB1**: lead, pad or bass), the groups under it (**KNOB2**; an empty USER group is dimmed), the chosen group's sounds on the right (**KNOB3**) with the one playing glowing, and the USER slot to save to underneath (**KNOB4**). **SELECT** moves to another instrument's page, **ALGORITHM** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
 
 | Page | KNOB1 | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|
@@ -104,15 +104,15 @@ The drum kits are synthesised, except the **LM-1**, which plays samples of a rea
 
 **Glide** (MAIN, KNOB1) slides each note's pitch from the last one: off at 0, up to about half a second. Tempo is on KNOB1 of the home screen.
 
-OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose width the LFO can move: set the LFO target to **PWM**) and **sync** (wave 2 only: a saw restarted by wave 1, hard sync; the filter envelope sweeps it). For drums the first page is **KIT** (KNOB2 group, KNOB3 kit, KNOB4 USER slot, REC twice saves the kit), then a tab per drum (BD SD HH OH CP PC): **SELECT** chooses the page, **KNOB1–3** the drum's pitch, decay and level.
+OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose width the LFO can move: set the LFO target to **PWM**) and **sync** (wave 2 only: a saw restarted by wave 1, hard sync; the filter envelope sweeps it). For drums the first page is **KIT** (KNOB2 group, KNOB3 kit, KNOB4 USER slot, REC twice saves the kit), then a tab per drum (BD SD HH OH CP PC): **ALGORITHM** chooses the page, **KNOB1–3** the drum's pitch, decay and level.
 
-**The signal chain (EDIT twice).** The track's four pedals as cards, in the order the sound flows through them (FX, SEL, then ENV, LFO), each with its power sign, three small knobs and their values; one that is off is grey, the chosen one glows. **SELECT** moves between them and **KNOB2–4** turn the chosen pedal's knobs (named on the bottom line); **KNOB1** switches it on or off; **PRESETS** swaps it for another pedal from the whole library, category by category (one already in another slot is skipped, and a pedal that would overload the chip stays off: **CPU FULL**).
+**The signal chain (EDIT twice).** The track's four pedals as cards, in the order the sound flows through them (FX, SEL, then ENV, LFO), each with its power sign, three small knobs and their values; one that is off is grey, the chosen one glows. **ALGORITHM** moves between them and **KNOB2–4** turn the chosen pedal's knobs (named on the bottom line); **KNOB1** switches it on or off; **PRESETS** swaps it for another pedal from the whole library, category by category (one already in another slot is skipped, and a pedal that would overload the chip stays off: **CPU FULL**).
 
 ![Signal chain](guide/chain.png)
 
 ## Effects pedals and arpeggiator
 
-The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 30**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **SELECT** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Loose, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. The pedal page is the stompbox itself, in its own colour: the red lamp lights and a faint glow surrounds it when it is on, and its three knobs show their values underneath.
+The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 30**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **ALGORITHM** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Loose, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. The pedal page is the stompbox itself, in its own colour: the red lamp lights and a faint glow surrounds it when it is on, and its three knobs show their values underneath.
 
 ![A pedal](guide/pedal.png) A new project starts with Reverb, Delay, Distortion and Chorus in the four slots. (**EDIT** is no longer a pedal slot: it is the sound editor.)
 
@@ -159,7 +159,7 @@ The **arpeggiator** plays held notes or pattern chords in sequence. Like a pedal
 
 ## SUPER SEQ: song arrangements
 
-Press **SEQ** twice (the sequencer, then SUPER SEQ) to open **SUPER SEQ**; **SEQ** again or **HOME** returns home. Each instrument has its own row of up to **eight boxes**, and there are **ten songs (A–J)**. Each box plays its pattern once before moving on; instruments advance independently, so a 32-step pattern lasts twice as long as a 16-step pattern.
+Press **SEQ** twice (the sequencer, then SUPER SEQ) to open **SUPER SEQ**; **SEQ** again goes back to the step recorder, **HOME** home. Each instrument has its own row of up to **eight boxes**, and there are **ten songs (A–J)**. Each box plays its pattern once before moving on; instruments advance independently, so a 32-step pattern lasts twice as long as a 16-step pattern.
 
 ![SUPER SEQ](guide/superseq.png)
 
@@ -171,9 +171,9 @@ For example, `A...B.A.` plays **A A A A B B A A**. A new song starts with A foll
 
 | Control | SUPER SEQ |
 |---|---|
-| **ALGORITHM** | Instrument row |
+| **SELECT** | Instrument row |
 | **KNOB1** | SUPER SEQ on/off |
-| **SELECT** or **KNOB2** | Select box |
+| **ALGORITHM** or **KNOB2** | Select box |
 | **KNOB3** | Blank / A–J / X |
 | **KNOB4** | Song length: 1–8 boxes |
 | **PRESETS** | Song A–J |
@@ -185,7 +185,7 @@ When SUPER SEQ is on, it chooses the playing patterns instead of PRESETS. **PLAY
 
 **GLO** opens the mixer. **KNOB1–4** set the volumes of lead, pads, bass and drums. On the mixer, **FX / SEL / ENV / LFO** mute lead, pads, bass and drums (lit = playing). Tap **GLO** again for the **KEY page**, and once more to go home (**HOME** also goes straight home). If audio crackles, try switching a pedal off.
 
-**The KEY page** (from Conductor) shows the key, its relative minor and its signature, and one octave of keyboard with the key's notes lit and named (the notes you play light gold). **SELECT** chooses the key, a sharp or a flat at a time (C, G, D … or F, B-flat, E-flat …; QUARTET's demo groove is in C minor, the key of E-flat). **KNOB1** switches **LOCK** on: the keys then play only the key's notes, a note outside it sounding the one below. **KNOB2** switches **LIGHTS** on: the key's notes glow on the FM-1's keys (lead, pads and bass, outside the step recorder).
+**The KEY page** (from Conductor) shows the key, its relative minor and its signature, and one octave of keyboard with the key's notes lit and named (the notes you play light gold). **ALGORITHM** chooses the key, a sharp or a flat at a time (C, G, D … or F, B-flat, E-flat …; QUARTET's demo groove is in C minor, the key of E-flat). **KNOB1** switches **LOCK** on: the keys then play only the key's notes, a note outside it sounding the one below. **KNOB2** switches **LIGHTS** on: the key's notes glow on the FM-1's keys (lead, pads and bass, outside the step recorder).
 
 Quartet **automatically remembers current work** after playback stops and the sound has been quiet for two seconds. Four separate save slots let you keep projects.
 
@@ -199,18 +199,18 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 
 | Control | Playing / home | Step recorder | Other screens |
 |---|---|---|---|
-| **ALGORITHM** | Select instrument | Select instrument | SUPER SEQ: select row; SOUND, chain: another instrument; copy page: the track to copy from |
+| **SELECT** | Select instrument | Select instrument | SUPER SEQ: select row; SOUND, chain: another instrument; copy page: the track to copy from |
 | **PRESETS** | Select pattern A–J | Select pattern | SUPER SEQ: select song; pedal: the pedal in its category; chain: another pedal; copy page: the pattern to copy from |
-| **SELECT** | Select sound/kit (no test note) | Melodic step cursor | Pedal: category; SOUND: the page; chain: the slot; copy page: the pattern; SUPER SEQ: the box; save: the slot; KEY: the key; arpeggiator, mixer: nothing |
+| **ALGORITHM** | Select sound/kit (no test note) | Melodic step cursor | Pedal: category; SOUND: the page; chain: the slot; copy page: the pattern; SUPER SEQ: the box; save: the slot; KEY: the key; arpeggiator, mixer: nothing |
 | **KNOB1–4** | Tempo (KNOB2–4: nothing) | Bars / note length / dynamic / note (drums: bars / — / dynamic / bar) | LIVE: bars / cursor / bar / —; KEY: lock / lights; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
 | **Keys** | Play notes; drums: first six white keys | Melodic notes; drums: black keys choose voice, white keys toggle hits | LIVE: play and record |
 | **OCT− / OCT+** | Change octave | Drum step page | Octave where applicable |
 | **PLAY** | Start/stop from step one | Start/stop | LIVE: start/stop (stopping ends recording); save: load |
-| **SEQ** | Open the sequencer (step recorder) | Tap: SUPER SEQ; hold: copy page | LIVE: the same; SUPER SEQ: home; copy page: back; other pages: the sequencer |
+| **SEQ** | Open the sequencer (step recorder) | Tap: SUPER SEQ; hold: copy page | LIVE: the same; SUPER SEQ: the step recorder; copy page: back; other pages: the sequencer |
 | **HOME** | Home | Return home | Return home |
 | **REC** | Hold: CLEAR ALL?, press again to confirm | Tap: LIVE; hold: clear pattern | LIVE: record on/off or hold clear; save: twice saves; INSTR / KIT: twice saves to the USER slot; copy page: twice copies; elsewhere holding it does nothing |
 | **ARP** | Tap: on/off; hold: arpeggiator page | Tap: tie; hold: rest | Arpeggiator page: tap on/off |
-| **FX / SEL / ENV / LFO** | Tap: pedal on/off (its name shows); hold: the pedal page | Same | Mixer: mute lead / pads / bass / drums; pedal page: SELECT category, PRESETS pedal, KNOB1 on/off, KNOB2–4 adjust it |
+| **FX / SEL / ENV / LFO** | Tap: pedal on/off (its name shows); hold: the pedal page | Same | Mixer: mute lead / pads / bass / drums; pedal page: ALGORITHM category, PRESETS pedal, KNOB1 on/off, KNOB2–4 adjust it |
 | **EDIT** | The SOUND page (the sound editor, from INSTR) | Same | SOUND page: the signal chain; chain: home |
 | **GLO** | Tap: mixer, then KEY, then home. Hold: beat repeat (white keys 1–5 choose 1/2–1/32) | Same | Same |
 | **SAVE** | Open save screen | Open save screen | Save screen: close |
