@@ -418,9 +418,10 @@ static void set_defaults(void)                  /* a starting groove in pattern 
     uint32_t i, s, t, p;
     for (i = 0; i < sizeof set; i++) z[i] = 0;
     set.bpm = 120;
-    for (i = 0; i < NSYN; i++) { set.styp[i] = (uint8_t)i; sound_load(i, 0); }   /* each slot its first instrument and sound */
+    for (i = 0; i < NSYN; i++) { set.styp[i] = (uint8_t)i; sound_load(i, i == T_BASS ? SND_REESE : 0u); }   /* PIANO, REESE, STRINGS */
     trk_req++;                                  /* (the voices dealt again for them) */
-    for (i = 0; i < NDR; i++) set.dsnd[i] = KITS[0][i];   /* the 808 kit */
+    set.dkit = KIT_808;                         /* the drums: the 808 kit */
+    for (i = 0; i < NDR; i++) set.dsnd[i] = KITS[KIT_808][i];
     for (t = 0; t < NTRK; t++) {                /* effects all off, set so that switching one on is heard at once */
         static const tfx_t FX0 = {0, 60, 60, 70, 60, 80, 32, 40, 90, 60};   /* reverb/delay/chorus levels; dist (LEVEL 32); phaser */
         set.fx[t] = FX0;

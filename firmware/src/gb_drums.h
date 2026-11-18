@@ -40,6 +40,7 @@ static const uint16_t KDEF[NDR] = {16, 64, 128, 16, 24, 48};
 #define KIT_ROCK 0u
 #define KIT_POPS 2u
 #define KIT_LM1 4u                              /* the LM-1: real samples, not synthesised */
+#define KIT_808 6u                              /* the 808: the kit a new project starts with */
 #define KIT_909 7u
 static const dsnd_t KITS[NKIT][NDR] = {
     {{58, 60, 92}, {70, 82, 86}, {64, 60, 60}, {56, 112, 66}, {64, 64, 64}, {34, 82, 78}},     /* ROCK: a punchy kick, a fat snare, a crash, a floor tom */

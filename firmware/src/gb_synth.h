@@ -149,6 +149,7 @@ static const sdef_t SND_LEAD[] = {
     SD("FLUTE", 42, 0, 92, 10, 10, W_SIN, W_NOISE, 24, 12, 40, 80, 110, 55, 95, 10, L_PITCH, LW_TRI), /* a breathy sine with vibrato */
     SD("HARMONICA", 43, 0, 72, 30, 25, W_PULSE, W_SQR, 24, 45, 25, 80, 100, 45, 90, 14, L_AMP, LW_TRI),   /* reedy, a little tremble */
 };
+#define SND_REESE 8u                            /* the bass a new project starts with */
 static const sdef_t SND_BASS[] = {
     /* ORIGINAL */
     SD("UPRIGHT", 0, 0, 72, 25, 40, W_SAW, W_TRI, 24, 40, 0, 92, 85, 50, 60, 0, L_FILT, LW_TRI),       /* round and woody, a thump that holds */
