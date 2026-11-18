@@ -35,9 +35,9 @@
  *
  * Pedals (gb_fx.h), for the chosen track: four slots (FX SEL ENV LFO), each holding any pedal of the library. A tap
  * on a top button switches its pedal on / off ("GLITCH ON" big on top; lit = on); held 0.5 s it shows the pedal (the
- * track's name above it, the pedal's category beside it, the ON lamp, three knobs; HOME goes back). There ALGORITHM picks
- * the category (DRIVE, FILTER, MODULATION, SPACE, PITCH, OTHER), PRESETS the pedal in it (a click each; a pedal in
- * another of the track's slots is not offered, nor GLITCH beside GHOST: ped_free()); KNOB1 switches it on (a click
+ * track's name above it, the pedal's category beside it, the ON lamp, three knobs; HOME goes back). There PRESETS picks
+ * the type (DRIVE, FILTER, MODULATION, SPACE, PITCH, OTHER), ALGORITHM the pedal in it (a click each; a pedal in
+ * another of the track's slots is not offered, nor GLITCH beside LOOSE: ped_free()); KNOB1 switches it on (a click
  * clockwise) / off (a click back), KNOB2-4 turn its knobs. (EDIT's slot is unused: EDIT is the sound editor.)
  * The space pedals (reverb, delay, tape echo, shimmer, reverse delay, spring reverb) are one each, shared: a track's
  * first knob is what it sends. STOP silences every pedal (gb_fx.h fx_flush).
@@ -81,7 +81,7 @@
  *   PRESETS  the song A-J (10 songs); ARP held + PRESETS: copy the song into the next letter
  *   (Elsewhere, under SUPER SEQ, PRESETS still picks the pattern you edit; SUPER shows on the top bar)
  *   PLAY       start / stop all tracks together (from step 1)
- *   OCT- OCT+  the octave of the keys
+ *   OCT- OCT+  a tap: the octave of the keys; held 0.5 s: the pattern being edited down / up an octave (synths)
  *   REC        hold 1 s: "CLEAR ALL?"; REC again (within 3 s): every pattern empty, every
  *              sound, pedal, mixer and SUPER SEQ song as new, pattern A everywhere (the save slots stay). Another
  *              button: no
@@ -105,7 +105,8 @@
  *   PRESETS    the pattern A-J, as outside edit mode
  *   KNOB1      the pattern's length in bars, 1-4 (16 / 32 / 48 / 64 steps)
  *   KNOB2      synths: the note length, 1/16 1/8 1/8. 1/4 1/4. 1/2 1/2. 1 (the cursor's note, and what is written next)
- *   KNOB3      the dynamic p mp mf f ACC (the cursor's note and what is written next; drums: new hits, or the hit
+ *   KNOB3      EXP, the expression: NORMAL SOFT LOUD SHORT PUNCH SMOOTH PLUCKED (DYN_NAME; the cursor's note and what is
+ *              written next; drums: new hits, or the hit
  *              whose white key is held)
  *   KNOB4      synths: the cursor's note (chord) up / down a semitone (heard, when stopped); drums: the page of 16
  *              (the info line shows BARS LEN DYN and the note; the bottom line the step and the length in words)
@@ -238,7 +239,7 @@ static struct {
     uint8_t spk[NSPACE][2];                     /* the shared pedals' other two knobs */
     uint8_t pad_ped;                            /* (the padding a save of the struct up to here had: its size, 8758) */
     /* each note's dynamic and the key (added after the pedal library, so last: older saves get f and C major) */
-    uint8_t sdyn[NSYN][NPAT][NSTEP];            /* a synth step's dynamic: 0 f (as before), 1 mf, 2 mp, 3 p, 4 accent */
+    uint8_t sdyn[NSYN][NPAT][NSTEP];            /* a synth step's dynamic (and articulation): DYN_NAME below */
     uint8_t ddyn[NPAT][NDR][NSTEP / 2u];        /* a drum hit's (the same codes), two steps a byte: the even one low */
     int8_t key;                                 /* the key: sharps +1..+7 or flats -1..-7, 0 C major (the KEY page) */
     uint8_t keyopt;                             /* bit 0: scale lock (the keys play only the key's notes); bit 1: its
@@ -265,20 +266,33 @@ static chord_t *step_at(uint32_t t, uint32_t p, uint32_t s)   /* each synth slot
 }
 static uint8_t *step_note(uint32_t t, uint32_t p, uint32_t s) { return step_at(t, p, s)->note; }   /* [0 .. STEP_NN(t) - 1] */
 static uint8_t *step_len(uint32_t t, uint32_t p, uint32_t s) { return &step_at(t, p, s)->len; }
-/* a step's dynamic: stored 0 f (so every older note is as loud as before), 1 mf, 2 mp, 3 p, 4 accent. On the knob and
- * the screen they run soft to loud: p, mp, mf, f, ACC (DYN_UI: knob place -> stored code; the same table back) */
-static const uint8_t DYN_UI[5] = {3, 2, 1, 0, 4};
-static const char *const DYN_NAME[5] = {"f", "mf", "mp", "p", "ACC"};   /* (by the stored code) */
-static uint32_t sdyn_get(uint32_t t, uint32_t p, uint32_t s) { return set.sdyn[t % NSYN][p % NPAT][s % NSTEP] % 5u; }
+/* a step's EXPRESSION (KNOB3, EXP: how it is played), stored as a code: 0 NORMAL (every older note: as loud as
+ * before), 1-3 SOFT (older saves' mf, mp, p, each as soft as it was; a new SOFT is 2), 4 PUNCH (louder, brighter: an
+ * accent), 5 LOUD, 6 SHORT (staccato), 7 SMOOTH (legato: on into the next note, which glides on without a new attack),
+ * 8 PLUCKED (pizzicato: it dies away by itself). On drums: SHORT and PLUCKED choke the hit, SMOOTH lets it ring. The
+ * knob's order: DYN_UI (place -> code), DYN_POS (code -> place) */
+#define NDYN 9u
+#define NDYN_UI 7u
+static const uint8_t DYN_UI[NDYN_UI] = {0, 2, 5, 6, 4, 7, 8};   /* NORMAL SOFT LOUD SHORT PUNCH SMOOTH PLUCKED */
+static const uint8_t DYN_POS[NDYN] = {0, 1, 1, 1, 4, 2, 3, 5, 6};
+static const char *const DYN_NAME[NDYN] = {"NORMAL", "SOFT", "SOFT", "SOFT", "PUNCH", "LOUD", "SHORT", "SMOOTH", "PLUCKED"};
+static const char *const DYN_SHORT[NDYN] = {"NORMAL", "SOFT", "SOFT", "SOFT", "PUNCH", "LOUD", "SHORT", "SMOOTH", "PLUCK"};   /* (the info line) */
+#define DYN_LONG DYN_NAME
+static uint32_t sdyn_get(uint32_t t, uint32_t p, uint32_t s)
+{
+    uint32_t v = set.sdyn[t % NSYN][p % NPAT][s % NSTEP];
+    return v < NDYN ? v : 0u;
+}
 static uint32_t ddyn_get(uint32_t p, uint32_t d, uint32_t s)
 {
-    uint32_t b = set.ddyn[p % NPAT][d % NDR][(s % NSTEP) / 2u];
-    return (s & 1u ? b >> 4 : b & 15u) % 5u;
+    uint32_t b = set.ddyn[p % NPAT][d % NDR][(s % NSTEP) / 2u], v = s & 1u ? b >> 4 : b & 15u;
+    return v < NDYN ? v : 0u;
 }
 static void ddyn_put(uint32_t p, uint32_t d, uint32_t s, uint32_t v)
 {
     uint8_t *b = &set.ddyn[p % NPAT][d % NDR][(s % NSTEP) / 2u];
-    *b = (uint8_t)(s & 1u ? (*b & 15u) | (v % 5u) << 4 : (*b & 0xF0u) | (v % 5u));
+    v = v < NDYN ? v : 0u;
+    *b = (uint8_t)(s & 1u ? (*b & 15u) | v << 4 : (*b & 0xF0u) | v);
 }
 static volatile uint32_t trk_mute;              /* main loop writes, the interrupt reads (saved as set.mute) */
 static volatile uint8_t trk_pos[NTRK];          /* gb_clock.h writes: the step each track plays now */
@@ -656,6 +670,26 @@ static uint32_t ped_any_step(uint32_t t, uint32_t e, uint32_t p, int32_t stp)   
     return ord[at];
 }
 
+static void ped_set(uint32_t trk, uint32_t e, uint32_t p);
+static int ped_fits(void);
+static int ped_cat_step(uint32_t trk, uint32_t sl, int32_t e)   /* a pedal page's PRESETS: another type (category), its
+                                                   first free pedal (a type with nothing free is passed by); 1: it
+                                                   was on and would overload the chip, so it is off now */
+{
+    uint32_t ca = PDEF[set.ped[trk][sl] % NPD].cat % NPCAT, tries;
+    int32_t stp = e, dir = stp > 0 ? 1 : -1, pf = -1;
+    while (stp) {
+        for (tries = 0, pf = -1; tries < NPCAT && pf < 0; tries++) {
+            ca = (uint32_t)(((int32_t)ca + dir + (int32_t)NPCAT) % (int32_t)NPCAT);
+            pf = ped_first(trk, sl, ca);
+        }
+        stp -= dir;
+    }
+    if (pf >= 0) ped_set(trk, sl, (uint32_t)pf);
+    if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); return 1; }
+    return 0;
+}
+
 /* each pedal's three knobs (KNOB2-4): where the value is kept, how far it goes */
 typedef struct { const char *name; uint8_t *v; uint8_t max; } pknob_t;
 static void pedal_knobs(uint32_t trk, uint32_t e, pknob_t k[3])
@@ -903,13 +937,14 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
         p = put(p, "  MIDI ");
         if (set.ch) { p = put(p, "CH"); p = put_num(p, set.ch, 1); } else p = put(p, "OMNI");
     } else if (proj >> 6) {                     /* the SEQ (edit) screen: what each knob does */
-        static const char *const LEG[6] = {"", "", "K1:BARS  K3:DYN  K4:PAGE",
+        static const char *const LEG[6] = {"", "", "K1:BARS  K3:EXP  K4:PAGE",
                                            "K1:BARS K2:STEP K3:PG REC:REC", "K1:BARS  K3:PAGE  REC:RECORD",
                                            "REC AGAIN: CLEAR EVERYTHING"};
         if ((proj >> 6) % 6u == 1u) {           /* synth: STEP 17/64  QUARTER (K1 BARS K2 LEN K3 DYN K4 NOTE on the info line) */
             uint32_t L = pat_len(trk, set.sel[trk] % NPAT);
-            p = put(p, "STEP "); p = put_num(p, drum + 1u, 1); *p++ = '/'; p = put_num(p, L, 1);
-            p = put(p, "  K2: "); p = put(p, NLEN_NAME[ui_len % NNLEN]);
+            p = put_num(p, drum + 1u, 1); *p++ = '/'; p = put_num(p, L, 1);   /* 7/16  QUARTER  NORMAL */
+            *p++ = ' '; *p++ = ' '; p = put(p, NLEN_NAME[ui_len % NNLEN]);
+            *p++ = ' '; p = put(p, DYN_LONG[ui_dyn % NDYN]);
         } else p = put(p, LEG[(proj >> 6) % 6u]);
     } else if (page == PG_KEY) {                /* the key page */
         p = put(p, "ALG:KEY  K1:LOCK  K2:LIGHTS");
@@ -935,7 +970,7 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
     } else if (page == PG_COPY) {               /* the copy page */
         p = put(p, cp_ask ? "REC AGAIN: COPY" : "REC TWICE:COPY  SEQ:BACK");
     } else if (IS_FX_PAGE(page)) {              /* a pedal: the values are on the pedal; here, how to work it */
-        p = put(p, "ALG:TYPE  PRESETS:PEDAL");   /* (KNOB1 or holding the button: on / off) */
+        p = put(p, "PRESETS:TYPE  ALG:PEDAL");   /* (KNOB1 or holding the button: on / off) */
     } else { bottom_pedals(trk); return; }     /* home: the track's pedals (its sound shows on its card) */
     *p = 0;
     bottom_bar(s, page == PG_MIX ? C_TXT : trk_c(trk, 100));
@@ -946,10 +981,10 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
 static uint32_t syn_covers(uint32_t t, uint32_t pt, uint32_t s, uint32_t len);
 static void info_cell(int32_t x, const char *lab, const char *val, uint16_t lc, uint16_t vc)
 {
-    int32_t tw = (lab[0] ? text_w(&FONT_S, lab) + 4 : -4) + text_w(&FONT_S, val), tx = x + 30 - tw / 2;
+    int32_t tw = (lab[0] ? text_w(&FONT_S, lab) + 4 : 0) + text_w(&FONT_S, val), tx = x + 30 - tw / 2;
     cv_rrect(x + 1, 1, 58, 20, 10, C_PANEL);
-    tx = cv_text_bg(tx, 3, &FONT_S, lab, lc, C_PANEL);
-    cv_text_bg(tx + 4, 3, &FONT_S, val, vc, C_PANEL);
+    if (lab[0]) tx = cv_text_bg(tx, 3, &FONT_S, lab, lc, C_PANEL) + 4;   /* (no label: the value alone, centred) */
+    cv_text_bg(tx, 3, &FONT_S, val, vc, C_PANEL);
 }
 static void draw_info(uint32_t trk, uint32_t mode, uint32_t cur, uint32_t page, int32_t oct)   /* mode 0 home, 1 synth edit, 2 drum edit, 3 live; page: shown */
 {
@@ -965,12 +1000,12 @@ static void draw_info(uint32_t trk, uint32_t mode, uint32_t cur, uint32_t page, 
         if (mode == 1u) {                       /* synth: KNOB2 the length, KNOB3 the dynamic, KNOB4 the note */
             const uint8_t *nt = step_note(trk, set.sel[trk] % NPAT, cur);
             info_cell(60, "LEN", NLEN_SHORT[ui_len % NNLEN], C_SUB, col);
-            info_cell(120, "DYN", DYN_NAME[ui_dyn % 5u], C_SUB, col);
+            info_cell(120, "", DYN_SHORT[ui_dyn % NDYN], C_SUB, col);
             if (nt[0]) { *put_note(v, nt[0]) = 0; info_cell(180, "", v, C_SUB, col); }
             else info_cell(180, "", syn_covers(trk, set.sel[trk] % NPAT, cur, len) ? "HELD" : "REST", C_DIMC, C_DIMC);
         } else if (mode == 2u) {                /* drums: KNOB3 the dynamic, KNOB4 the page */
             info_cell(60, "", "--", C_DIMC, C_DIMC);
-            info_cell(120, "DYN", DYN_NAME[ui_dyn % 5u], C_SUB, col);
+            info_cell(120, "", DYN_SHORT[ui_dyn % NDYN], C_SUB, col);
             p = put_num(v, pg + 1u, 1); *p++ = '/'; *put_num(p, len / PAGE, 1) = 0;
             info_cell(180, "PG", v, C_SUB, col);
         } else {
@@ -1102,12 +1137,12 @@ static void draw_grid(uint32_t pt, uint32_t drum, uint32_t page, uint32_t play, 
             if (st >= len) continue;
             on = dbit(pt, d, st);
             {
-                static const uint8_t PCT[5] = {100, 82, 64, 46, 100};   /* f mf mp p ACC */
+                static const uint8_t PCT[NDYN] = {100, 82, 64, 46, 100, 100, 70, 100, 70};   /* (soft, short: dimmer) */
                 uint32_t dy = on ? ddyn_get(pt, d, st) : 0u;
                 c = on ? trk_c(T_DRUMS, PCT[dy] * (me ? 100u : 62u) / 100u) : s % 4u == 0u ? C_EMPTY4 : C_EMPTY;
                 if (st == play) c = on ? C_WHITE : C_HEADC;
                 cv_rrect(28 + (int32_t)s * 13, y + 4, 11, 14, 2, c);
-                if (dy == 4u) cv_rect(31 + (int32_t)s * 13, y + 6, 5, 2, st == play ? C_BG : C_WHITE);   /* (an accent) */
+                if (dy == 4u || dy == 5u) cv_rect(31 + (int32_t)s * 13, y + 6, 5, 2, st == play ? C_BG : C_WHITE);   /* (an accent) */
             }
         }
     }
@@ -1147,11 +1182,14 @@ static void draw_roll(uint32_t t, uint32_t pt, uint32_t cur, uint32_t play, uint
             w = (int32_t)*step_len(t, pt, st) * 14 - 1;
             if (x + w > 236) w = 236 - x;       /* (a note past the page is drawn to its end) */
             {
-                static const uint8_t PCT[5] = {100, 82, 64, 46, 100};   /* f mf mp p ACC */
+                static const uint8_t PCT[NDYN] = {100, 82, 64, 46, 100, 100, 100, 100, 100};   /* (the SOFTs dimmer) */
                 uint32_t dy = sdyn_get(t, pt, st);
+                if (dy == 6u && w > 6) w = 6;   /* (staccato: short) */
                 cv_rrect(x - 1, y - 1, w + 2, 8, 3, rgbm(trk_rgb(t), 28));   /* (a soft glow) */
                 cv_rrect(x, y, w, 6, 3, st == cur ? C_WHITE : dy ? trk_c(t, PCT[dy]) : col);
-                if (dy == 4u) cv_rect(x + 1, y, w - 2 > 0 ? w - 2 : 1, 2, st == cur ? C_BG : C_WHITE);   /* (an accent) */
+                if (dy == 4u || dy == 5u) cv_rect(x + 1, y, w - 2 > 0 ? w - 2 : 1, 2, st == cur ? C_BG : C_WHITE);   /* (an accent, loud) */
+                if (dy == 7u) cv_rect(x + w - 1, y + 2, 3, 2, st == cur ? C_WHITE : col);   /* (legato: tied on) */
+                if (dy == 8u) cv_rect(x + 1, y + 2, 2, 2, st == cur ? C_BG : C_BG);   /* (pizzicato: a dot) */
             }
         }
     }
@@ -1879,6 +1917,20 @@ static void pat_clear(uint32_t t, uint32_t pt)  /* a whole pattern of a track */
         for (s = 0; s < NSTEP / 2u; s++) set.ddyn[pt][d][s] = 0;
     }
 }
+static int pat_transpose(uint32_t t, uint32_t p, int32_t by)   /* every note of a synth's pattern moved by semitones;
+                                                   0 (nothing moved) if one would leave 1..127 */
+{
+    uint32_t s, i;
+    for (s = 0; s < NSTEP; s++) {
+        const uint8_t *nt = step_note(t, p, s);
+        for (i = 0; i < STEP_NN(t); i++) if (nt[i] && ((int32_t)nt[i] + by < 1 || (int32_t)nt[i] + by > 127)) return 0;
+    }
+    for (s = 0; s < NSTEP; s++) {
+        uint8_t *nt = step_note(t, p, s);
+        for (i = 0; i < STEP_NN(t); i++) if (nt[i]) nt[i] = (uint8_t)((int32_t)nt[i] + by);
+    }
+    return 1;
+}
 static uint32_t pat_used(uint32_t t, uint32_t p)   /* a pattern with anything in it? */
 {
     uint32_t s, d;
@@ -2097,9 +2149,9 @@ static int settings_ok(void)
     if (set.spk[SP_DLY][0] >= NDLY || set.spk[SP_TAPE][0] >= NDLY) return 0;
     {
         const uint8_t *d = &set.sdyn[0][0][0];
-        for (i = 0; i < sizeof set.sdyn; i++) if (d[i] > 4u) return 0;
+        for (i = 0; i < sizeof set.sdyn; i++) if (d[i] >= NDYN) return 0;
         d = &set.ddyn[0][0][0];
-        for (i = 0; i < sizeof set.ddyn; i++) if ((d[i] & 15u) > 4u || d[i] >> 4 > 4u) return 0;
+        for (i = 0; i < sizeof set.ddyn; i++) if ((d[i] & 15u) >= NDYN || d[i] >> 4 >= NDYN) return 0;
     }
     if (set.key < -7 || set.key > 7 || set.keyopt > 3u) return 0;
     if (set.spk2[0][0] >= NDLY || set.spk2[0][1] > 127u || set.spk2[1][0] > 127u || set.spk2[1][1] > 127u) return 0;
@@ -2238,7 +2290,7 @@ static void app_main(void)
     uint32_t proj_go = 0, proj_go_t = 0;        /* a save (1) / load (2) confirmed: done once the sound has stopped */
     uint32_t wipe_ask = 0, wipe_t = 0;          /* HOME: "CLEAR ALL?" up (REC again to do it), since when */
     uint32_t page_hold_t = 0, vpage = 0;        /* SEQ screens: when you last moved the page / cursor (it stays put 3 s); the page shown */
-    uint8_t dyn_ui = 3;                         /* the step recorder's dynamic (KNOB2), by the knob: p mp mf f ACC (f) */
+    uint8_t dyn_ui = 0;                         /* the step recorder's dynamic (KNOB3), by the knob's place (DYN_UI): NORMAL */
     uint32_t dheld = 0xFFu;                     /* drums editing: the white key held (KNOB2 sets that hit's dynamic) */
     uint32_t glo_t0 = 0, glo_dn = 0, glo_used = 0, rep_sel = 2;   /* GLO: when it went down; held; used (no page);
                                                    the beat repeat's length (white keys 1-5 while held: 1/2 .. 1/32; 1/8) */
@@ -2258,6 +2310,7 @@ static void app_main(void)
     int32_t sw_acc = 0;                         /* KNOB1 as the pedal / arpeggiator switch: clicks gathered */
     uint32_t preset_t = 0;                      /* a preset picked: when (its name shows) */
     uint32_t seq_dn = 0, seq_t0 = 0;            /* SEQ down in the step recorder / live page: a tap or a hold */
+    uint32_t oct_t0[2] = {0, 0}, oct_long = 3;  /* OCT- / OCT+ down when; held (bit: no tap when let go) */
     uint32_t earp_t0 = 0, earp_used = 1;        /* the step recorder: ARP down when; used (a hold: the rest) */
     static char pmsg[24];                       /* "GLITCH ON" ... */
     uint32_t cur[NSYN] = {0, 0, 0};             /* each synth's step-recording cursor */
@@ -2345,7 +2398,7 @@ static void app_main(void)
                     if (slot[k] < NDR) { drum = slot[k]; hit_req[drum]++; }   /* choose a drum, and hear it */
                 } else if (dpage * PAGE + slot[k] < len) {
                     set.dpat[pt][drum][dpage] ^= (uint16_t)(1u << slot[k]);   /* a step on / off */
-                    if (dbit(pt, drum, dpage * PAGE + slot[k])) ddyn_put(pt, drum, dpage * PAGE + slot[k], DYN_UI[dyn_ui % 5u]);   /* (at the dynamic set) */
+                    if (dbit(pt, drum, dpage * PAGE + slot[k])) ddyn_put(pt, drum, dpage * PAGE + slot[k], DYN_UI[dyn_ui % NDYN_UI]);   /* (at the dynamic set) */
                     dheld = k;                  /* (held: KNOB2 sets its dynamic) */
                     page_hold_t = fm1_ms;       /* (the page stays while you tap) */
                     if (!clk_run && dbit(pt, drum, dpage * PAGE + slot[k])) hit_req[drum]++;
@@ -2379,7 +2432,7 @@ static void app_main(void)
                     uint8_t *nt = step_note(trk, pt, cur[trk]), *ln = step_len(trk, pt, cur[trk]);
                     page_hold_t = fm1_ms;       /* (the cursor's page stays in view while you write) */
                     if (STEP_NN(trk) > 1u) {         /* a chord: the keys held together, the cursor moves when all are up */
-                        if (chord_n == 0u) { syn_clear_step(trk, pt, cur[trk]); chord_trk = trk; set.sdyn[trk][pt][cur[trk]] = DYN_UI[dyn_ui % 5u]; }
+                        if (chord_n == 0u) { syn_clear_step(trk, pt, cur[trk]); chord_trk = trk; set.sdyn[trk][pt][cur[trk]] = DYN_UI[dyn_ui % NDYN_UI]; }
                         if (chord_n < 4u) {
                             if (chord_n == 0u) { *ln = (uint8_t)syn_room(trk, pt, cur[trk], len); nt[0] = (uint8_t)n; }
                             else nt[chord_n] = (uint8_t)n;
@@ -2388,7 +2441,7 @@ static void app_main(void)
                     } else {
                         uint32_t L = syn_room(trk, pt, cur[trk], len);
                         *ln = (uint8_t)L;       /* (the length first: the interrupt may read the step meanwhile) */
-                        set.sdyn[trk][pt][cur[trk]] = DYN_UI[dyn_ui % 5u];
+                        set.sdyn[trk][pt][cur[trk]] = DYN_UI[dyn_ui % NDYN_UI];
                         nt[0] = (uint8_t)n;
                         cur[trk] = (cur[trk] + L) % len;   /* (on past the note) */
                     }
@@ -2462,12 +2515,28 @@ static void app_main(void)
             else if (!rc) edits++;
             proj_go = 0;
         }
-        if (drum_edit) {                        /* drums editing: OCT- / OCT+ turn the page */
-            if (b & (1u << BTN_OCT_DOWN) && dpage > 0u) { dpage--; page_hold_t = fm1_ms; }
-            if (b & (1u << BTN_OCT_UP) && dpage + 1u < len / PAGE) { dpage++; page_hold_t = fm1_ms; }
-        } else {
-            if (b & (1u << BTN_OCT_DOWN) && oct > -2) { set.oct = (uint8_t)(oct - 1); CHANGED(); }
-            if (b & (1u << BTN_OCT_UP) && oct < 2) { set.oct = (uint8_t)(oct + 1); CHANGED(); }
+        /* OCT- / OCT+: a tap (let go within 0.5 s) the keys' octave (the drum recorder: the page); held 0.5 s: the
+         * pattern being edited (the chosen track's) moves down / up an octave */
+        for (k = 0; k < 2u; k++) {
+            uint32_t bt = k ? BTN_OCT_UP : BTN_OCT_DOWN;
+            if (b >> bt & 1u) { oct_t0[k] = fm1_ms; oct_long &= ~(1u << k); }
+            if (fm1_in.buttons >> bt & 1u && !(oct_long >> k & 1u) && fm1_ms - oct_t0[k] >= 500u) {
+                oct_long |= 1u << k;
+                if (trk >= NSYN) { msg = "DRUMS: NO PITCH"; msg_ok = 0; }
+                else if (pat_transpose(trk, set.sel[trk] % NPAT, k ? 12 : -12)) { msg = k ? "PATTERN OCT UP" : "PATTERN OCT DOWN"; msg_ok = 1; CHANGED(); }
+                else { msg = "OUT OF RANGE"; msg_ok = 0; }
+                msg_t = fm1_ms ? fm1_ms : 1u;
+            }
+            if (rel >> bt & 1u) {
+                if (!(oct_long >> k & 1u)) {        /* a tap */
+                    if (drum_edit) {
+                        if (!k && dpage > 0u) { dpage--; page_hold_t = fm1_ms; }
+                        if (k && dpage + 1u < len / PAGE) { dpage++; page_hold_t = fm1_ms; }
+                    } else if (!k && oct > -2) { set.oct = (uint8_t)(oct - 1); CHANGED(); }
+                    else if (k && oct < 2) { set.oct = (uint8_t)(oct + 1); CHANGED(); }
+                }
+                oct_long |= 1u << k;
+            }
         }
         if (b & (1u << BTN_PLAY)) {             /* all tracks: start (from step 1) / stop */
             if (clk_run) clk_run = 0;
@@ -2520,10 +2589,8 @@ static void app_main(void)
                 uint32_t sl = chain_sl % NPED_SLOTS;
                 ped_set(trk, sl, ped_any_step(trk, sl, set.ped[trk][sl] % NPD, e));
                 if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
-            } else if (IS_FX_PAGE(spage)) {     /* a pedal page: the pedal within its category (a click each) */
-                uint32_t sl = spage - PG_FX, p = set.ped[trk][sl] % NPD;
-                ped_set(trk, sl, ped_step(trk, sl, p, e));
-                if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
+            } else if (IS_FX_PAGE(spage)) {     /* a pedal page: the type (category), a click each */
+                if (ped_cat_step(trk, spage - PG_FX, e)) CPU_FULL();
             } else if (spage == PG_SSEQ) {      /* SUPER SEQ: the song A-J, a click each (ARP held: copy it along) */
                 uint32_t to = (uint32_t)(((int32_t)(set.sseq_sel % NCHAIN) + e % (int32_t)NCHAIN + (int32_t)NCHAIN) % (int32_t)NCHAIN);
                 if (to != set.sseq_sel % NCHAIN) {
@@ -2550,21 +2617,11 @@ static void app_main(void)
                 sseq_cur = (uint32_t)(v < 0 ? 0 : v >= cl2 ? cl2 - 1 : v);
             }
             else if (spage == PG_MIX || spage == PG_ARP) {}   /* (nothing to move) */
-            else if (IS_FX_PAGE(spage)) {            /* a pedal page: the category (a click each); its first free pedal */
-                {
-                    uint32_t sl = spage - PG_FX, ca = PDEF[set.ped[trk][sl] % NPD].cat % NPCAT, tries;
-                    int32_t stp = e, dir = stp > 0 ? 1 : -1, pf = -1;
-                    while (stp) {                       /* one category a step (one with nothing free is passed by) */
-                        for (tries = 0, pf = -1; tries < NPCAT && pf < 0; tries++) {
-                            ca = (uint32_t)(((int32_t)ca + dir + (int32_t)NPCAT) % (int32_t)NPCAT);
-                            pf = ped_first(trk, sl, ca);
-                        }
-                        stp -= dir;
-                    }
-                    if (pf >= 0) ped_set(trk, sl, (uint32_t)pf);
-                    if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
-                    CHANGED();
-                }
+            else if (IS_FX_PAGE(spage)) {            /* a pedal page: the pedal within its type, a click each */
+                uint32_t sl = spage - PG_FX, p = set.ped[trk][sl] % NPD;
+                ped_set(trk, sl, ped_step(trk, sl, p, e));
+                if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
+                CHANGED();
             }
             else if (spage == PG_KEY) {         /* the key: a sharp or flat a click */
                 int32_t v = (int32_t)set.key + e;
@@ -2646,10 +2703,10 @@ static void app_main(void)
                     ch = 1;
                 }
             } else if (edit) fm1_enc_take(ENC_KNOB2);
-            if (edit) {                         /* the step recorder: KNOB3 the dynamic, p mp mf f ACC: the note at the
+            if (edit) {                         /* the step recorder: KNOB3 the expression (NORMAL ... PLUCKED): the note at the
                                                    cursor (drums: the hit whose key is held), and what you write next */
-                if (sy && *step_note(trk, pt, cur[trk])) dyn_ui = DYN_UI[sdyn_get(trk, pt, cur[trk])];   /* (from the note's) */
-                if (knob(ENC_KNOB3, &dyn_ui, 0, 4)) {
+                if (sy && *step_note(trk, pt, cur[trk])) dyn_ui = DYN_POS[sdyn_get(trk, pt, cur[trk])];   /* (from the note's) */
+                if (knob(ENC_KNOB3, &dyn_ui, 0, NDYN_UI - 1u)) {
                     if (sy && *step_note(trk, pt, cur[trk])) { set.sdyn[trk][pt][cur[trk]] = DYN_UI[dyn_ui]; ch = 1; }
                     else if (!sy && dheld < 27u && dpage * PAGE + slot[dheld] < len) {
                         uint32_t s2 = dpage * PAGE + slot[dheld];
@@ -3100,7 +3157,7 @@ static void app_main(void)
                 uint32_t pj = leg << 6;
                 st = mix(mix(mix(mix(mix(st, pj), snd_pg), usr_ask), usr_slot), chain_sl | cp_ask << 4);
                 st = mix(mix(st, set.fx[trk].on), set.ped[trk][0] | set.ped[trk][1] << 8 | set.ped[trk][2] << 16 | (uint32_t)set.ped[trk][3] << 24);
-                if (leg == 1u) st = mix(mix(st, cur[trk]), ui_len);   /* (synth step recorder: the cursor, its length) */
+                if (leg == 1u) st = mix(mix(mix(st, cur[trk]), ui_len), ui_dyn);   /* (synth step recorder: the cursor, its length) */
                 if (st != status_drawn && spage != PG_SSEQ) { status_drawn = st; draw_status(oct, trk, show_ch, spage, leg == 1u ? cur[trk] : drum, pj, cpu_drawn); }
             }
         }
@@ -3120,7 +3177,7 @@ static void app_main(void)
             ui_dyn = trk < NSYN && *step_note(trk, pt, c) ? sdyn_get(trk, pt, c)   /* (the DYN cell: the cursor's note, or
                                                    the drum key held, or what you write next) */
                    : trk == T_DRUMS && dheld < 27u && dbit(pt, drum, dpage * PAGE + slot[dheld]) ? ddyn_get(pt, drum, dpage * PAGE + slot[dheld])
-                   : DYN_UI[dyn_ui % 5u];
+                   : DYN_UI[dyn_ui % NDYN_UI];
             st = mix(st, ui_dyn);
             ui_len = trk < NSYN && *step_note(trk, pt, c) ? nlen_idx(*step_len(trk, pt, c)) : len_ui;   /* (the LEN cell) */
             st = mix(mix(st, ui_len), set.sel[trk]);

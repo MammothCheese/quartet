@@ -297,6 +297,7 @@ static struct {
     int32_t dstep;                              /* amp's step per sample in this block */
     int32_t env;                                /* the ADSR, Q23 */
     int32_t low, band, f, q;
+    uint8_t pizz;                               /* a pizzicato note: plucked, it dies away by itself */
     uint8_t gate, note, seq, stage, blk, fmi;   /* seq: started by the sequencer; stage: 0 attack, 1 decay/sustain, 2 release; fmi: FM depth */
     uint32_t tinc;                              /* glide: the pitch it slides to (inc: where it is now) */
     int32_t vel;                                /* how hard: Q15 (32767 = as ever; an accent ~+3 dB) */
@@ -319,7 +320,9 @@ static void live_note(uint32_t trk, uint32_t note, uint32_t on)   /* main loop *
     live_w = w + 1u;                            /* (published last: the interrupt sees a whole entry) */
 }
 
-static const int32_t DYN_G15[5] = {32767, 25500, 19500, 14000, 46286};   /* f, mf, mp, p, accent (+3 dB); Conductor's */
+static const int32_t DYN_G15[NDYN] = {32767, 25500, 19500, 14000, 46286, 39000, 32767, 32767, 29000};   /* NORMAL, the SOFTs
+                                                   (mf, mp, p), ACCENT (+3 dB), LOUD (+1.5 dB), STACCATO, LEGATO, PIZZICATO */
+static uint8_t leg_on[NSYN];                    /* interrupt: the track's notes playing now are legato (the next glides on) */
 static uint32_t trk_last[NSYN];                 /* each slot's last note's pitch (a glide starts from it) */
 static uint32_t inc2_of(uint32_t inc, uint32_t tune)   /* osc 2's pitch: tuned, and ~7 cents above (two oscillators that
                                                    beat a little sound wider) */
@@ -343,8 +346,9 @@ static void voice_on(uint32_t trk, uint32_t note, uint32_t seq, uint32_t dyn)
     vx[pick].inc2 = inc2_of(vx[pick].inc, tune);
     vx[pick].note = (uint8_t)note;
     vx[pick].seq = (uint8_t)seq;
-    vx[pick].vel = DYN_G15[dyn % 5u];
-    vx[pick].acc = (uint8_t)(dyn % 5u == 4u);
+    vx[pick].vel = DYN_G15[dyn % NDYN];
+    vx[pick].acc = (uint8_t)(dyn % NDYN == 4u);
+    vx[pick].pizz = (uint8_t)(dyn % NDYN == 8u);
     vx[pick].age = ++vx_ages;
     vx[pick].stage = 0;                         /* attack, from wherever the envelope is (no click) */
     vx[pick].gate = 1;
@@ -429,7 +433,28 @@ static void synth_step_t(uint32_t t)            /* one track's step (BROKEN CLOC
         const uint8_t *nt = step_note(t, play_pat[t], trk_pos[t]);
         uint32_t ln = *step_len(t, play_pat[t], trk_pos[t]), dy = sdyn_get(t, play_pat[t], trk_pos[t]);
         if ((trk_mute | chain_rest) >> t & 1u || !nt[0]) return;   /* (muted, or a SUPER SEQ rest) */
+        if (leg_on[t] && !(set.arp_on >> t & 1u)) {   /* after a legato note: these glide on from the notes still
+                                                   sounding, without a new attack; any left over end */
+            uint32_t v, used = 0;
+            for (i = 0; i < STEP_NN(t); i++) {
+                if (!nt[i] || nt[i] > 127u) continue;
+                for (v = TRK[t].first; v < TRK[t].first + TRK[t].count; v++)
+                    if (vx[v].gate && vx[v].seq && !(used >> v & 1u)) break;
+                if (v < TRK[t].first + TRK[t].count) {
+                    used |= 1u << v;
+                    vx[v].tinc = INC_C9[nt[i] % 12u] >> (10u - nt[i] / 12u);
+                    trk_last[t] = vx[v].tinc;
+                    vx[v].note = nt[i]; vx[v].vel = DYN_G15[dy % NDYN]; vx[v].acc = (uint8_t)(dy == 4u); vx[v].pizz = (uint8_t)(dy == 8u);
+                } else voice_on(t, nt[i], 1, dy);
+            }
+            for (v = TRK[t].first; v < TRK[t].first + TRK[t].count; v++)
+                if (vx[v].gate && vx[v].seq && !(used >> v & 1u)) { vx[v].gate = 0; vx[v].stage = 2; }
+            leg_on[t] = (uint8_t)(dy == 7u);
+            syn_left[t] = dy == 6u ? TPS / 2u : (ln ? ln : 1u) * TPS - (dy == 7u ? 0u : 1u) + (dy == 7u ? 2u : 0u);
+            return;
+        }
         voice_off(t, 0, 1);                     /* (the last step's notes end: a new one starts) */
+        leg_on[t] = (uint8_t)(dy == 7u);
         if (set.arp_on >> t & 1u) {             /* the arpeggiator on: it takes the notes, as if held on the keys */
             seq_arp_drop(t);
             arp_dyn[t] = (uint8_t)dy;
@@ -438,7 +463,9 @@ static void synth_step_t(uint32_t t)            /* one track's step (BROKEN CLOC
         } else
             for (i = 0; i < STEP_NN(t); i++)
                 if (nt[i] && nt[i] < 128u) voice_on(t, nt[i], 1, dy);
-        syn_left[t] = (ln ? ln : 1u) * TPS - 1u;   /* the notes end a tick before their last step does */
+        syn_left[t] = dy == 6u ? TPS / 2u   /* staccato: half a step */
+                    : dy == 7u ? (ln ? ln : 1u) * TPS + 2u   /* legato: on past the next step's start (it glides on) */
+                    : (ln ? ln : 1u) * TPS - 1u;   /* the notes end a tick before their last step does */
     }
 }
 static void synth_step(void) { uint32_t t; for (t = 0; t < NSYN; t++) synth_step_t(t); }
@@ -448,13 +475,13 @@ static void synth_tick(void)
     uint32_t t;
     for (t = 0; t < NSYN; t++) {
         if ((trk_mute | chain_rest) >> t & 1u && syn_left[t]) syn_left[t] = 1;   /* muted (or resting): its notes end now */
-        if (syn_left[t] && --syn_left[t] == 0u) { voice_off(t, 0, 1); seq_arp_drop(t); }
+        if (syn_left[t] && --syn_left[t] == 0u) { voice_off(t, 0, 1); seq_arp_drop(t); leg_on[t] = 0; }
     }
 }
 static void synth_stop(void)
 {
     uint32_t t;
-    for (t = 0; t < NSYN; t++) { syn_left[t] = 0; voice_off(t, 0, 1); seq_arp_drop(t); }
+    for (t = 0; t < NSYN; t++) { syn_left[t] = 0; voice_off(t, 0, 1); seq_arp_drop(t); leg_on[t] = 0; }
 }
 static int synth_quiet(void)
 {
@@ -542,10 +569,12 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                         i1 = vx[v].inc; i2 = vx[v].inc2;
                         if (pm) { i1 += (uint32_t)(int32_t)(((int64_t)i1 * pm) >> 16); i2 += (uint32_t)(int32_t)(((int64_t)i2 * pm) >> 16); }
                     }
-                    if (vx[v].stage == 0u) {    /* attack: towards 1.3 x full, done at full */
-                        env += (int32_t)(((int64_t)(full + (full >> 2) + (full >> 4) - env) * ENV_K[sp->a & 127u]) >> 15);
+                    if (vx[v].stage == 0u) {    /* attack: towards 1.3 x full, done at full (pizzicato: at once) */
+                        env += (int32_t)(((int64_t)(full + (full >> 2) + (full >> 4) - env) * ENV_K[vx[v].pizz && sp->a > 20u ? 20u : sp->a & 127u]) >> 15);
                         if (env >= full) { env = full; vx[v].stage = 1; }
-                    } else if (vx[v].stage == 1u)   /* decay to the sustain level, and stay */
+                    } else if (vx[v].stage == 1u && vx[v].pizz)   /* pizzicato: on down to nothing, soon */
+                        env += (int32_t)(((int64_t)(0 - env) * ENV_K[sp->d > 84u ? 84u : sp->d & 127u]) >> 15);
+                    else if (vx[v].stage == 1u)   /* decay to the sustain level, and stay */
                         env += (int32_t)(((int64_t)(sus - env) * ENV_K[sp->d & 127u]) >> 15);
                     else {                      /* release */
                         env -= (int32_t)(((int64_t)env * ENV_K[sp->r & 127u]) >> 15);
