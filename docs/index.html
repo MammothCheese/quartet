@@ -156,28 +156,28 @@ footer a { color: var(--sub); }
       </div>
       <img src="guide/home.png" alt="The home screen while the demo plays">
     </div>
-    <div class="stage big" style="--c: #E46BFF">
+    <div class="stage" style="--c: var(--pad)">
       <div class="n">2</div>
+      <div>
+        <h3>Pick a player and a sound</h3>
+        <ol>
+          <li><kbd>SELECT</kbd> chooses who you play: <span class="tk lead">LEAD</span> <span class="tk padc">PAD</span> <span class="tk bassc">BASS</span> <span class="tk drumc">DRUMS</span>.</li>
+          <li>Play the keys. Turn <kbd>ALGORITHM</kbd> to change the sound.</li>
+        </ol>
+      </div>
+      <img src="guide/sound.png" alt="A new sound chosen: its name shows big">
+    </div>
+    <div class="stage big" style="--c: #E46BFF">
+      <div class="n">3</div>
       <div>
         <h3>Stomp on a pedal</h3>
         <ol>
-          <li><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are four pedals. <b>Tap</b> <kbd>ENV</kbd> to switch on Distortion.</li>
+          <li>With the lead chosen, <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are its four pedals. <b>Tap</b> <kbd>ENV</kbd> to switch on Distortion.</li>
           <li><b>Hold</b> <kbd>ENV</kbd> to open it. Turn <kbd>KNOB 4</kbd> for more dirt.</li>
           <li>Turn <kbd>ALGORITHM</kbd> for a different pedal (<a href="#meet">30 in all</a>).</li>
         </ol>
       </div>
       <img src="guide/pedal.png" alt="A distortion pedal page">
-    </div>
-    <div class="stage" style="--c: var(--pad)">
-      <div class="n">3</div>
-      <div>
-        <h3>Pick a player and a sound</h3>
-        <ol>
-          <li><kbd>SELECT</kbd> chooses who you play: <span class="tk lead">LEAD</span> <span class="tk padc">PAD</span> <span class="tk bassc">BASS</span> <span class="tk drumc">DRUMS</span>. Each has its own pedals.</li>
-          <li>Play the keys. Turn <kbd>ALGORITHM</kbd> to change the sound.</li>
-        </ol>
-      </div>
-      <img src="guide/sound.png" alt="A new sound chosen: its name shows big">
     </div>
     <div class="stage" style="--c: var(--drums)">
       <div class="n">4</div>
@@ -222,6 +222,8 @@ footer a { color: var(--sub); }
 <section id="sounds">
   <h2>Instruments and sounds</h2>
   <p class="sub">Four instruments, each in its own colour. <kbd>SELECT</kbd> picks one, <kbd>ALGORITHM</kbd> changes its sound.</p>
+  <h3 style="margin-top:0">The home screen</h3>
+  <p>A row per instrument shows its sound and pattern; the chosen one opens to show its steps. <b>A&gt;C</b> means C plays next. A muted instrument turns red. The top line shows tempo, swing (<b>SW</b>) and octave; the bottom shows the chosen instrument's pedals, lit when on.</p>
   <div class="split">
     <div>
       <table class="t">
@@ -282,8 +284,6 @@ footer a { color: var(--sub); }
   <p>The LM-1 kit uses samples of a real Linn LM-1 (its clap and perc keys are toms). The perc drum changes with the kit.</p>
   <p class="note">Sounds from older saves that are no longer listed still load and play.</p>
 
-  <h3>The home screen</h3>
-  <p>A row per instrument shows its sound and pattern; the chosen one opens to show its steps. <b>A&gt;C</b> means C plays next. A muted instrument turns red. The top line shows tempo, swing (<b>SW</b>) and octave; the bottom shows the chosen instrument's pedals, lit when on.</p>
 </section>
 
 <!-- ============================================================ PEDALBOARD -->
@@ -390,21 +390,15 @@ footer a { color: var(--sub); }
     <div class="try" style="--c: var(--pad)"><b class="h">Try this</b><p>Write a bassline in B while A plays, then turn <kbd>PRESETS</kbd> to B.</p></div>
   </div>
 
-  <div class="split rev">
-    <div class="shots">
-      <div class="shot"><img src="guide/drums.png" alt="The drum grid"><p>The drum grid.</p></div>
-      <div class="shot"><img src="guide/copy.png" alt="The copy page"><p>The copy page.</p></div>
-    </div>
+  <h3 style="margin-top:0">Tempo and swing</h3>
+  <p>On the home screen, <kbd>KNOB 1</kbd> is the tempo and <kbd>KNOB 2</kbd> the swing, from straight (50 %) to a heavy shuffle (66 %).</p>
+
+  <div class="split rev" style="margin-top:24px">
+    <div class="shot"><img src="guide/drums.png" alt="The drum grid"><p>The drum grid.</p></div>
     <div>
       <h3>Drum beats</h3>
       <p>Choose the drums and press <kbd>SEQ</kbd> for the drum grid. The first six black keys pick a drum; the 16 white keys switch its hits on and off. <kbd>KNOB 4</kbd> (or <kbd>OCT-</kbd> <kbd>OCT+</kbd>) changes bar, <kbd>KNOB 1</kbd> sets the length.</p>
       <p><kbd>KNOB 3</kbd> sets how hits play: SOFT, LOUD, SHORT, and so on. To change one hit, hold its key and turn <kbd>KNOB 3</kbd>.</p>
-
-      <h3>Copying</h3>
-      <p>Hold <kbd>SEQ</kbd> for the copy page. <kbd>SELECT</kbd> and <kbd>PRESETS</kbd> pick what to copy; <kbd>REC</kbd> twice copies it into the pattern you're editing. Lead, pads and bass can copy from each other. Quicker: on the home screen, hold <kbd>ARP</kbd> and turn <kbd>PRESETS</kbd> to copy into the next letter.</p>
-
-      <h3>Moving and clearing</h3>
-      <p>Hold <kbd>OCT-</kbd> or <kbd>OCT+</kbd> to move a pattern down or up an octave. Hold <kbd>REC</kbd> in the step recorder to clear it.</p>
     </div>
   </div>
 
@@ -429,8 +423,16 @@ footer a { color: var(--sub); }
     </div>
   </div>
 
-  <h3>Tempo and swing</h3>
-  <p>On the home screen, <kbd>KNOB 1</kbd> is the tempo and <kbd>KNOB 2</kbd> the swing, from straight (50 %) to a heavy shuffle (66 %).</p>
+  <div class="split rev" style="margin-top:28px">
+    <div class="shot"><img src="guide/copy.png" alt="The copy page"><p>The copy page.</p></div>
+    <div>
+      <h3>Copying</h3>
+      <p>Hold <kbd>SEQ</kbd> for the copy page. <kbd>SELECT</kbd> and <kbd>PRESETS</kbd> pick what to copy; <kbd>REC</kbd> twice copies it into the pattern you're editing. Lead, pads and bass can copy from each other. Quicker: on the home screen, hold <kbd>ARP</kbd> and turn <kbd>PRESETS</kbd> to copy into the next letter.</p>
+
+      <h3>Moving and clearing</h3>
+      <p>Hold <kbd>OCT-</kbd> or <kbd>OCT+</kbd> to move a pattern down or up an octave. Hold <kbd>REC</kbd> in the step recorder to clear it.</p>
+    </div>
+  </div>
 </section>
 
 <!-- ============================================================ PLAYING LIVE -->
