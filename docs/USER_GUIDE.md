@@ -9,13 +9,13 @@ Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72
 
 ## Instruments and home screen
 
-**Lead** (coral) plays melodies; **pads** (teal) plays pads and chords; **bass** (violet) plays basslines; **drums** (blue) has six percussion voices. Muted instruments turn grey.
+**Lead** (gold) plays melodies; **pads** (violet) plays pads and chords; **bass** (cyan) plays basslines; **drums** (green) has six percussion voices. Each home card shows its instrument (keys, waves, a bass guitar, a drum). Muted instruments turn red.
 
 Turn **ALGORITHM** to choose an instrument and **SELECT** to choose its sound or drum kit (one click per choice, through every bank in turn; the new sound's name shows, without playing a test note). Play the keys; for drums, the first six white keys play the six sounds. **OCT− / OCT+** change octave and **MASTER** sets overall volume. **PLAY** starts or stops all instruments from step one.
 
 The **home screen** shows the selected instrument and pattern (A–J), tempo, beat lights and octave, then a card per track: its badge, its sound, the steps of its pattern (the playing step white) and its pattern. The chosen card glows. The bottom line shows the chosen track's four pedals, glowing in their colours when on. **A > C** means pattern C is queued after A.
 
-![Quartet screens](overhaul_mockup.png)
+![Quartet screens](screens.png)
 
 On the home screen, **KNOB1** sets tempo; the sound itself is shaped in **EDIT**. **PRESETS** chooses patterns, **SEQ** opens the sequencer (and SUPER SEQ), **EDIT** opens the sound editor, **GLO** opens the mixer and **SAVE** opens project storage. **HOME** always returns here.
 
@@ -105,7 +105,7 @@ On the home screen, turn **SELECT** to step through every sound of the slot's ty
 
 The drum kits are synthesised, except the **LM-1**, which plays samples of a real Linn LM-1; on it the CLAP and PERC keys are its **low and high toms** (TL / TH on the drum grid). PERC is a different instrument per kit: a conga on CR-78, a shaker on Mini Pops and 606, a high tom on 808 and a low tom on Lo-Fi.
 
-**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, a menu: a row per knob, with the bank's sounds listed under SOUND and the one playing lit. **ALGORITHM** moves to another instrument's page, **SELECT** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
+**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, a sound browser: the banks on the left (an empty USER bank is dimmed), the chosen bank's sounds on the right with the one playing glowing, and underneath the type and the USER slot to save to. **ALGORITHM** moves to another instrument's page, **SELECT** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
 
 | Page | KNOB1 | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|
@@ -127,7 +127,9 @@ OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose
 
 ## Effects pedals and arpeggiator
 
-The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 36**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **SELECT** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Ghost, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. A new project starts with Reverb, Delay, Distortion and Chorus in the four slots. (**EDIT** is no longer a pedal slot: it is the sound editor.)
+The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 36**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **SELECT** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Ghost, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. The pedal page is the stompbox itself, in its own colour: the red lamp lights and a faint glow surrounds it when it is on, and its three knobs show their values underneath.
+
+![A pedal](guide/pedal.png) A new project starts with Reverb, Delay, Distortion and Chorus in the four slots. (**EDIT** is no longer a pedal slot: it is the sound editor.)
 
 | Category | Pedal | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|
@@ -180,7 +182,7 @@ The **arpeggiator** plays held notes or pattern chords in sequence. Like a pedal
 
 Press **SEQ** twice (the sequencer, then SUPER SEQ) to open **SUPER SEQ**; **SEQ** again or **HOME** returns home. Each instrument has its own row of up to **eight boxes**, and there are **ten songs (A–J)**. Each box plays its pattern once before moving on; instruments advance independently, so a 32-step pattern lasts twice as long as a 16-step pattern.
 
-![SUPER SEQ](superseq_mockup.png)
+![SUPER SEQ](guide/superseq.png)
 
 - **A–J:** play that pattern.
 - **Blank:** repeat the previous pattern; blanks at the beginning are silent.
@@ -208,7 +210,7 @@ When SUPER SEQ is on, it chooses the playing patterns instead of PRESETS. **PLAY
 
 Quartet **automatically remembers current work** after playback stops and the sound has been quiet for two seconds. Four separate save slots let you keep projects.
 
-![Save screen](save_mockup.png)
+![Save screen](guide/save.png)
 
 Press **SAVE**; **KNOB1** chooses slot 1–4. Press **REC twice** (second press within three seconds) to **save**, or **PLAY twice** to **load**. Loading replaces current work; an empty slot says **EMPTY**. Saving or loading stops playback. Press **SAVE** to leave the page.
 

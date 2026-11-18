@@ -7,8 +7,8 @@
 <meta name="description" content="Custom firmware that turns the M-VAVE FM-1 into a four-track groovebox: three synth slots and drums, 72 sounds in banks plus your own, 36 effects pedals, step and live recording and a song arranger.">
 <style>
 :root {
-  --bg: #0B0E17; --panel: #141A26; --card: #1C2335; --line: #283048; --txt: #E8E8EF; --sub: #A3A3B0; --dim: #6C6C7A;
-  --gold: #FF6B5E; --pad: #2EE0C8; --bass: #B57CFF; --drums: #3BA8FF; --mute: #5C647A;
+  --bg: #0D0D11; --panel: #16161B; --card: #1C1C23; --line: #2C2C36; --txt: #E8E8EF; --sub: #A3A3B0; --dim: #6C6C7A;
+  --gold: #FFB824; --pad: #B27CFF; --bass: #24C6F0; --drums: #5CE268; --mute: #EE382E;
   --narrow: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -78,7 +78,7 @@ footer a { color: var(--sub); }
 </head>
 <body id="top">
 <header><div class="wrap"><nav>
-  <a class="brand" href="#top"><span class="bars"><i style="background:#FF6B5E"></i><i style="background:#2EE0C8"></i><i style="background:#B57CFF"></i><i style="background:#3BA8FF"></i></span>QUARTET</a>
+  <a class="brand" href="#top"><span class="bars"><i style="background:#FFB824"></i><i style="background:#B27CFF"></i><i style="background:#24C6F0"></i><i style="background:#5CE268"></i></span>QUARTET</a>
   <ul>
     <li><a href="#start">Start</a></li>
     <li><a href="#controls">Controls</a></li>
@@ -106,8 +106,8 @@ footer a { color: var(--sub); }
     <p class="note">Press <kbd>PLAY</kbd> as soon as it starts: a short demo groove is loaded in pattern A of each track.</p>
   </div>
   <div class="screen">
-    <img src="guide/home.png" alt="QUARTET's home screen: four tracks in their colours, the step playing in white">
-    <p>The home screen: a row per track, the step playing in white.</p>
+    <img src="guide/home.png" alt="QUARTET's home screen: a card per track in its colour, the chosen one glowing, its pedals along the bottom">
+    <p>The home screen: a card per track, the chosen one glowing; its pedals along the bottom.</p>
   </div>
 </div>
 
@@ -157,7 +157,7 @@ footer a { color: var(--sub); }
 
 <section id="band">
   <h2>The band</h2>
-  <p class="sub">Four tracks, each a card in the colour of what it plays: coral lead, teal pad, violet bass, blue drums. The chosen card glows; a muted track turns grey.</p>
+  <p class="sub">Four tracks, each a card in the colour of what it plays (gold lead, violet pad, cyan bass, green drums) with its instrument on the badge: keys, waves, a bass guitar, a drum. The chosen card glows; a muted track turns red.</p>
   <div class="split">
     <div>
       <table class="t">
@@ -209,7 +209,7 @@ footer a { color: var(--sub); }
   <div class="split" style="margin-top:28px">
     <div>
       <h3>The sound editor (<kbd>EDIT</kbd>)</h3>
-      <p>Press <kbd>EDIT</kbd> for the SOUND page of the chosen track. It opens on <b>INSTR</b>, a menu: a row for each knob, with the bank's sounds listed under <b>SOUND</b> and the one playing lit. <kbd>SELECT</kbd> chooses the page, <kbd>KNOB 1&ndash;4</kbd> edit it, <kbd>ALGORITHM</kbd> moves to another track. <kbd>EDIT</kbd> again opens the <a href="#chain">signal chain</a>; <kbd>HOME</kbd> goes back.</p>
+      <p>Press <kbd>EDIT</kbd> for the SOUND page of the chosen track. It opens on <b>INSTR</b>, a sound browser: the banks on the left (<kbd>KNOB 2</kbd>; an empty USER bank is dimmed), the chosen bank's sounds on the right (<kbd>KNOB 3</kbd>) with the one playing glowing, and underneath the type (<kbd>KNOB 1</kbd>) and the USER slot to save to (<kbd>KNOB 4</kbd>). <kbd>SELECT</kbd> chooses the page, <kbd>KNOB 1&ndash;4</kbd> edit it, <kbd>ALGORITHM</kbd> moves to another track. <kbd>EDIT</kbd> again opens the <a href="#chain">signal chain</a>; <kbd>HOME</kbd> goes back.</p>
       <table class="t grid4">
         <tr><th>Page</th><th>KNOB 1</th><th>KNOB 2</th><th>KNOB 3</th><th>KNOB 4</th></tr>
         <tr><td>INSTR</td><td>Type: lead, pad, bass</td><td>Bank</td><td>Sound in the bank</td><td>USER slot to save to</td></tr>
@@ -226,7 +226,7 @@ footer a { color: var(--sub); }
       <p>Tweak the sound, go to <b>INSTR</b> (or <b>KIT</b>), choose a USER slot with <kbd>KNOB 4</kbd> and press <kbd>REC</kbd> <b>twice</b> (the bottom line asks first). <b>SAVED USER 3</b> shows, and the track now plays your sound from the USER bank. Saving over a used slot replaces it. The USER bank is kept with your work and inside each saved project, and <i>clear all</i> leaves it alone.</p>
     </div>
     <div>
-      <div class="shot"><img src="guide/instr.png" alt="The INSTR page"><p>INSTR: type, bank, sound, USER slot.</p></div>
+      <div class="shot"><img src="guide/instr.png" alt="The INSTR page"><p>INSTR: banks on the left, the bank's sounds on the right.</p></div>
       <div class="shot" style="margin-top:18px"><img src="guide/editor.png" alt="The OSC page"><p>OSC: two pulse waves.</p></div>
       <div class="shot" style="margin-top:18px"><img src="guide/kit.png" alt="The KIT page"><p>Drums: the KIT page.</p></div>
       <div class="shot" style="margin-top:18px" id="chain"><img src="guide/chain.png" alt="The signal chain"><p>The signal chain: <kbd>EDIT</kbd> twice.</p></div>
@@ -277,6 +277,7 @@ footer a { color: var(--sub); }
 <section id="pedals">
   <h2>Pedals</h2>
   <p class="sub"><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are four pedal slots for the chosen track, and each holds any pedal from a library of 36. <b>Tap</b> a button to switch its pedal on or off (its name shows: <b>GLITCH ON</b>; lit = on). <b>Hold</b> it half a second to open the pedal. To see and set all four at once, press <kbd>EDIT</kbd> twice for the <a href="#chain">signal chain</a>.</p>
+  <p>The pedal page is the stompbox itself, in its own colour: the red lamp lights and a faint glow surrounds it when it is on, and its three knobs show their values underneath.</p>
   <div class="split">
     <div>
       <table class="t">
@@ -318,7 +319,7 @@ footer a { color: var(--sub); }
       <h3>Beat repeat (hold <kbd>GLO</kbd>)</h3>
       <p>Hold <kbd>GLO</kbd> while playing: the slice playing goes round until you let go, then the music carries on where it would have been. Meanwhile the first five white keys choose the slice: 1/2 bar, 1/4, 1/8 (to start), 1/16, 1/32.</p>
       <h3>Mixer (<kbd>GLO</kbd>)</h3>
-      <p><kbd>KNOB 1&ndash;4</kbd> set the volumes of the four tracks. Here <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute them (lit = playing). Tap <kbd>GLO</kbd> again for the KEY page, and again to go home.</p>
+      <p>A fader per track: <kbd>KNOB 1&ndash;4</kbd> set the volumes of the four tracks. Here <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute them (lit = playing). Tap <kbd>GLO</kbd> again for the KEY page, and again to go home.</p>
       <h3>The KEY page</h3>
       <p>The key, its relative minor and its signature, and an octave of keyboard with the key's notes lit and named. <kbd>SELECT</kbd> picks the key, <kbd>KNOB 1</kbd> <b>LOCK</b> (the keys play only the key's notes) and <kbd>KNOB 2</kbd> <b>LIGHTS</b> (the key's notes glow on the keys).</p>
     </div>

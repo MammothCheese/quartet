@@ -2,9 +2,9 @@
 
 # QUARTET
 
-A four-track groovebox for the M-VAVE FM-1 built around traditional instruments and effects pedals that simulates a four-piece band: lead, pads, bass and drums. Featuring 40 sounds, ten patterns per instrument, live recording, and a song sequencer where each instrument follows its own arrangement.
+A four-track groovebox for the M-VAVE FM-1 built around traditional instruments and effects pedals that simulates a four-piece band: lead, pads, bass and drums. Featuring 72 sounds and 18 drum kits in banks (plus your own), ten patterns per instrument, 36 pedals, live recording, and a song sequencer where each instrument follows its own arrangement.
 
-<p align="center"><img src="docs/overhaul_mockup.png" width="900" alt="QUARTET's screens: the sequencer, the step and live recorders, the pedals, the arpeggiator, the mixer"></p>
+<p align="center"><img src="docs/screens.png" width="900" alt="QUARTET's screens: home, the sound browser, the signal chain, a pedal, the step recorder, the drum grid, the mixer, SUPER SEQ"></p>
 
 ## What it does
 

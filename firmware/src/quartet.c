@@ -460,22 +460,22 @@ static int quiet(void)                          /* nothing sounds, not even a re
 /* ---- the screen. The look: dark rounded panels on black. Each track has its own colour (red when muted), and the
  * chosen track's colour runs through the screen: the top bar, its steps, the beat light, the SEQ values, the dot on
  * the bottom bar. (Mock-ups: docs/overhaul_mockup.png) */
-static const uint8_t TRK_RGB[NTRK][3] = {{255, 107, 94}, {181, 124, 255}, {46, 224, 200}, {59, 168, 255}};   /* LEAD coral, BASS violet, PAD teal, DRUMS blue */
-static const uint8_t MUTE_RGB[3] = {92, 100, 122};   /* a muted track: slate grey (red is for REC and alerts) */
-#define C_BG RGB(11, 14, 23)                    /* the background: deep navy */
-#define C_MUTE RGB(255, 77, 94)                 /* red: REC, MUTE, a pedal's lamp, what did not happen */
-#define C_AMBER RGB(255, 181, 71)               /* the playhead */
-#define C_PANEL RGB(20, 26, 38)                 /* the cards */
-#define C_PANEL2 RGB(30, 38, 58)                /* the chosen card */
-#define C_TXT RGB(233, 237, 247)                /* values */
-#define C_SUB RGB(138, 147, 168)                /* labels */
-#define C_DIMC RGB(74, 82, 102)                 /* off, unused */
-#define C_BOTTXT RGB(160, 168, 188)             /* the bottom bar's text */
-#define C_LCD RGB(12, 15, 24)                   /* the little value screens */
-#define C_KEYCAP RGB(40, 48, 72)
-#define C_PLAYG RGB(46, 224, 200)               /* the play sign */
-#define C_EMPTY RGB(28, 34, 50)                 /* an empty step; on a beat: */
-#define C_EMPTY4 RGB(40, 48, 68)
+static const uint8_t TRK_RGB[NTRK][3] = {{255, 184, 36}, {36, 198, 240}, {178, 124, 255}, {92, 226, 104}};   /* LEAD gold, BASS cyan, PAD violet, DRUMS green */
+static const uint8_t MUTE_RGB[3] = {238, 56, 46};
+#define C_BG RGB(12, 12, 16)                    /* the background: near black */
+#define C_MUTE RGB(238, 56, 46)
+#define C_PLAYHD RGB(236, 236, 244)             /* the playhead */
+#define C_PANEL RGB(22, 22, 28)                 /* the cards */
+#define C_PANEL2 RGB(36, 36, 44)                /* the chosen card */
+#define C_TXT RGB(232, 232, 240)                /* values */
+#define C_SUB RGB(160, 160, 172)                /* labels */
+#define C_DIMC RGB(70, 70, 84)                  /* off, unused */
+#define C_BOTTXT RGB(190, 190, 204)             /* the bottom bar's text */
+#define C_LCD RGB(10, 10, 13)                   /* the little value screens */
+#define C_KEYCAP RGB(52, 52, 64)
+#define C_PLAYG RGB(92, 232, 112)               /* the play sign */
+#define C_EMPTY RGB(32, 32, 42)                 /* an empty step; on a beat: */
+#define C_EMPTY4 RGB(50, 50, 64)
 #define C_HEADC RGB(110, 118, 140)              /* the step playing, when empty */
 static uint32_t live_mode, live_rec;            /* the live recording page is up; it records (main loop) */
 static uint32_t scr_home;                       /* the sequencer screen is home (not a recorder): for the top bar */
@@ -724,14 +724,14 @@ static uint16_t trk_c(uint32_t t, uint32_t k)   /* a track's colour (red when mu
 }
 static uint16_t rgbm(const uint8_t *c, uint32_t k)   /* a colour k % of the way from the background to it */
 {
-    return RGB(11 + ((int32_t)c[0] - 11) * (int32_t)k / 100, 14 + ((int32_t)c[1] - 14) * (int32_t)k / 100,
-               23 + ((int32_t)c[2] - 23) * (int32_t)k / 100);
+    return RGB(12 + ((int32_t)c[0] - 12) * (int32_t)k / 100, 12 + ((int32_t)c[1] - 12) * (int32_t)k / 100,
+               16 + ((int32_t)c[2] - 16) * (int32_t)k / 100);
 }
 static const uint8_t *trk_rgb(uint32_t t) { return trk_mute >> t & 1u ? MUTE_RGB : TRK_RGB[TTYPE(t)]; }
 static void glow_card(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, const uint8_t *c, uint16_t fill)
-{                                               /* the chosen card: a soft halo in its colour, a bright edge, the face */
-    cv_rrect(x - 2, y - 2, w + 4, h + 4, r + 2, rgbm(c, 16));
-    cv_rrect(x - 1, y - 1, w + 2, h + 2, r + 1, rgbm(c, 40));
+{                                               /* the chosen card: a faint halo in its colour, a bright edge, the face */
+    cv_rrect(x - 2, y - 2, w + 4, h + 4, r + 2, rgbm(c, 10));
+    cv_rrect(x - 1, y - 1, w + 2, h + 2, r + 1, rgbm(c, 28));
     cv_rrect(x, y, w, h, r, rgbk(c, 100));
     cv_rrect(x + 1, y + 1, w - 2, h - 2, r > 0 ? r - 1 : 0, fill);
 }
@@ -742,27 +742,6 @@ static void logo4(int32_t x, int32_t y)          /* QUARTET's mark: four slanted
     int32_t r;
     for (i = 0; i < 4u; i++)
         for (r = 0; r < 14; r++) cv_rect(x + (int32_t)i * 6 + (13 - r) / 3, y + r, 3, 1, rgbk(TRK_RGB[ORD[i]], 100));
-}
-static const char *title_case(const char *s)    /* "SYNC LEAD" -> "Sync Lead" (a word with a digit, or no vowel, stays:
-                                                   PWM, DX, 303, LM-1, CR-78) */
-{
-    static char b[4][24];
-    static uint32_t n;
-    char *o = b[n++ & 3u], *q = o;
-    while (*s && q < o + 23) {
-        const char *e = s, *w = s;
-        uint32_t keep = 0, v = 0;
-        while (*e && *e != ' ' && *e != '-') {
-            if (*e >= '0' && *e <= '9') keep = 1;
-            if (*e == 'A' || *e == 'E' || *e == 'I' || *e == 'O' || *e == 'U' || *e == 'Y') v = 1;
-            e++;
-        }
-        if (!v) keep = 1;
-        for (; s < e && q < o + 23; s++) *q++ = (char)(keep || s == w || *s < 'A' || *s > 'Z' ? *s : *s + 32);
-        if (*s && q < o + 23) *q++ = *s++;      /* (the space or hyphen) */
-    }
-    *q = 0;
-    return o;
 }
 static void disc(int32_t cx, int32_t cy, int32_t r, uint16_t c)   /* a filled circle */
 {
@@ -868,12 +847,12 @@ static void bottom_pedals(uint32_t trk)         /* home's bottom line: the chose
     for (e = 0; e < NPED_SLOTS; e++) {
         const pdef_t *d = &PDEF[set.ped[trk][e] % NPD];
         uint32_t on = set.fx[trk].on >> e & 1u, n = 0;
-        int32_t x = 3 + (int32_t)e * 59, w = 55;
-        const char *nm = title_case(d->name);
+        int32_t x = 1 + (int32_t)e * 60, w = 58;
+        const char *nm = (d->name);
         char sh[14];
         while (nm[n] && n < 13u) { sh[n] = nm[n]; n++; }
         sh[n] = 0;
-        while (n > 1u && text_w(&FONT_S, sh) > w - 6) sh[--n] = 0;   /* (as much of the name as fits) */
+        while (n > 1u && text_w(&FONT_S, sh) > w - 1) sh[--n] = 0;   /* (as much of the name as fits) */
         if (on) glow_card(x, 3, w, 19, 7, ped_rgb(d), C_PANEL2);   /* (on: it glows in the pedal's colour) */
         else cv_rrect(x, 3, w, 19, 7, C_PANEL);
         cv_text_bg(x + w / 2 - text_w(&FONT_S, sh) / 2, 4, &FONT_S, sh, on ? C_TXT : C_DIMC, on ? C_PANEL2 : C_PANEL);
@@ -1018,6 +997,29 @@ static uint32_t syn_covers(uint32_t t, uint32_t pt, uint32_t s, uint32_t len)   
 
 /* the home view: a card a track, LEAD PAD BASS DRUMS: a badge in its colour (its short name), its sound, the steps of
  * the page it is on (the step playing white), its pattern in a pill. The chosen card glows; a muted one is grey */
+static void icon_inst(int32_t x, int32_t y, uint32_t ty, uint16_t c)   /* an instrument, 16 x 14, in colour c */
+{
+    static const int8_t WAVE[15] = {0, 1, 2, 2, 2, 1, 0, -1, -2, -2, -2, -1, 0, 1, 2};
+    int32_t i;
+    switch (ty) {
+    case T_LEAD:                                /* a keyboard: four white keys, three black ones over them */
+        for (i = 0; i < 4; i++) cv_rect(x + 1 + i * 4, y + 2, 3, 11, c);
+        break;
+    case T_PAD:                                 /* two waves */
+        for (i = 0; i < 15; i++) { cv_rect(x + 1 + i, y + 4 + WAVE[i], 1, 2, c); cv_rect(x + 1 + i, y + 10 + WAVE[(i + 3) % 15], 1, 2, c); }
+        break;
+    case T_BASS:                                /* a bass guitar: the neck, the body */
+        cv_line(x + 14, y + 1, x + 6, y + 9, c); cv_line(x + 15, y + 1, x + 7, y + 9, c);
+        cv_rect(x + 13, y, 3, 2, c);
+        disc(x + 5, y + 10, 4, c); disc(x + 8, y + 8, 3, c);
+        break;
+    default:                                    /* a drum: the shell, two sticks over it */
+        cv_rrect(x + 2, y + 6, 13, 8, 3, c);
+        cv_line(x + 2, y + 1, x + 8, y + 6, c); cv_line(x + 15, y + 1, x + 9, y + 6, c);
+        break;
+    }
+}
+static uint32_t slot_nth(uint32_t t);
 static void draw_home(uint32_t sel, uint32_t run)
 {
     uint32_t r, s, pass;
@@ -1029,15 +1031,18 @@ static void draw_home(uint32_t sel, uint32_t run)
             uint32_t pt = play_pat[t] % NPAT, len = pat_len(t, pt), pos = trk_pos[t], page = run ? pos / PAGE : 0u;
             const uint8_t *rgb = trk_rgb(t);
             uint16_t col = rgbk(rgb, 100), card = me ? C_PANEL2 : C_PANEL, bdg = me ? col : rgbm(rgb, 55);
-            const char *nm = title_case(t < NSYN ? sound_name(TTYPE(t), set.snd[t].preset) : kit_name());
+            const char *nm = (t < NSYN ? sound_name(TTYPE(t), set.snd[t].preset) : kit_name());
             char lt[4], *q;
             if (me != pass) continue;
             q = put_pat(lt, t); *q = 0;
             if (me) glow_card(4, y, 232, 28, 7, rgb, card);
             else cv_rrect(4, y, 232, 28, 7, card);
             cv_rrect(9, y + 4, 22, 20, 5, bdg);
-            cv_text_bg(20 - text_w(&FONT_S, slot_short(t)) / 2, y + 6, &FONT_S, slot_short(t), C_BG, bdg);
-            cv_text_bg(x0, y + 1, &FONT_S, nm, me ? C_TXT : C_SUB, card);
+            icon_inst(12, y + 7, TTYPE(t), C_BG);   /* (what it plays) */
+            if (slot_nth(t)) {                  /* two of a kind: L1, L2 before the sound */
+                int32_t nx = cv_text_bg(x0, y + 1, &FONT_S, slot_short(t), col, card);
+                cv_text_bg(nx + 5, y + 1, &FONT_S, nm, me ? C_TXT : C_SUB, card);
+            } else cv_text_bg(x0, y + 1, &FONT_S, nm, me ? C_TXT : C_SUB, card);
             pw = text_w(&FONT_S, lt) + 10;
             if (pw < 24) pw = 24;
             cv_rrect(231 - pw, y + 5, pw, 18, 7, C_BG);
@@ -1133,7 +1138,7 @@ static void draw_roll(uint32_t t, uint32_t pt, uint32_t cur, uint32_t play, uint
         }
     }
     if (play != ~0u && play / PAGE == page)     /* the playhead */
-        cv_rect(12 + (int32_t)(play % PAGE) * 14 + 5, 0, 2, H_VIEW, C_AMBER);
+        cv_rect(12 + (int32_t)(play % PAGE) * 14 + 5, 0, 2, H_VIEW, C_PLAYHD);
     cv_blit(0, Y_VIEW);
 }
 
@@ -1183,61 +1188,58 @@ static void lcd_value(int32_t cx, int32_t y, int32_t w, const char *s, uint16_t 
     cv_text_bg(cx - text_w(&FONT_S, s) / 2, y + 1, &FONT_S, s, c, C_LCD);
 }
 
-/* ---- a pedal (the pedals, the arpeggiator), in the cards' style: a dark card, its edge glowing in the pedal's colour
- * when it is on; a header band tinted in that colour with the power sign, the name and an ON / OFF pill; three arc
- * knobs with their names and values (in pills); the footswitch, lit when on. 240 x 164 under the top bar, drawn in
- * two halves (the canvas holds 240 x 128) */
+/* ---- a stompbox (the pedals, the arpeggiator): its painted case with a light top edge and a dark bottom one, four
+ * screws, the red ON lamp, the name plate, three arc knobs with their names and values (in pills), the chrome
+ * footswitch, QUARTET on the case; when on, a faint glow round it. 240 x 164 under the top bar, drawn in two halves
+ * (the canvas holds 240 x 128) */
 typedef struct { const char *name; uint32_t v, mx; const char *val; } kview_t;
-static void arc_knob(int32_t cx, int32_t cy, uint32_t v, uint32_t mx, uint16_t ring, uint16_t dim)   /* a big knob */
-{
-    int32_t i, x0, y0, x1, y1, deg;
-    if (!mx) mx = 1;
-    if (v > mx) v = mx;
-    for (i = 0; i <= 27; i++) {                 /* its arc: 28 dots from -135 to +135 degrees, lit up to the value */
-        knob_xy(cx, cy, -135 + i * 10, 22, &x0, &y0);
-        cv_rrect(x0 - 2, y0 - 2, 4, 4, 2, (uint32_t)i * mx <= v * 27u && v ? ring : dim);
-    }
-    disc(cx, cy, 16, C_KEYCAP);
-    disc(cx, cy, 15, RGB(34, 41, 60));
-    deg = -135 + (int32_t)(270u * v / mx);
-    knob_xy(cx, cy, deg, 4, &x0, &y0);
-    knob_xy(cx, cy, deg, 13, &x1, &y1);
-    cv_line(x0, y0, x1, y1, C_TXT);
-    cv_line(x0 + 1, y0, x1 + 1, y1, C_TXT);
-}
 static void draw_stomp(const uint8_t *rgb, int dark, const char *title, uint32_t on, const kview_t *k, uint32_t nk,
                        const char *msg)
 {
-    uint16_t col = rgbk(rgb, 100), band = rgbm(rgb, on ? 30u : 14u), pc = on ? col : C_DIMC;
-    const char *nm = title_case(title);
+    static const int16_t SCREW[4][2] = {{20, 15}, {220, 15}, {20, 149}, {220, 149}};
+    static const uint8_t LIGHT[3] = {200, 200, 210};
+    const uint8_t *gc = rgb[0] + rgb[1] + rgb[2] < 150u ? LIGHT : rgb;   /* (the glow of a black pedal: light grey) */
+    uint16_t body = rgbk(rgb, 100), hi = rgbl(rgb, 35), lo = rgbk(rgb, 50), plate = RGB(14, 14, 17);
+    uint16_t ink = dark ? RGB(14, 14, 16) : RGB(246, 246, 250), screw = dark ? rgbk(rgb, 70) : rgbl(rgb, 55);
+    uint16_t lit = dark ? RGB(14, 14, 16) : RGB(255, 255, 255);
+    int32_t pw = text_w(&FONT_S, title) + 18, px = 214 - pw;
     uint32_t half, i;
-    (void)dark;
     for (half = 0; half < 2u; half++) {
         cv_begin(240, H_PEDAL / 2, C_BG);
         cv_oy = -(int32_t)half * (H_PEDAL / 2);  /* (drawn in pedal coordinates; the canvas is this half) */
-        if (on) glow_card(6, 2, 228, 160, 12, rgb, C_PANEL);
-        else { cv_rrect(6, 2, 228, 160, 12, rgbm(rgb, 35)); cv_rrect(7, 3, 226, 158, 11, C_PANEL); }
-        cv_rrect(8, 4, 224, 32, 10, band);      /* the header: the power sign, the name, ON / OFF */
-        cv_rect(8, 24, 224, 12, band);
-        disc(24, 20, 8, pc); disc(24, 20, 6, band);
-        cv_rect(22, 10, 5, 7, band); cv_rect(23, 11, 2, 9, pc);
-        cv_text_bg(38, 11, &FONT_S, nm, on ? C_TXT : C_SUB, band);
-        cv_rrect(186, 11, 40, 18, 9, on ? col : C_KEYCAP);
-        cv_text_bg(206 - text_w(&FONT_S, on ? "ON" : "OFF") / 2, 12, &FONT_S, on ? "ON" : "OFF", on ? C_BG : C_SUB, on ? col : C_KEYCAP);
-        if (msg) cv_text_bg(120 - text_w(&FONT_S, msg) / 2, 74, &FONT_S, msg, C_SUB, C_PANEL);
+        if (on) { cv_rrect(3, 0, 234, H_PEDAL, 14, rgbm(gc, 12)); cv_rrect(4, 1, 232, H_PEDAL - 2, 13, rgbm(gc, 30)); }
+        cv_rrect(6, 2, 228, H_PEDAL - 4, 12, lo);   /* the case */
+        cv_rrect(6, 2, 228, H_PEDAL - 7, 12, hi);
+        cv_rrect(8, 4, 224, H_PEDAL - 10, 11, body);
+        for (i = 0; i < 4u; i++) { disc(SCREW[i][0], SCREW[i][1], 3, screw); cv_rect(SCREW[i][0] - 2, SCREW[i][1], 5, 1, lo); }
+        if (on) { disc(40, 22, 7, RGB(115, 18, 18)); disc(40, 22, 5, RGB(255, 70, 60)); cv_rect(38, 20, 2, 2, RGB(255, 200, 190)); }
+        else disc(40, 22, 5, RGB(84, 22, 20));
+        cv_text_bg(52, 14, &FONT_S, on ? "ON" : "OFF", ink, body);
+        cv_rrect(px, 12, pw, 20, 10, plate);    /* the name plate */
+        cv_text_bg(px + 9, 14, &FONT_S, title, RGB(246, 246, 250), plate);
+        if (msg) cv_text_bg(120 - text_w(&FONT_S, msg) / 2, 70, &FONT_S, msg, ink, body);
         for (i = 0; i < nk; i++) {              /* the knobs, KNOB2-4 */
-            int32_t cx = 46 + 74 * (int32_t)i;
-            const char *kn = title_case(k[i].name);
-            arc_knob(cx, 70, k[i].v, k[i].mx, pc, C_KEYCAP);
-            cv_text_bg(cx - text_w(&FONT_S, kn) / 2, 96, &FONT_S, kn, C_SUB, C_PANEL);
-            cv_rrect(cx - 28, 115, 56, 18, 9, C_BG);
-            cv_text_bg(cx - text_w(&FONT_S, k[i].val) / 2, 116, &FONT_S, k[i].val, on ? col : C_SUB, C_BG);
+            int32_t cx = 46 + 74 * (int32_t)i, j, x0, y0, x1, y1, deg;
+            uint32_t v = k[i].v > k[i].mx ? k[i].mx : k[i].v, mx = k[i].mx ? k[i].mx : 1u;
+            for (j = 0; j <= 27; j++) {         /* its arc of dots, lit up to the value */
+                knob_xy(cx, 66, -135 + j * 10, 22, &x0, &y0);
+                cv_rrect(x0 - 2, y0 - 2, 4, 4, 2, (uint32_t)j * mx <= v * 27u && v ? (on ? lit : rgbl(rgb, 20)) : lo);
+            }
+            disc(cx, 66, 16, RGB(12, 12, 16));  /* a black knob with a white line */
+            disc(cx, 66, 14, RGB(46, 46, 54));
+            disc(cx, 66, 12, RGB(30, 30, 36));
+            deg = -135 + (int32_t)(270u * v / mx);
+            knob_xy(cx, 66, deg, 4, &x0, &y0); knob_xy(cx, 66, deg, 12, &x1, &y1);
+            cv_line(x0, y0, x1, y1, C_WHITE); cv_line(x0 + 1, y0, x1 + 1, y1, C_WHITE);
+            cv_text_bg(cx - text_w(&FONT_S, k[i].name) / 2, 92, &FONT_S, k[i].name, ink, body);
+            cv_rrect(cx - 28, 111, 56, 18, 9, C_LCD);
+            cv_text_bg(cx - text_w(&FONT_S, k[i].val) / 2, 112, &FONT_S, k[i].val, RGB(240, 240, 246), C_LCD);
         }
-        if (on) { disc(120, 148, 13, rgbm(rgb, 30)); disc(120, 148, 11, col); }   /* the footswitch: lit when on */
-        else disc(120, 148, 11, C_KEYCAP);
-        disc(120, 148, 9, RGB(34, 41, 60));
-        disc(120, 148, 4, on ? col : C_DIMC);
-        logo4(18, 142);
+        disc(120, 145, 15, RGB(40, 40, 46));    /* the footswitch */
+        disc(120, 144, 13, RGB(150, 150, 160));
+        disc(120, 144, 9, RGB(206, 206, 216));
+        disc(117, 141, 3, RGB(250, 250, 255));
+        cv_text_bg(32, 137, &FONT_S, "QUARTET", lo, body);
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
     }
@@ -1294,7 +1296,7 @@ static void draw_pedal(uint32_t trk, uint32_t e)
     uint32_t k;
     ped_vals(trk, e, pk, val);
     for (k = 0; k < 3u; k++) kv[k] = (kview_t){pk[k].name, *pk[k].v, pk[k].max ? pk[k].max : 1u, val[k]};
-    draw_stomp(ped_rgb(d), d->dark, d->name, set.fx[trk].on >> e & 1u, kv, 3, 0);
+    draw_stomp(d->rgb, d->dark, d->name, set.fx[trk].on >> e & 1u, kv, 3, 0);
 }
 
 /* ---- the signal chain (EDIT twice): the track's four pedals as cards, in order (FX SEL ENV LFO, left to right, top
@@ -1315,7 +1317,7 @@ static void draw_chain(uint32_t trk, uint32_t sl)
                 uint32_t on = set.fx[trk].on >> e & 1u, me = e == sl, n = 0;
                 int32_t x = 4 + (int32_t)(e % 2u) * 118, y = 2 + (int32_t)(e / 2u) * 81, w = 114, h = 77;
                 uint16_t bg = me ? C_PANEL2 : C_PANEL, pc = on ? rgbk(rgb, 100) : C_DIMC;
-                const char *nm = title_case(d->name);
+                const char *nm = (d->name);
                 char sh[16];
                 if (me != pass) continue;
                 if (me) glow_card(x, y, w, h, 8, rgb, bg);
@@ -1343,7 +1345,7 @@ static void draw_chain(uint32_t trk, uint32_t sl)
 /* the arpeggiator, a stompbox too: the lamp (hold ARP), RATE, OCTAVES, DIR */
 static void draw_arp(uint32_t trk)
 {
-    static const uint8_t BODY[3] = {80, 200, 215};
+    static const uint8_t BODY[3] = {20, 110, 120};
     if (trk < NSYN) {
         static const char *const DIR_NAME[3] = {"UP", "DOWN", "RANDOM"};
         static const char *const OCT_NAME[4] = {"1", "2", "3", "4"};
@@ -1351,7 +1353,7 @@ static void draw_arp(uint32_t trk)
         kview_t kv[3] = {{"RATE", rate, 3, ARP_NAME[rate]}, {"OCTAVES", oct, 3, OCT_NAME[oct]}, {"DIR", dir, 2, DIR_NAME[dir]}};
         draw_stomp(BODY, 0, "ARPEGGIATOR", set.arp_on >> trk & 1u, kv, 3, 0);
     } else
-        draw_stomp(BODY, 0, "ARPEGGIATOR", 0, 0, 0, "For lead, pad and bass");
+        draw_stomp(BODY, 0, "ARPEGGIATOR", 0, 0, 0, "FOR LEAD, PAD, BASS");
 }
 
 /* the mixer: four channel strips, LEAD PAD BASS DRUMS (KNOB1-4): a header in the track's colour, a knob, its value, a
@@ -1442,7 +1444,7 @@ static void draw_sseq(uint32_t sel, uint32_t cur, uint32_t run)
             if (me && i == cur) cv_rrect(x - 2, y + 3, 27, 26, 6, C_WHITE);
             cv_rrect(x, y + 5, 23, 22, 5, bg);
             cv_text_bg(x + 8, y + 8, &FONT_S, v, ink, bg);
-            if (live && chain_at[t] % NLINK == i) cv_rrect(x + 3, y + 27, 17, 3, 1, C_AMBER);
+            if (live && chain_at[t] % NLINK == i) cv_rrect(x + 3, y + 27, 17, 3, 1, C_PLAYHD);
         }
     }
     cv_blit(0, Y_VIEW);
@@ -1641,9 +1643,9 @@ static void menu_row(int32_t y, const char *k, const char *lab, const char *val,
  * (the bank's sounds listed, the one playing lit), KNOB4 the USER slot REC (twice) saves to */
 static void draw_instr(uint32_t trk)
 {
-    static const char *const TAB[NPAGE + 1u] = {"Instr", "Main", "Osc", "Env", "LFO"};
-    static const char *const DTAB[NDR + 1u] = {"Kit", "BD", "SD", "HH", "OH", "CP", "PC"};
-    static const char *const BK[2][NBANK] = {{"Original", "Classic", "Experim.", "User"}, {"Original", "Electro", "Experim.", "User"}};
+    static const char *const TAB[NPAGE + 1u] = {"INSTR", "MAIN", "OSC", "ENV", "LFO"};
+    static const char *const DTAB[NDR + 1u] = {"KIT", "BD", "SD", "HH", "OH", "CP", "PC"};
+    static const char *const BK[2][NBANK] = {{"ORIGINAL", "CLASSIC", "EXPERIM.", "USER"}, {"ORIGINAL", "ELECTRO", "EXPERIM.", "USER"}};
     static const uint16_t YEL = RGB(255, 200, 60);
     const uint8_t *rgb = trk_rgb(trk);
     uint16_t col = rgbk(rgb, 100);
@@ -1660,9 +1662,9 @@ static void draw_instr(uint32_t trk)
     top = at > 2u ? at - 2u : 0u;               /* the list: seven of the bank's sounds, the one playing among them */
     if (m >= 7u && top + 7u > m) top = m - 7u;
     if (m < 7u) top = 0;
-    if (trk < NSYN) { p = put(ty, "< "); p = put(p, title_case(TYPE_NAME[TTYPE(trk)])); *put(p, " >") = 0; } else *put(ty, "Drums") = 0;
-    if (usr_ask) { p = put(us, "Save U"); *p++ = (char)('1' + usr_slot); *p++ = '?'; *p = 0; }
-    else { p = put(us, "U"); *p++ = (char)('1' + usr_slot); p = put(p, used ? " used" : " empty"); *p = 0; }
+    if (trk < NSYN) { p = put(ty, "< "); p = put(p, (TYPE_NAME[TTYPE(trk)])); *put(p, " >") = 0; } else *put(ty, "DRUMS") = 0;
+    if (usr_ask) { p = put(us, "SAVE U"); *p++ = (char)('1' + usr_slot); *p++ = '?'; *p = 0; }
+    else { p = put(us, "U"); *p++ = (char)('1' + usr_slot); p = put(p, used ? " USED" : " EMPTY"); *p = 0; }
     for (half = 0; half < 2u; half++) {
         cv_begin(240, H_PEDAL / 2, C_BG);
         cv_oy = -(int32_t)half * (H_PEDAL / 2);
@@ -1687,7 +1689,7 @@ static void draw_instr(uint32_t trk)
         for (i = 0; i < 7u && top + i < m; i++) {
             uint32_t id = sub[top + i], me = top + i == at;
             int32_t y = 33 + (int32_t)i * 18;
-            const char *nm = title_case(trk < NSYN ? sound_name(TTYPE(trk), id) : kit_name_id(id));
+            const char *nm = (trk < NSYN ? sound_name(TTYPE(trk), id) : kit_name_id(id));
             if (me) {
                 glow_card(88, y, 144, 17, 5, rgb, C_PANEL2);
                 cv_line(212, y + 9, 215, y + 4, col); cv_line(215, y + 4, 218, y + 13, col);   /* (a little wave) */
@@ -1701,8 +1703,8 @@ static void draw_instr(uint32_t trk)
 }
 static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
 {
-    static const char *const TAB[NPAGE + 1u] = {"Instr", "Main", "Osc", "Env", "LFO"};
-    static const char *const DTAB[NDR + 1u] = {"Kit", "BD", "SD", "HH", "OH", "CP", "PC"};
+    static const char *const TAB[NPAGE + 1u] = {"INSTR", "MAIN", "OSC", "ENV", "LFO"};
+    static const char *const DTAB[NDR + 1u] = {"KIT", "BD", "SD", "HH", "OH", "CP", "PC"};
     const char *const *WAVE = WAVE_NAME, *const *LTGT = LTGT_NAME;
     static const char *const LWAVE[NLWAVE] = {"TRI", "SQR", "SAW", "RND"};
     const uint8_t *rgb = trk_mute >> trk & 1u ? MUTE_RGB : TRK_RGB[TTYPE(trk)];
@@ -1752,7 +1754,7 @@ static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
             cv_text_bg(tx + tw / 2 - text_w(&FONT_S, tn) / 2, 9, &FONT_S, tn, i == sel ? C_BG : C_SUB, i == sel ? col : C_KEYCAP);
         }
         {
-            const char *sn = title_case(trk < NSYN ? sound_name(TTYPE(trk), set.snd[trk].preset) : kit_name());
+            const char *sn = (trk < NSYN ? sound_name(TTYPE(trk), set.snd[trk].preset) : kit_name());
             cv_text_bg(120 - text_w(&FONT_S, sn) / 2, 36, &FONT_S, sn, col, C_PANEL);
         }
         for (i = 0; i < 4u; i++) {              /* the four knobs, KNOB1-4 (drums: three) */
