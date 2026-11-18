@@ -943,7 +943,7 @@ static void ring_block(pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
     }
 }
 
-/* WRONG STATION's static: a short burst of radio noise each time it tunes away or back (gb_clock.h sets ws_static) */
+/* WRONG STATION's static: a brief, soft hiss of radio noise each time it tunes away or back (gb_clock.h sets ws_static) */
 static volatile uint16_t ws_static[NTRK];
 static void wrong_block(uint32_t t, pst_t *st, int32_t *x, uint32_t n)
 {
@@ -951,9 +951,9 @@ static void wrong_block(uint32_t t, pst_t *st, int32_t *x, uint32_t n)
     int32_t lp = st->s[0];
     if (!left) return;
     for (i = 0; i < n && left; i++, left--) {
-        int32_t nz = (int32_t)(rnd_next(&st->rnd) >> 17) - 16384, lvl = (int32_t)(left > 2000u ? 2000u : left) * 4;
-        lp += (nz - lp) >> 2;                   /* (hiss, a little dulled; the sound ducks under it) */
-        x[i] = x[i] * (8000 - lvl / 2) / 8000 + ((lp * lvl) >> 13);
+        int32_t nz = (int32_t)(rnd_next(&st->rnd) >> 17) - 16384, lvl = (int32_t)(left > 1000u ? 1000u : left) * 2;
+        lp += (nz - lp) >> 3;                   /* (a soft, dulled hiss well under the sound, which barely dips) */
+        x[i] = x[i] * (16000 - lvl / 4) / 16000 + ((lp * lvl) >> 13);
     }
     ws_static[t] = (uint16_t)left;
     st->s[0] = lp;

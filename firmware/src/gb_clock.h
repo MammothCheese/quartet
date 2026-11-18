@@ -188,7 +188,7 @@ static void ws_step(uint32_t t, const uint8_t *k)   /* a step with WRONG STATION
     uint32_t n, i, at = 0, span, r = np_next(), id;
     if (ws_away[t]) {
         if (ws_left[t]) ws_left[t]--;
-        if (!ws_left[t] || (t < NSYN ? set.snd[t].preset : set.dkit) != ws_alt[t]) { ws_home(t); ws_static[t] = 3500; }
+        if (!ws_left[t] || (t < NSYN ? set.snd[t].preset : set.dkit) != ws_alt[t]) { ws_home(t); ws_static[t] = 2000; }
         return;
     }
     if ((r & 0xFFFFu) >= (uint32_t)k[0] * 40u) return;   /* CHANCE: up to ~8 % a step */
@@ -204,7 +204,7 @@ static void ws_step(uint32_t t, const uint8_t *k)   /* a step with WRONG STATION
     else { uint32_t d; for (d = 0; d < NDR; d++) { ws_dsnd[d] = set.dsnd[d]; set.dsnd[d] = KITS[id][d]; } ws_dkit = set.dkit; set.dkit = (uint8_t)id; }
     ws_alt[t] = (uint8_t)id; ws_away[t] = 1;
     ws_left[t] = (uint16_t)(HOLD[k[2] & 3u] * (1u + (r >> 22 & 1u)));
-    ws_static[t] = 3500;                        /* (~80 ms of static) */
+    ws_static[t] = 2000;                        /* (~45 ms of static) */
 }
 /* MECH FAILURE: how worn it is (0 working .. 32767 falling apart), going up step by step until RECOVERY */
 static int32_t mf_wear[NTRK];
