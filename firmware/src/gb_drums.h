@@ -29,7 +29,8 @@ static const uint16_t MULT[128] = {
 /* each drum's decay as designed: the level falls k / 65536 a sample (k 16: ~0.1 s time constant) */
 static const uint16_t KDEF[NDR] = {16, 64, 128, 16, 24, 48};
 
-/* the ten kits (SELECT on DRUMS, 2 clicks each): each drum's {pitch, decay, level}, 64 = as designed.
+/* the ten kits (SELECT on DRUMS, 2 clicks each): each drum's {pitch, decay, level}, 64 = as designed (the loudest kits'
+ * snares trimmed: ROCK, HIP-HOP, BREAKS, DUB by 2.5 dB, INDUSTRIAL, METAL, NOISE by 4).
  * KICK, SNARE, HAT, OPEN HAT, CLAP, PERC. How some drums are made differs per kit (KIT_TONE below): the kick's beater
  * click (ROCK, 909), the hats' noise (MINI POPS: soft maracas), what PERC is (a tom, a conga, a shaker ...); MINI POPS
  * gives the snare more tone than rattle; LO-FI, HIP-HOP and INDUSTRIAL crush the sound like an old sampler. The LM-1
@@ -43,8 +44,8 @@ static const uint16_t KDEF[NDR] = {16, 64, 128, 16, 24, 48};
 #define KIT_808 6u                              /* the 808: the kit a new project starts with */
 #define KIT_909 7u
 static const dsnd_t KITS[NKIT][NDR] = {
-    {{58, 60, 92}, {70, 82, 86}, {64, 60, 60}, {56, 112, 66}, {64, 64, 64}, {34, 82, 78}},     /* ROCK: a punchy kick, a fat snare, a crash, a floor tom */
-    {{46, 96, 84}, {54, 80, 76}, {56, 46, 48}, {56, 66, 46}, {56, 70, 66}, {70, 60, 56}},      /* HIP-HOP: a low boomy kick, a fat snare, dark hats, dusty */
+    {{58, 60, 92}, {70, 82, 65}, {64, 60, 60}, {56, 112, 66}, {64, 64, 64}, {34, 82, 78}},     /* ROCK: a punchy kick, a fat snare, a crash, a floor tom */
+    {{46, 96, 84}, {54, 80, 57}, {56, 46, 48}, {56, 66, 46}, {56, 70, 66}, {70, 60, 56}},      /* HIP-HOP: a low boomy kick, a fat snare, dark hats, dusty */
     {{72, 50, 72}, {84, 46, 66}, {92, 30, 58}, {88, 70, 48}, {84, 36, 56}, {64, 42, 54}},      /* MINI POPS: a round soft thud, a tonal snare, maracas, claves, a shaker */
     {{76, 40, 64}, {84, 40, 56}, {90, 30, 48}, {90, 50, 48}, {70, 40, 48}, {58, 64, 72}},      /* CR-78: short, light, clicky, a conga */
     {{64, 64, 70}, {64, 64, 66}, {64, 64, 44}, {64, 64, 40}, {64, 64, 58}, {64, 64, 58}},      /* LM-1: samples (64 = as recorded) */
@@ -52,22 +53,22 @@ static const dsnd_t KITS[NKIT][NDR] = {
     {{44, 110, 72}, {64, 64, 60}, {70, 50, 56}, {70, 80, 56}, {64, 70, 72}, {70, 82, 72}},     /* 808: a long low boom, a high tom */
     {{60, 72, 90}, {78, 70, 78}, {80, 48, 62}, {80, 80, 60}, {64, 64, 74}, {50, 70, 66}},      /* 909: a clicky punchy kick, a bright snare, crisp hats */
     {{56, 80, 76}, {56, 60, 70}, {50, 50, 56}, {50, 70, 56}, {56, 60, 64}, {44, 86, 74}},      /* LO-FI: lower, then crushed, a low tom */
-    {{54, 80, 92}, {60, 90, 86}, {64, 70, 64}, {60, 100, 62}, {50, 90, 80}, {36, 90, 80}},     /* INDUSTRIAL: loud and long, crushed hard */
+    {{54, 80, 92}, {60, 90, 54}, {64, 70, 64}, {60, 100, 62}, {50, 90, 80}, {36, 90, 80}},     /* INDUSTRIAL: loud and long, crushed hard */
     /* ELECTRONIC */
     {{48, 90, 88}, {74, 56, 74}, {84, 40, 58}, {84, 70, 56}, {70, 60, 76}, {64, 56, 62}},      /* ELECTRO: a deep kick, a tuned clap, a cowbell */
     {{52, 84, 94}, {70, 66, 72}, {88, 34, 62}, {88, 64, 58}, {66, 56, 70}, {60, 50, 60}},      /* TECHNO: a driving clicky kick, full hats, a rim */
     {{40, 122, 84}, {82, 50, 70}, {102, 22, 56}, {96, 50, 50}, {78, 46, 72}, {70, 40, 56}},    /* TRAP: a long sub boom, a tight snare, ticking hats */
-    {{60, 70, 86}, {88, 58, 80}, {76, 44, 58}, {76, 70, 56}, {70, 56, 66}, {56, 64, 64}},      /* BREAKS: a punchy kick, a cracking snare, gritty */
+    {{60, 70, 86}, {88, 58, 60}, {76, 44, 58}, {76, 70, 56}, {70, 56, 66}, {56, 64, 64}},      /* BREAKS: a punchy kick, a cracking snare, gritty */
     /* EXPERIMENTAL */
-    {{50, 90, 90}, {48, 100, 84}, {40, 90, 64}, {40, 110, 62}, {40, 100, 80}, {30, 100, 80}},  /* METAL: low clanging, everything rings */
+    {{50, 90, 90}, {48, 100, 53}, {40, 90, 64}, {40, 110, 62}, {40, 100, 80}, {30, 100, 80}},  /* METAL: low clanging, everything rings */
     {{70, 30, 80}, {96, 24, 70}, {112, 20, 56}, {110, 40, 52}, {100, 30, 66}, {90, 30, 60}},   /* GLITCH: tiny clicks and crushed blips */
     {{90, 30, 60}, {100, 30, 56}, {112, 24, 50}, {110, 40, 46}, {96, 30, 52}, {84, 40, 56}},   /* TOY: high and soft, maracas, a guiro */
-    {{30, 110, 90}, {40, 110, 86}, {60, 90, 66}, {60, 120, 64}, {40, 110, 84}, {24, 110, 82}},    /* NOISE: huge, long, crushed bursts */
+    {{30, 110, 90}, {40, 110, 54}, {60, 90, 66}, {60, 120, 64}, {40, 110, 84}, {24, 110, 82}},    /* NOISE: huge, long, crushed bursts */
     /* (later: more for the groups) */
     {{62, 60, 70}, {72, 74, 62}, {70, 40, 46}, {66, 100, 50}, {60, 50, 50}, {60, 80, 60}},     /* JAZZ: a soft kick, a loose snare, a ride, a floor tom */
     {{60, 58, 90}, {80, 56, 84}, {74, 36, 58}, {74, 60, 54}, {66, 56, 70}, {62, 52, 64}},      /* FUNK: tight and dry, a crisp snare, a conga */
     {{50, 84, 88}, {72, 60, 70}, {86, 30, 60}, {86, 62, 58}, {70, 64, 72}, {64, 50, 62}},      /* HOUSE: a round thump, a big clap, open hats, a shaker */
-    {{42, 96, 78}, {60, 84, 74}, {64, 40, 54}, {60, 90, 50}, {56, 90, 64}, {50, 60, 66}},     /* DUB: a deep kick, a long snare, a rim */
+    {{42, 96, 78}, {60, 84, 55}, {64, 40, 54}, {60, 90, 50}, {56, 90, 64}, {50, 60, 66}},     /* DUB: a deep kick, a long snare, a rim */
     {{80, 40, 70}, {96, 40, 64}, {108, 30, 56}, {104, 60, 52}, {92, 40, 60}, {86, 60, 66}}};   /* KITCHEN: pots, pans and a cowbell */
 static const char *const KIT_NAME[NKIT] = {"ROCK", "HIP-HOP", "MINI POPS", "CR-78", "LM-1", "606", "808", "909", "LO-FI", "INDUSTRIAL",
                                            "ELECTRO", "TECHNO", "TRAP", "BREAKS", "METAL", "GLITCH", "TOY", "NOISE",
@@ -262,7 +263,7 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
                 sn = ((sine(dr[DR_SNARE].ph) * (dr[DR_SNARE].amp >> 9)) >> 15) * 3 >> 3;
                 sn += ((noise * (dr[DR_SNARE].amp2 >> 9)) >> 15) >> 1;
             }
-            s += (sn * g[DR_SNARE]) >> 6;
+            s += ((sn * g[DR_SNARE]) >> 6) * 9 >> 4;   /* (x 9/16, -5 dB: the snares sat far above the band) */
             dr[DR_SNARE].amp = decay_k(dr[DR_SNARE].amp, k[DR_SNARE]);
             dr[DR_SNARE].amp2 = decay_k(dr[DR_SNARE].amp2, k[DR_SNARE] >> 1);
         }
@@ -292,7 +293,7 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
                 dr[DR_CLAP].lp2 += (dr[DR_CLAP].lp1 - dr[DR_CLAP].lp2) >> 4;
             }
             band = dr[DR_CLAP].lp1 - dr[DR_CLAP].lp2;
-            s += ((((band * (dr[DR_CLAP].amp >> 9)) >> 15) * 3 >> 2) * g[DR_CLAP]) >> 6;
+            s += ((((band * (dr[DR_CLAP].amp >> 9)) >> 15) * 27 >> 6) * g[DR_CLAP]) >> 6;   /* (3/4 x 9/16: -5 dB, as the snare) */
             dr[DR_CLAP].amp = decay_k(dr[DR_CLAP].amp, c < 2u * CLAP_GAP ? 400 : k[DR_CLAP]);
         }
         if (dr[DR_PERC].amp) {                  /* PERC, by the kit's type */
