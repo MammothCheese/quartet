@@ -114,7 +114,7 @@ The drum kits are synthesised, except the **LM-1**, which plays samples of a rea
 | **ENV** | Attack | Decay | Sustain | Release |
 | **LFO** | Rate | Depth | Target: pitch/filter/volume | Wave: tri/square/saw/random |
 
-**Saving your own sound:** tweak it, go to **INSTR**, pick a USER slot with **KNOB4** and press **REC twice** (within three seconds; the bottom line asks first). **SAVED USER 3** shows and the slot now plays the saved sound, which appears in the USER bank of that type. Saving to a used slot replaces it. The USER bank is kept with your work and with each saved project, and survives *clear everything*.
+**Saving your own sound:** press **REC twice** on any page of the sound editor (within three seconds; the bottom line asks first). It saves to the USER slot named on the bottom line (**SAVE U1**); pick another with **KNOB4** on **INSTR**. **SAVED USER 3** shows and the slot now plays the saved sound, which appears in the USER bank of that type. Saving to a used slot replaces it. The USER bank is kept with your work and with each saved project, and survives *clear everything*.
 
 **Glide** (MAIN, KNOB1) slides each note's pitch from the last one: off at 0, up to about half a second. Tempo is on KNOB1 of the home screen.
 

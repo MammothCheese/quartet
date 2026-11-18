@@ -998,7 +998,7 @@ static void bottom_bar(const char *s, uint16_t dot)   /* the bottom bar: the tex
 static uint32_t kit_list(uint8_t *ids, uint32_t cur);
 static uint32_t id_bank(uint32_t t, uint32_t id);
 static uint32_t snd_pg;                         /* the sound editor's page: 0 INSTR (drums: KIT), then MAIN OSC ENV LFO (drums: a drum each) */
-static uint32_t usr_slot, usr_ask, usr_t;       /* INSTR: the USER slot to save to; "sure?" (REC again within 3 s) */
+static uint32_t usr_slot, usr_ask, usr_t;       /* the USER slot to save to (KNOB4 on INSTR); "sure?" (REC again within 3 s, any page) */
 static uint32_t chain_sl;                       /* the signal chain (EDIT twice): the pedal slot chosen, 0..3 */
 static uint32_t cp_trk, cp_pat, cp_ask, cp_t, cp_live;   /* the copy page (SEQ held): the pattern to copy from; "sure?"
                                                    (REC again within 3 s); back to the live page (else the step recorder) */
@@ -1034,9 +1034,8 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
     } else if (page == PG_MIX) {                /* the mixer */
         p = put(p, "FX, SEL, ENV, LFO: MUTE TRACKS");
     } else if (page == PG_SOUND) {              /* the sound editor */
-        if (snd_pg == 0u && usr_ask) { p = put(p, "REC AGAIN: SAVE TO USER "); *p++ = (char)('1' + usr_slot); }
-        else if (snd_pg == 0u) p = put(p, "ALG:PAGE  REC TWICE:SAVE");
-        else p = put(p, "ALG:PAGE  EDIT:CHAIN");
+        if (usr_ask) { p = put(p, "REC AGAIN: SAVE TO USER "); *p++ = (char)('1' + usr_slot); }
+        else { p = put(p, "ALG:PAGE  REC TWICE:SAVE U"); *p++ = (char)('1' + usr_slot); }
     } else if (page == PG_CHAIN) {              /* the signal chain: what KNOB2-4 turn on the chosen pedal */
         pknob_t pk[3];
         uint32_t k, n;
@@ -1325,6 +1324,21 @@ static void arow(int32_t x0, int32_t x1, int32_t y, uint16_t c)   /* a row x0..x
     if (x1 >= x0) cv_rect(x0, y, x1 - x0 + 1, 1, c);
 }
 static int32_t row_vis(int32_t y) { return y + cv_oy >= 0 && y + cv_oy < (int32_t)cv_h; }
+static void arect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c)   /* a rectangle, clipped to the case */
+{
+    int32_t j;
+    for (j = y; j < y + h; j++) if (row_vis(j)) arow(x, x + w - 1, j, c);
+}
+static void arrect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint16_t c)   /* round corners, clipped */
+{
+    int32_t i;
+    if (2 * r > h) r = h / 2;
+    if (2 * r > w) r = w / 2;
+    for (i = 0; i < h; i++) {
+        int32_t d = i < r ? r - 1 - i : i >= h - r ? i - (h - r) : -1, ins = d < 0 ? 0 : r - isqrt_small(r * r - d * d);
+        if (row_vis(y + i)) arow(x + ins, x + w - 1 - ins, y + i, c);
+    }
+}
 static uint16_t cv_get(int32_t x, int32_t y)
 {
     x += cv_ox;
@@ -1635,10 +1649,10 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
         int32_t gx, gy;
         for (gy = 0; gy < 7; gy++) {
             if (gy == 2 || gy == 4 || gy == 6) continue;
-            for (gx = -8; gx <= 8; gx++) if (gx * gx + gy * gy <= 56) cv_rect(120 + gx * 6, 170 - gy * 6, 5, 5, mix565(RGB(240, 80, 190), RGB(255, 200, 60), gy * 100 / 7));
+            for (gx = -8; gx <= 8; gx++) if (gx * gx + gy * gy <= 56) arect(120 + gx * 6, 170 - gy * 6, 5, 5, mix565(RGB(240, 80, 190), RGB(255, 200, 60), gy * 100 / 7));
         }
         for (gy = 0; gy < 6; gy++)
-            for (gx = 0; gx < 38; gx++) if (!((gx + gy) & 1)) cv_rect(6 + gx * 6, 176 + gy * 6, 5, 5, mix565(RGB(240, 80, 190), body, 55 + gy * 7));
+            for (gx = 0; gx < 38; gx++) if (!((gx + gy) & 1)) arect(6 + gx * 6, 176 + gy * 6, 5, 5, mix565(RGB(240, 80, 190), body, 55 + gy * 7));
         break;
     }
     case LK_FSEQ: {
@@ -1646,7 +1660,7 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
         uint16_t mi = RGB(80, 230, 190);
         for (i = 0; i < 14u; i++) {
             int32_t x = 10 + (int32_t)i * 16, top = 196 - H[i], wy;
-            cv_rect(x, top, 13, 208 - top, mix565(mi, body, i == 3u ? 0 : 55));
+            arect(x, top, 13, 208 - top, mix565(mi, body, i == 3u ? 0 : 55));
             for (wy = top + 6; wy < 206; wy += 6) { ap(x + 4, wy, mix565(mi, body, 10)); ap(x + 9, wy, mix565(mi, body, 30)); }
         }
         astars(31, 10, 130, 230, 150, 18, mi);
@@ -1821,8 +1835,8 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
         uint16_t cn = RGB(80, 210, 240);
         for (k = 0; k < 7; k++) {
             int32_t x = 30 + k * 26, y = 200 - k * 10;
-            cv_rect(x, y, 26, 10, mix565(cn, body, 10 + k * 8));
-            cv_rect(x, y + 10, 26, 208 - y - 10, mix565(cn, body, 70));
+            arect(x, y, 26, 10, mix565(cn, body, 10 + k * 8));
+            arect(x, y + 10, 26, 208 - y - 10, mix565(cn, body, 70));
         }
         aline(40, 186, 40, 170, cn, 1); aline(40, 170, 34, 176, cn, 1); aline(40, 170, 46, 176, cn, 1);
         break;
@@ -1906,8 +1920,8 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
     }
     case LK_LOFI: {
         uint16_t rb = RGB(60, 46, 34);
-        cv_rrect(60, 150, 120, 54, 8, rb);
-        cv_rrect(68, 158, 60, 38, 4, mix565(rb, body, 30));
+        arrect(60, 150, 120, 54, 8, rb);
+        arrect(68, 158, 60, 38, 4, mix565(rb, body, 30));
         s = 5;
         for (i = 0; i < 160u; i++) { int32_t x = 70 + (int32_t)rnd_n(&s, 56), y = 160 + (int32_t)rnd_n(&s, 34); ap(x, y, rnd_n(&s, 10) < 6u ? body : rb); }
         adisc(154, 166, 7, body); adisc(154, 188, 7, body);
@@ -1948,7 +1962,7 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
         uint16_t aa = RGB(90, 220, 220);
         adisc(206, 160, 12, mix565(aa, K_WHITE, 50));
         adisc(212, 156, 11, body);
-        for (k = 0; k < 9; k++) { int32_t x = 24 + k * 20, y = 200 - k * 8 - (k % 3) * 4; cv_rrect(x, y, 14, 5, 2, mix565(aa, body, k == 4 ? 0 : 50)); }
+        for (k = 0; k < 9; k++) { int32_t x = 24 + k * 20, y = 200 - k * 8 - (k % 3) * 4; arrect(x, y, 14, 5, 2, mix565(aa, body, k == 4 ? 0 : 50)); }
         astars(12, 10, 126, 190, 160, 16, aa);
         break;
     }
@@ -2072,7 +2086,7 @@ static void draw_pedal(uint32_t trk, uint32_t e)
 static const uint8_t PL_FOCUS[NLOOK][2] = {
     {125, 165}, {120, 175}, {120, 160}, {100, 160}, {120, 170}, {120, 175}, {110, 185}, {120, 180}, {180, 160}, {122, 180},
     {140, 140}, {120, 160}, {120, 180}, {120, 165}, {120, 175}, {62, 150}, {120, 160}, {120, 165}, {120, 130}, {120, 165},
-    {120, 172}, {110, 180}, {120, 165}, {160, 165}, {100, 158}, {120, 170}, {120, 170}, {120, 170}, {100, 170}, {140, 170},
+    {120, 172}, {110, 180}, {120, 165}, {160, 165}, {100, 158}, {120, 170}, {120, 170}, {120, 108}, {100, 170}, {140, 170},
     {120, 175}};
 static void art_window(uint32_t lk, int32_t dx, int32_t dy, int32_t w, int32_t h, int32_t r)
 {                                               /* a window of a pedal's art (round its focus) at dx, dy, w x h */
@@ -3641,7 +3655,7 @@ static void app_main(void)
                                 | knob(ENC_KNOB3, &sp->ltgt, 0, NLTGT - 1) | knob(ENC_KNOB4, &sp->lwave, 0, NLWAVE - 1); break;
                 }
             }
-            if (ch) CHANGED();
+            if (ch) { CHANGED(); usr_ask = 0; }
         } else if (spage == PG_KEY) {           /* the key: KNOB1 the lock, KNOB2 the lights */
             uint8_t lk = set.keyopt & 1u, li = set.keyopt >> 1 & 1u;
             if (knob(ENC_KNOB1, &lk, 0, 1) | knob(ENC_KNOB2, &li, 0, 1)) { set.keyopt = (uint8_t)(lk | li << 1); CHANGED(); }
@@ -3699,7 +3713,7 @@ static void app_main(void)
                     CHANGED();
                 }
             }
-            else if (!rec_long && spage == PG_SOUND && snd_pg == 0u) {   /* INSTR: save the sound to the USER slot (REC twice) */
+            else if (!rec_long && spage == PG_SOUND) {   /* any page of the sound editor: save the sound to the USER slot (REC twice) */
                 if (!usr_ask || fm1_ms - usr_t > 3000u) { usr_ask = 1; usr_t = fm1_ms; }
                 else {
                     static char sm[16];
@@ -3877,11 +3891,14 @@ static void app_main(void)
         } else if (pedal_mode == 8u) {                 /* the sound editor: the track (SOUND), its page */
             const uint8_t *sb = trk < NSYN ? (const uint8_t *)&set.snd[trk] : (const uint8_t *)&set.dsnd[drum];
             uint32_t nb = trk < NSYN ? sizeof(snd_t) : sizeof(dsnd_t);
-            if ((st = mix(mix(mix(trk, trk_mute >> trk & 1u), 8u), trk < NSYN ? set.styp[trk] * 7u + set.styp[(trk + 1u) % NSYN] * 3u + set.styp[(trk + 2u) % NSYN] : 0u)) != head_drawn) {
+            uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
+            if ((st = mix(mix(mix(mix(trk, trk_mute >> trk & 1u), 8u), trk < NSYN ? set.styp[trk] * 7u + set.styp[(trk + 1u) % NSYN] * 3u + set.styp[(trk + 2u) % NSYN] : 0u), show_msg ? msg_t : 0u)) != head_drawn) {
                 static char sn[8] = "SLOT 1";
                 for (k = 0; k < NTRK && SEQ_ORDER[k] != trk; k++) {}
                 sn[5] = (char)('1' + k % NTRK);   /* (the slots as on the screen, top to bottom: 1-4) */
-                head_drawn = st; head_badge = TYPE_NAME[TTYPE(trk)]; head_track(trk, sn, 0); head_badge = 0;
+                head_drawn = st;
+                if (show_msg) head_text(msg, msg_ok ? C_WHITE : C_MUTE, msg_ok ? C_PLAYG : C_MUTE);   /* SAVED USER 3 */
+                else { head_badge = TYPE_NAME[TTYPE(trk)]; head_track(trk, sn, 0); head_badge = 0; }
             }
             st = mix(mix(mix(mix(mix(mix(trk, snd_pg), drum), set.bpm), set.dkit), trk_mute >> trk & 1u), 81u);
             st = mix(mix(mix(mix(st, usr_slot), usr_ask), trk < NSYN ? set.styp[trk] : 9u), trk < NSYN ? set.glide[trk] : 0u);
