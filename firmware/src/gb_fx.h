@@ -39,6 +39,8 @@ enum { PD_DIST, PD_OD, PD_FUZZ, PD_OCTF, PD_GATEF, PD_FOLD,              /* DRIV
        PD_SHIFT, PD_HARM,                       /* PITCH */
        PD_LOFI, PD_SLOW, PD_GHOST, PD_MBOX, PD_BROKEN, PD_SHADOW,   /* OTHER */
        PD_LOOSE, PD_OLDM,                       /* (OTHER: GHOST + BROKEN CLOCK, CASSETTE + VINYL in one each) */
+       PD_DJF, PD_ACID, PD_RING,                /* (later still: FILTER, FILTER, PITCH) */
+       PD_WRONG, PD_MECH, PD_MEML, PD_WORM,     /* (OTHER: the note pedals, gb_clock.h) */
        NPD };
 enum { SP_REV, SP_DLY, SP_TAPE, SP_SHIM, SP_REVD, SP_SPRING, NSPACE_ALL };   /* the shared pedals (and their buses); the
                                                    first NSPACE keep their knobs in set.spk, the later ones in set.spk2 */
@@ -870,6 +872,93 @@ static void mbox_block(uint32_t t, pst_t *st, int16_t *b, const uint8_t *k, int3
     }
 }
 
+/* ---- the later pedals: DJ FILTER and ACID (filters), RING MOD (pitch); WRONG STATION's static (OTHER) ---- */
+/* DJ FILTER: FILTER, RES, LEVEL. One knob from dark to thin: below the middle a low-pass closing, above it a high-pass
+ * opening, in the middle (64) the sound as it is. Glided, so a sweep has no steps */
+static void djf_block(pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    int32_t low = st->s[0], band = st->s[1], f = st->s[2], pos = (int32_t)k[0] - 64;
+    int32_t q = 30000 - (int32_t)k[1] * 180, lvl = 32 + (int32_t)k[2] / 2, ft, a = pos < 0 ? -pos : pos;
+    uint32_t i;
+    if (pos < -2) ft = 260 + (15540 * (64 - a) * (64 - a)) / 4096;   /* (low-pass: 3.4 kHz down to ~60 Hz, curved) */
+    else if (pos > 2) ft = 120 + (12000 * a * a) / 4096;          /* (high-pass: ~25 Hz up to 2.6 kHz) */
+    else ft = 15800;
+    if (!f) f = ft;
+    for (i = 0; i < n; i++) {
+        int32_t y, hi;
+        f += (ft - f) >> 8;
+        svf(&low, &band, x[i], f, q);
+        hi = clampv(x[i], 32767) - low - ((q * band) >> 14);
+        y = pos < -2 ? low : pos > 2 ? hi : x[i];
+        x[i] = (y * lvl) >> 6;
+    }
+    st->s[0] = low; st->s[1] = band; st->s[2] = f;
+}
+
+/* ACID: CUTOFF, RES, DECAY. A resonant low-pass that snaps open on each new note and closes again (the squelch of an
+ * acid bass line): on a synth track it knows the notes (a voice's age changes); on the drums it hears the hits */
+static void acid_block(uint32_t t, pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    int32_t low = st->s[0], band = st->s[1], env = st->s[2], fast = st->s[3], slow = st->s[4];
+    int32_t base = 500 + (int32_t)k[0] * 70, q = 24000 - (int32_t)k[1] * 160;
+    int32_t T = 1300 + (int32_t)k[2] * 200, dec16 = 32767 - 32767 * 16 / T;
+    uint32_t i, hit = 0;
+    if (t < NSYN) {                             /* a note started since the last block? */
+        uint32_t v;
+        for (v = TRK[t].first; v < TRK[t].first + TRK[t].count; v++)
+            if (vx[v].gate && (int32_t)(vx[v].age - st->cnt) > 0) { hit = 1; st->cnt = vx[v].age; }
+    }
+    if (hit) env = 32767;
+    for (i = 0; i < n; i++) {
+        int32_t f, a = absv(x[i]);
+        if (t >= NSYN) {                        /* the drums: a sudden rise is a hit */
+            fast += (a - fast) >> 4; slow += (a - slow) >> 10;
+            if (fast > 2500 && fast > slow * 3 && env < 12000) env = 32767;
+        }
+        f = base + (((15800 - base) * (env >> 3)) >> 12);
+        if (f > 15800) f = 15800;
+        svf(&low, &band, x[i] >> 1, f, q);
+        x[i] = clampv(low * 7 / 4, 32767);      /* (back up, and a little pushed: the squelch) */
+        if ((i & 15u) == 0u) env = (env * dec16) >> 15;
+    }
+    st->s[0] = low; st->s[1] = band; st->s[2] = env; st->s[3] = fast; st->s[4] = slow;
+}
+
+/* RING MOD: FREQ (~30 Hz .. 3.8 kHz), MIX, WOBBLE. The sound times a sine: metallic, bell-like, robotic; WOBBLE
+ * swings the sine's pitch slowly */
+static void ring_block(pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    uint32_t i, oct = k[0] / 18u, fr = k[0] % 18u, inc = 2921746u << oct, wob = k[2];
+    int32_t mx = k[1];
+    int32_t dev;
+    inc += (inc >> 10) * fr * 40u;              /* (2^(1/18) a step, near enough) */
+    dev = (int32_t)((inc >> 4) / 127u * wob);   /* (the wobble's reach: up to 1/16 of the pitch) */
+    for (i = 0; i < n; i++) {
+        int32_t y, s;
+        if ((i & 31u) == 0u) st->ph2 += 2000u * 32u;   /* (the wobble: ~0.6 Hz) */
+        s = sine(st->ph2);
+        st->ph += inc + (uint32_t)(((dev >> 6) * (s >> 6)) >> 3);
+        y = (x[i] * sine(st->ph)) >> 15;
+        x[i] += ((y - x[i]) * mx) >> 7;
+    }
+}
+
+/* WRONG STATION's static: a short burst of radio noise each time it tunes away or back (gb_clock.h sets ws_static) */
+static volatile uint16_t ws_static[NTRK];
+static void wrong_block(uint32_t t, pst_t *st, int32_t *x, uint32_t n)
+{
+    uint32_t i, left = ws_static[t];
+    int32_t lp = st->s[0];
+    if (!left) return;
+    for (i = 0; i < n && left; i++, left--) {
+        int32_t nz = (int32_t)(rnd_next(&st->rnd) >> 17) - 16384, lvl = (int32_t)(left > 2000u ? 2000u : left) * 4;
+        lp += (nz - lp) >> 2;                   /* (hiss, a little dulled; the sound ducks under it) */
+        x[i] = x[i] * (8000 - lvl / 2) / 8000 + ((lp * lvl) >> 13);
+    }
+    ws_static[t] = (uint16_t)left;
+    st->s[0] = lp;
+}
+
 static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, int32_t *x, uint32_t n)
 {
     pst_t *st = &pst[t][e];
@@ -899,6 +988,11 @@ static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, 
     }
     else if (type == PD_MBOX) mbox_block(t, st, pbuf[t][e], k, x, n);
     else if (type == PD_BROKEN) {}              /* (BROKEN CLOCK changes when the track plays: gb_clock.h) */
+    else if (type == PD_DJF) djf_block(st, k, x, n);
+    else if (type == PD_ACID) acid_block(t, st, k, x, n);
+    else if (type == PD_RING) ring_block(st, k, x, n);
+    else if (type == PD_WRONG) wrong_block(t, st, x, n);
+    else if (type == PD_MECH || type == PD_MEML || type == PD_WORM) {}   /* (the notes they play: gb_clock.h) */
     else if (type <= PD_UNI) mod_block(type, st, pbuf[t][e], k, x, n);
     else other_block(t, type, st, pbuf[t][e], k, x, n);
 }

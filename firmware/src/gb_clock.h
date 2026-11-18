@@ -147,7 +147,135 @@ static void repeat_step(uint32_t step, int restart)   /* a new step, after the t
  * often twice. Its late steps wait here (cleared on STOP) */
 static uint8_t brk_wait[NTRK], brk_again[NTRK];
 static uint32_t brk_rnd = 0x2545F491u;
-static void track_step(uint32_t t) { if (t == T_DRUMS) drums_step(); else synth_step_t(t); }
+/* ---- the note pedals (gb_fx.h lists them): they change which step a track plays, or with what sound, just before it
+ * plays it. Each works from the track's own position, so the pattern itself is never changed:
+ *   WRONG STATION  now and then tunes the track to a neighbouring sound (drums: kit) for a while, with a burst of
+ *                  static, then back: CHANCE, DRIFT (how far along the list), HOLD (how long away)
+ *   MECH FAILURE   the instrument wears out: missed attacks, sticking notes (the step before again), notes out of tune,
+ *                  until it suddenly works again: WEAR, STICK, RECOVERY
+ *   MEMORY LOSS    each time the pattern comes round a few more of its steps are forgotten (the same ones: fragments
+ *                  remain), down to FLOOR; RECALL: then it remembers again, in waves: SPEED, FLOOR, RECALL
+ *   TAPE WORM      keeps the last steps played and now and then loops a fragment of them: CHANCE, LENGTH, REPEATS
+ * WRONG STATION swaps the track's sound here, in the audio interrupt, and puts it back here too: on STOP, while the
+ * sound editor is open (ws_hold), and before anything is saved (the music stops first), so a station is never kept */
+static uint32_t kit_list(uint8_t *ids, uint32_t cur);
+static uint32_t np_rnd = 0x6C8E9CF5u;
+static uint32_t np_next(void) { np_rnd = np_rnd * 1664525u + 1013904223u; return np_rnd >> 8; }
+static const uint8_t *note_ped(uint32_t t, uint32_t p)   /* the track's pedal p, if switched on: its knobs */
+{
+    uint32_t e;
+    for (e = 0; e < NPED_SLOTS; e++) if (set.fx[t].on >> e & 1u && set.ped[t][e] % NPD == p) return set.pk[t][e];
+    return 0;
+}
+/* WRONG STATION: the sound it went away from, kept to come back to */
+static snd_t ws_snd[NSYN];
+static uint8_t ws_glide[NSYN], ws_dkit, ws_away[NTRK], ws_alt[NTRK];
+static uint16_t ws_left[NTRK];
+static dsnd_t ws_dsnd[NDR];
+static volatile uint8_t ws_hold;                /* main loop: the sound editor is open (the real sound, please) */
+static void ws_home(uint32_t t)                 /* back to the real sound (unless it was changed meanwhile: then that stays) */
+{
+    if (!ws_away[t]) return;
+    ws_away[t] = 0;
+    if (t < NSYN) { if (set.snd[t].preset == ws_alt[t]) { set.snd[t] = ws_snd[t]; set.glide[t] = ws_glide[t]; } }
+    else if (set.dkit == ws_alt[t]) { uint32_t d; for (d = 0; d < NDR; d++) set.dsnd[d] = ws_dsnd[d]; set.dkit = ws_dkit; }
+}
+static void ws_home_all(void) { uint32_t t; for (t = 0; t < NTRK; t++) ws_home(t); }
+static void ws_step(uint32_t t, const uint8_t *k)   /* a step with WRONG STATION on: tune away, or count down to coming back */
+{
+    static const uint8_t HOLD[4] = {4, 8, 16, 32};   /* (1/4 bar .. 2 bars) */
+    uint8_t ids[48];
+    uint32_t n, i, at = 0, span, r = np_next(), id;
+    if (ws_away[t]) {
+        if (ws_left[t]) ws_left[t]--;
+        if (!ws_left[t] || (t < NSYN ? set.snd[t].preset : set.dkit) != ws_alt[t]) { ws_home(t); ws_static[t] = 3500; }
+        return;
+    }
+    if ((r & 0xFFFFu) >= (uint32_t)k[0] * 40u) return;   /* CHANCE: up to ~8 % a step */
+    if (t < NSYN) n = sound_list(set.styp[t] % NSYN, ids, set.snd[t].preset);
+    else { uint32_t m = kit_list(ids, set.dkit); for (n = i = 0; i < m; i++) if (ids[i] < NKIT) ids[n++] = ids[i]; }
+    if (n < 2u) return;
+    for (i = 0; i < n; i++) if (ids[i] == (t < NSYN ? set.snd[t].preset : set.dkit)) at = i;
+    span = 1u + (uint32_t)k[1] * (n - 1u) / 127u / 2u;   /* DRIFT: the next sound .. halfway round the list */
+    i = (r >> 16) % span + 1u;
+    id = ids[(r >> 20 & 1u) ? (at + i) % n : (at + n - i % n) % n];
+    if (id == (t < NSYN ? set.snd[t].preset : set.dkit)) return;
+    if (t < NSYN) { ws_snd[t] = set.snd[t]; ws_glide[t] = set.glide[t]; sound_load(t, id); }
+    else { uint32_t d; for (d = 0; d < NDR; d++) { ws_dsnd[d] = set.dsnd[d]; set.dsnd[d] = KITS[id][d]; } ws_dkit = set.dkit; set.dkit = (uint8_t)id; }
+    ws_alt[t] = (uint8_t)id; ws_away[t] = 1;
+    ws_left[t] = (uint16_t)(HOLD[k[2] & 3u] * (1u + (r >> 22 & 1u)));
+    ws_static[t] = 3500;                        /* (~80 ms of static) */
+}
+/* MECH FAILURE: how worn it is (0 working .. 32767 falling apart), going up step by step until RECOVERY */
+static int32_t mf_wear[NTRK];
+/* MEMORY LOSS: how much is forgotten (0..255), going up each time round; RECALL: coming back down */
+static int32_t ml_amt[NTRK];
+static uint8_t ml_down[NTRK], ml_on[NTRK];
+/* TAPE WORM: the last 32 steps played; a fragment playing: where it starts, how long, how far in, how many times */
+static uint8_t tw_hist[NTRK][32], tw_n[NTRK], tw_from[NTRK], tw_len[NTRK], tw_at[NTRK], tw_rep[NTRK];
+#ifdef NOTE_LOG
+static void note_log(uint32_t t, uint32_t pos);  /* (a test build: which step each track played) */
+#endif
+static void track_play(uint32_t t)
+{
+#ifdef NOTE_LOG
+    note_log(t, trk_pos[t]);
+#endif
+    if (t == T_DRUMS) drums_step(); else synth_step_t(t);
+}
+static void track_step(uint32_t t)              /* one track's step, through its note pedals */
+{
+    uint32_t pos = trk_pos[t], play = pos, len = pat_len(t, play_pat[t] % NPAT), before = vx_ages, v;
+    const uint8_t *k;
+    int32_t detune = 0;
+    tw_hist[t][tw_n[t]++ & 31u] = (uint8_t)pos;
+    if ((k = note_ped(t, PD_WRONG)) != 0) ws_step(t, k);
+    else if (ws_away[t]) ws_home(t);
+    if ((k = note_ped(t, PD_MEML)) != 0) {      /* MEMORY LOSS: SPEED, FLOOR, RECALL */
+        int32_t top = 255 * (127 - (int32_t)k[1]) / 127;
+        if (!ml_on[t]) { ml_on[t] = 1; ml_amt[t] = 0; ml_down[t] = 0; if (pos == 0u) ml_on[t] = 2; }
+        if (pos == 0u && ml_on[t] == 2u) ml_on[t] = 3;   /* (the first time through: all of it, once) */
+        else if (pos == 0u) {                   /* round again: forget some more (or remember) */
+            if (!ml_down[t]) { ml_amt[t] += 6 + (int32_t)k[0] / 3; if (ml_amt[t] >= top) { ml_amt[t] = top; if (k[2]) ml_down[t] = 1; } }
+            else { ml_amt[t] -= 4 + (int32_t)k[2] / 4; if (ml_amt[t] <= 0) { ml_amt[t] = 0; ml_down[t] = 0; } }
+        }
+        if ((pos ? (int32_t)((pos * 2654435761u + t * 0x9E3779B9u + 0x7F4A7C15u) >> 24) : 250) < ml_amt[t]) return;   /* (this step
+                                                   forgotten; the downbeat last of all) */
+    } else ml_on[t] = 0;
+    if ((k = note_ped(t, PD_WORM)) != 0) {      /* TAPE WORM: CHANCE, LENGTH (1/8 .. a bar), REPEATS (1-4) */
+        if (!tw_len[t] && tw_n[t] > 8u && (np_next() & 0xFFFFu) < (uint32_t)k[0] * 30u) {
+            uint32_t L = 2u << (k[1] & 3u), back = L + np_next() % 16u;
+            if (back > 31u) back = 31u;
+            tw_len[t] = (uint8_t)L; tw_at[t] = 0; tw_rep[t] = (uint8_t)(1u + (k[2] & 3u));
+            tw_from[t] = (uint8_t)(tw_n[t] - 1u - back);
+        }
+        if (tw_len[t]) {                        /* a fragment playing: its step instead */
+            play = tw_hist[t][(uint8_t)(tw_from[t] + tw_at[t]) & 31u] % (len ? len : 1u);
+            if (++tw_at[t] >= tw_len[t]) { tw_at[t] = 0; if (!--tw_rep[t]) tw_len[t] = 0; }
+        }
+    } else tw_len[t] = 0;
+    if ((k = note_ped(t, PD_MECH)) != 0) {      /* MECH FAILURE: WEAR, STICK, RECOVERY */
+        uint32_t r = np_next();
+        int32_t fail;
+        mf_wear[t] += 40 + (int32_t)k[0] * 2;
+        if (mf_wear[t] > 32767) mf_wear[t] = 32767;
+        if ((r & 0xFFFFu) < (uint32_t)k[2] * 8u) mf_wear[t] = 0;   /* (it works again, all at once) */
+        fail = mf_wear[t] * (int32_t)k[0] / 127;
+        if ((int32_t)((r >> 4) & 0x7FFFu) < fail / 3) return;   /* (a missed attack) */
+        if ((int32_t)((r >> 9) & 0x7FFFu) < fail * (int32_t)k[1] / 254) play = (play + len - 1u) % (len ? len : 1u);   /* (it sticks) */
+        detune = (int32_t)((r >> 3) % 65u) - 32;
+        detune = detune * fail / 32767;         /* (out of tune: up to ~1/3 semitone either way) */
+    } else mf_wear[t] = 0;
+    trk_pos[t] = (uint8_t)play;
+    track_play(t);
+    trk_pos[t] = (uint8_t)pos;
+    if (detune && t < NSYN)                     /* the notes just started a little off */
+        for (v = TRK[t].first; v < TRK[t].first + TRK[t].count; v++)
+            if (vx[v].gate && (int32_t)(vx[v].age - before) > 0) {
+                vx[v].inc = (uint32_t)((int32_t)vx[v].inc + (int32_t)(vx[v].inc >> 10) * detune);
+                vx[v].tinc = (uint32_t)((int32_t)vx[v].tinc + (int32_t)(vx[v].tinc >> 10) * detune);
+            }
+}
 static const uint8_t *broken_k(uint32_t t)      /* the track's BROKEN CLOCK knobs, if it has one on (or LOOSE: its LATE
                                                    as how late and how often, a hiccup now and then) */
 {
@@ -218,9 +346,11 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
     if (go_done != clk_go) { go_done = clk_go; pos_q8 = 0; tick = 0; clock_fire(0); }   /* PLAY: step 1 now */
     if (was_run && !run) {                      /* STOP: the notes let go; the pedals fall silent (gb_fx.h); no late step */
         drums_stop(); synth_stop(); fx_flush_req = 1; fx_quiet = 1;
+        ws_home_all();                          /* (WRONG STATION: the real sounds back) */
         for (t = 0; t < NTRK; t++) brk_wait[t] = brk_again[t] = 0;
     }
     was_run = run;
+    if (ws_hold) ws_home_all();                /* (the sound editor open: the real sound) */
     if (pos_q8 > 2u * len_q8) pos_q8 = len_q8;  /* (the tempo jumped up a lot: one tick now, not a burst) */
     if (run) fx_quiet = 0;
     fxc_run = run; fxc_tick = tick; fxc_pos = pos_q8 < len_q8 ? pos_q8 : 0u; fxc_len = len_q8;   /* (for synced effects) */

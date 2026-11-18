@@ -20,7 +20,7 @@ The rest is in **[the guide](https://mammothcheese.github.io/quartet/)**.
 
 ## What's inside
 
-- **30 pedals**, four on every instrument: drive, filter, modulation, space, pitch and some strange ones (Loose, Old Media, Glitch). Each drawn as its own boutique pedal.
+- **37 pedals**, four on every instrument: drive, filter (DJ Filter, Acid), modulation, space, pitch (Ring Mod) and some strange ones that play with the notes themselves (Wrong Station, Mech Failure, Memory Loss, Tape Worm, Loose). Each drawn as its own boutique pedal.
 - **72 sounds and 23 drum kits**: pianos, organs, guitars, strings, choirs, basses, synths, and kits from Rock and Jazz to 808, 909 and a sampled Linn LM-1. Tweak any sound and save your own.
 - **Beats and parts**: ten patterns per instrument, drum grid, step and live recording, note lengths and expression, swing, copy.
 - **Play live**: arpeggiator, beat repeat, mixer with mutes, key lock.

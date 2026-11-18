@@ -575,7 +575,8 @@ static const uint8_t FX_BTN[NFX] = {BTN_FX, BTN_SEL, BTN_ENV, BTN_LFO, BTN_EDIT}
 
 /* the pedal library: each pedal's name, category, colour (dark: black letters on it) and three knobs (KNOB2-4):
  * where each is kept (0-2: the slot's knob; 3, 4: the shared pedal's), how far it goes, where it starts, how shown */
-enum { KV_LVL, KV_DLY, KV_R4, KV_R8, KV_GL, KV_OCT, KV_PAT, KV_SRC, KV_SEMI, KV_OCT5, KV_INT, KV_OCT2 };   /* ... -12..+12;
+enum { KV_LVL, KV_DLY, KV_R4, KV_R8, KV_GL, KV_OCT, KV_PAT, KV_SRC, KV_SEMI, KV_OCT5, KV_INT, KV_OCT2,
+       KV_DJ, KV_TWL, KV_REP, KV_HOLD };    /* (DJ FILTER: LP .. OPEN .. HP; TAPE WORM's length, repeats; WRONG STATION's hold) */   /* ... -12..+12;
                                                    -2..+2 octaves; the harmony's interval; -1/-2 octaves */   /* 0..20; a note value; 1/4-1/16; 1/8-1/32; 1/32-1/8;
                                                    0/-1/-2; 1-8; KICK/1/4/1/8 */
 typedef struct { const char *name; uint8_t src, max, def, kind; } pkdef_t;
@@ -620,6 +621,13 @@ static const pdef_t PDEF[NPD] = {
     {"SHADOW", 5, {50, 50, 70}, 0, {KL("LEVEL", 0, 60), KL("TONE", 1, 40), {"OCTAVE", 2, 1, 0, KV_OCT2}}},
     {"LOOSE", 5, {200, 170, 110}, 1, {KL("LATE", 0, 50), KL("DOUBLE", 1, 50), KL("DRIFT", 2, 40)}},   /* GHOST + BROKEN CLOCK */
     {"OLD MEDIA", 5, {120, 70, 45}, 0, {KL("WEAR", 0, 60), KL("NOISE", 1, 45), KL("TONE", 2, 60)}},   /* CASSETTE + VINYL */
+    {"DJ FILTER", 1, {40, 200, 230}, 1, {{"FILTER", 0, 127, 34, KV_DJ}, KL("RES", 1, 50), KL("LEVEL", 2, 64)}},
+    {"ACID", 1, {196, 232, 40}, 1, {KL("CUTOFF", 0, 30), KL("RES", 1, 90), KL("DECAY", 2, 40)}},
+    {"RING MOD", 4, {190, 196, 204}, 1, {KL("FREQ", 0, 70), KL("MIX", 1, 90), KL("WOBBLE", 2, 20)}},
+    {"WRONG STATION", 5, {232, 214, 170}, 1, {KL("CHANCE", 0, 60), KL("DRIFT", 1, 30), {"HOLD", 2, 3, 1, KV_HOLD}}},
+    {"MECH FAILURE", 5, {110, 118, 126}, 0, {KL("WEAR", 0, 70), KL("STICK", 1, 60), KL("RECOVERY", 2, 30)}},
+    {"MEMORY LOSS", 5, {206, 200, 222}, 1, {KL("SPEED", 0, 60), KL("FLOOR", 1, 30), KL("RECALL", 2, 40)}},
+    {"TAPE WORM", 5, {214, 178, 120}, 1, {KL("CHANCE", 0, 60), {"LENGTH", 1, 3, 1, KV_TWL}, {"REPEATS", 2, 3, 1, KV_REP}}},
 };
 /* pedals no longer offered (an older save that has one keeps it, as it was): SHADOW (SHIFTER / HARMONIZER do it), GATED
  * FUZZ, SLOW (the sound's attack does it), UNI; GHOST and BROKEN CLOCK (now LOOSE), CASSETTE and VINYL (now OLD MEDIA) */
@@ -707,7 +715,8 @@ static void pedal_knobs(uint32_t trk, uint32_t e, pknob_t k[3])
  * each pedal in 20 slots; a shared pedal once, plus a little per send). The five original pedals on all four tracks
  * come to 156 (on the FM-1 ~40 % of the CPU, on top of the instruments); more than PED_BUDGET is refused */
 static const uint8_t PD_COST[NPD] = {5, 8, 4, 5, 6, 4, 17, 16, 7, 18, 5, 2, 4, 5, 19, 1, 1, 1, 1, 9, 5, 3, 6, 4, 3,
-                                     2, 1, 1, 9, 10, 3, 4, 5, 10, 1, 10, 6, 11};   /* (LOOSE, OLD MEDIA) */   /* (MUSIC BOX: with four notes ringing) */
+                                     2, 1, 1, 9, 10, 3, 4, 5, 10, 1, 10, 6, 11,    /* (LOOSE, OLD MEDIA) */
+                                     11, 11, 9, 2, 1, 1, 1};   /* (DJ FILTER, ACID, RING MOD measured as the rest; the note pedals: next to nothing) */   /* (MUSIC BOX: with four notes ringing) */
 static const uint8_t SP_COST[NSPACE_ALL] = {19, 9, 17, 18, 6, 15};   /* reverb, delay, tape echo, shimmer, reverse, spring */
 #define PED_BUDGET 170u
 static int ped_fits(void)
@@ -1543,7 +1552,8 @@ static void mask_corners(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r) 
  * the name (baseline), the knob row, the LED and the footswitch (fx 0: none) sit, and the name's letter spacing */
 enum { LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FOLD, LK_CRUSH, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE,
        LK_VIB, LK_PUMP, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_REVD, LK_SPRING, LK_SHIFT, LK_HARM, LK_OLDM, LK_GLITCH,
-       LK_WATER, LK_SYNTH, LK_LOFI, LK_LOOSE, LK_MBOX, LK_ARP, NLOOK };
+       LK_WATER, LK_SYNTH, LK_LOFI, LK_LOOSE, LK_MBOX, LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML,
+       LK_WORM, LK_ARP, NLOOK };
 enum { L_SANS = 1, L_LOWER = 2, L_PCT = 4, L_SKIRT = 8, L_SIDES = 16, L_CENTRE = 32 };
 typedef struct {
     const char *title;
@@ -1583,12 +1593,20 @@ static const plook_t PLOOK[NLOOK] = {
     {"lo-fi", RGB(214, 200, 170), RGB(60, 46, 34), RGB(60, 46, 34), RGB(90, 70, 50), RGB(24, 24, 26), W_, RGB(255, 120, 40), L_SKIRT | L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
     {"loose", RGB(226, 190, 120), RGB(80, 50, 26), RGB(80, 50, 26), RGB(120, 80, 40), RGB(110, 70, 36), RGB(250, 236, 200), RGB(255, 110, 40), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
     {"music box", RGB(250, 196, 214), RGB(140, 50, 90), RGB(140, 50, 90), RGB(180, 80, 120), RGB(255, 250, 252), RGB(140, 50, 90), RGB(255, 90, 160), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"DJ FILTER", RGB(20, 22, 28), RGB(80, 220, 240), RGB(80, 220, 240), RGB(220, 250, 255), RGB(60, 200, 230), W_, RGB(80, 230, 255), L_SANS, 18, 60, 84, 216, 56, 0, 0, 1},
+    {"ACID", RGB(196, 232, 40), RGB(20, 24, 10), RGB(20, 24, 10), RGB(40, 60, 10), RGB(24, 24, 26), RGB(196, 232, 40), RGB(255, 60, 50), L_SKIRT, 18, 62, 84, 216, 56, 0, 0, 4},
+    {"RING MOD", RGB(34, 38, 46), RGB(200, 210, 220), RGB(200, 210, 220), RGB(240, 244, 250), RGB(190, 196, 204), RGB(34, 38, 46), RGB(120, 200, 255), 0, 18, 62, 84, 216, 56, 0, 0, 1},
+    {"wrong station", RGB(232, 214, 170), RGB(70, 40, 20), RGB(70, 40, 20), RGB(130, 60, 30), RGB(90, 56, 30), RGB(244, 230, 196), RGB(255, 140, 40), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"MECH FAILURE", RGB(110, 118, 126), RGB(250, 170, 60), RGB(240, 240, 244), RGB(255, 210, 150), RGB(24, 24, 26), RGB(250, 170, 60), RGB(255, 90, 40), L_SKIRT, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"memory loss", RGB(206, 200, 222), RGB(70, 60, 110), RGB(70, 60, 110), RGB(110, 100, 150), RGB(240, 238, 248), RGB(70, 60, 110), RGB(170, 140, 255), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"tape worm", RGB(214, 178, 120), RGB(60, 36, 18), RGB(60, 36, 18), RGB(110, 60, 30), RGB(70, 44, 24), RGB(230, 200, 150), RGB(255, 110, 40), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
     {"ARPEGGIATOR", RGB(14, 40, 46), RGB(90, 220, 220), RGB(90, 220, 220), RGB(220, 255, 255), RGB(70, 200, 200), W_, RGB(100, 255, 240), L_SANS, 18, 60, 84, 216, 56, 0, 0, 1},
 };
 static const uint8_t PD_LOOK[NPD] = {           /* by PD_ number; those no longer offered borrow a look (and keep their name) */
     LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FUZZ, LK_FOLD, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE, LK_VIB,
     LK_VIB, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_OLDM, LK_OLDM, LK_GLITCH, LK_WATER, LK_SYNTH, LK_PUMP, LK_CRUSH, LK_REVD,
-    LK_SPRING, LK_SHIFT, LK_HARM, LK_LOFI, LK_TREM, LK_LOOSE, LK_MBOX, LK_LOOSE, LK_REV, LK_LOOSE, LK_OLDM};
+    LK_SPRING, LK_SHIFT, LK_HARM, LK_LOFI, LK_TREM, LK_LOOSE, LK_MBOX, LK_LOOSE, LK_REV, LK_LOOSE, LK_OLDM,
+    LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML, LK_WORM};
 
 static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs and the name */
 {
@@ -1958,6 +1976,90 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
         }
         break;
     }
+    case LK_DJF: {                              /* DJ FILTER: a record on a turntable, its tonearm */
+        uint16_t pl = RGB(46, 48, 56), gr = RGB(66, 68, 80), cy = RGB(80, 220, 240);
+        adisc(120, 176, 44, RGB(10, 10, 14));
+        adisc(120, 176, 40, pl);
+        for (k = 12; k <= 36; k += 4) aring(120, 176, k, 1, gr);
+        adisc(120, 176, 10, cy); adisc(120, 176, 2, RGB(10, 10, 14));
+        adisc(204, 132, 7, RGB(150, 150, 160)); adisc(204, 132, 3, RGB(60, 60, 66));
+        aline(204, 132, 196, 172, RGB(190, 190, 200), 3); aline(196, 172, 170, 182, RGB(190, 190, 200), 3);
+        arrect(164, 178, 10, 7, 2, RGB(220, 220, 228));
+        for (k = 0; k < 6; k++) arect(16, 140 + k * 10, 14, 4, k == 2 ? cy : gr);   /* (the fader's scale) */
+        break;
+    }
+    case LK_ACID: {                             /* ACID: the filter's curve with its sharp peak, dripping */
+        static const int16_t D1[] = {146, 160, 151, 170, 146, 175, 141, 170}, D2[] = {160, 176, 164, 184, 160, 188, 156, 184};
+        uint16_t ink = RGB(20, 24, 10);
+        int32_t x0 = 10, y0 = 194;
+        for (k = 12; k <= 230; k += 4) {
+            int32_t d = k - 150, y = 194 - 3200 / (d * d / 16 + 64) + (d > 0 ? d * d / 50 : 0);
+            if (y > 206) y = 206;
+            aline(x0, y0, k, y, ink, 3);
+            x0 = k; y0 = y;
+        }
+        afill(D1, NPT(D1), ink, 0, 0); afill(D2, NPT(D2), ink, 0, 0);
+        aring(100, 196, 5, 1, ink); aring(210, 200, 4, 1, ink); aring(30, 196, 3, 1, ink);
+        break;
+    }
+    case LK_RING: {                             /* RING MOD: a ringed planet, its waves */
+        uint16_t sv = RGB(200, 210, 220);
+        for (k = 0; k < 4; k++) aring(120, 168, 50 + k * 12, 1, mix565(sv, body, 70 + k * 7));
+        adisc(120, 168, 22, mix565(sv, body, 30));
+        afill((const int16_t[]){98, 158, 142, 158, 142, 178, 98, 178}, 4, body, 4, 2);
+        aring(120, 168, 22, 1, sv);
+        aarc(120, 168, 60, 13, 0, 360, sv, 2);
+        astars(17, 10, 128, 230, 206, 22, sv);
+        break;
+    }
+    case LK_WRONG: {                            /* WRONG STATION: a radio's tuning dial, the needle off between stations */
+        uint16_t br = RGB(70, 40, 20), cr = RGB(244, 230, 196), rd = RGB(220, 50, 40);
+        arrect(14, 136, 212, 56, 8, br);
+        arrect(20, 142, 200, 44, 6, cr);
+        for (k = 0; k <= 48; k++) aline(24 + k * 4, 176, 24 + k * 4, k % 4 ? 172 : 166, br, 1);
+        for (k = 0; k < 6; k++) adisc(36 + k * 34, 156, 2, br);   /* (the stations) */
+        aline(131, 146, 128, 184, rd, 2);
+        s = 9;
+        for (i = 0; i < 40u; i++) ap(24 + (int32_t)rnd_n(&s, 192), 146 + (int32_t)rnd_n(&s, 14), mix565(br, cr, 50));
+        adisc(56, 200, 6, br); adisc(184, 200, 6, br);
+        break;
+    }
+    case LK_MECH: {                             /* MECH FAILURE: gears, one cracked, sparks where they meet */
+        uint16_t gm = RGB(60, 64, 70), am = RGB(250, 170, 60), gl = RGB(160, 166, 174);
+        int32_t g, cx[2] = {86, 150}, cy[2] = {172, 158}, r[2] = {28, 20};
+        for (g = 0; g < 2; g++) {
+            for (k = 0; k < 360; k += 30) aline(cx[g] + acs(k, r[g] - 2), cy[g] + asn(k, r[g] - 2), cx[g] + acs(k, r[g] + 5), cy[g] + asn(k, r[g] + 5), gm, 3);
+            adisc(cx[g], cy[g], r[g], gm); adisc(cx[g], cy[g], r[g] - 8, gl); adisc(cx[g], cy[g], 4, gm);
+        }
+        aline(80, 150, 92, 168, am, 1); aline(92, 168, 84, 180, am, 1); aline(84, 180, 96, 196, am, 1);   /* (the crack) */
+        for (k = 0; k < 5; k++) aline(118, 166, 118 + acs(-60 + k * 30, 14), 166 + asn(-60 + k * 30, 14), RGB(255, 230, 120), 1);
+        for (k = 0; k < 6; k++) aline(186 + (k & 1) * 12, 140 + k * 10, 186 + ((k + 1) & 1) * 12, 150 + k * 10, gl, 2);   /* (a spring) */
+        break;
+    }
+    case LK_MEML: {                             /* MEMORY LOSS: a tune fading out, the last notes only outlines */
+        uint16_t ink = RGB(70, 60, 110);
+        for (k = 0; k < 5; k++) aline(10, 150 + k * 9, 230, 150 + k * 9, mix565(ink, body, 70), 1);
+        for (k = 0; k < 8; k++) {
+            int32_t x = 24 + k * 26, y = 186 - (k * 37 % 5) * 9;
+            uint16_t c = mix565(ink, body, k * 12);
+            if (k < 5) { adisc(x, y, 5, c); aline(x + 5, y, x + 5, y - 22, c, 2); }
+            else { aring(x, y, 5, 1, c); }
+        }
+        break;
+    }
+    case LK_WORM: {                             /* TAPE WORM: a worm made of tape, coiling */
+        uint16_t tp = RGB(80, 46, 22), seg = RGB(120, 76, 40);
+        int32_t x0 = 30, y0 = 180, hx = 0, hy = 0;
+        for (k = 0; k <= 36; k++) {
+            int32_t x = 30 + k * 5, y = 176 + asn(k * 30, 16);
+            aline(x0, y0, x, y, tp, 3); aline(x0, y0 + 4, x, y + 4, tp, 3);
+            if (k % 3 == 0) aring(x, y + 2, 5, 1, seg);
+            x0 = x; y0 = y; hx = x; hy = y;
+        }
+        adisc(hx + 6, hy + 2, 9, tp); adisc(hx + 9, hy - 1, 2, RGB(250, 240, 220));
+        aring(26, 196, 8, 2, tp); aring(44, 202, 6, 2, tp);   /* (the reels it came off) */
+        break;
+    }
     case LK_ARP: {
         uint16_t aa = RGB(90, 220, 220);
         adisc(206, 160, 12, mix565(aa, K_WHITE, 50));
@@ -2044,6 +2146,8 @@ static void ped_vals(uint32_t trk, uint32_t e, pknob_t pk[3], char val[3][8])   
     static const char *const SRC[3] = {"KICK", "1/4", "1/8"};
     static const char *const OC5[5] = {"-2", "-1", "0", "+1", "+2"}, *const OC2[2] = {"-1", "-2"};
     static const char *const INTV[10] = {"-OCT", "-5TH", "-4TH", "-3RD", "-m3", "+m3", "+3RD", "+4TH", "+5TH", "+OCT"};
+    static const char *const TWL[4] = {"1/8", "1/4", "1/2", "BAR"}, *const REP[4] = {"1x", "2x", "3x", "4x"};
+    static const char *const HLD[4] = {"1/4", "1/2", "1 BAR", "2 BARS"};
     const pdef_t *d = &PDEF[set.ped[trk][e] % NPD];
     uint32_t k;
     pedal_knobs(trk, e, pk);
@@ -2060,13 +2164,19 @@ static void ped_vals(uint32_t trk, uint32_t e, pknob_t pk[3], char val[3][8])   
         case KV_OCT5: s = OC5[v % 5u]; break;
         case KV_OCT2: s = OC2[v % 2u]; break;
         case KV_INT: s = INTV[v % 10u]; break;
+        case KV_TWL: s = TWL[v & 3u]; break;
+        case KV_REP: s = REP[v & 3u]; break;
+        case KV_HOLD: s = HLD[v & 3u]; break;
+        case KV_DJ: { char *pp = val[k]; int32_t dv = (int32_t)v - 64;   /* LP 10 .. OPEN .. HP 10 */
+            if (dv >= -2 && dv <= 2) { *put(pp, "OPEN") = 0; break; }
+            pp = put(pp, dv < 0 ? "LP " : "HP "); *put_num(pp, (uint32_t)((dv < 0 ? -dv : dv) * 10 / 62), 1) = 0; break; }
         case KV_SEMI: { char *pp = val[k]; int32_t sv = (int32_t)(v % 25u) - 12;
             if (sv > 0) *pp++ = '+'; else if (sv < 0) *pp++ = '-';
             *put_num(pp, (uint32_t)(sv < 0 ? -sv : sv), 1) = 0; break; }
         default: break;
         }
         if (s) *put(val[k], s) = 0;
-        else if (d->k[k].kind == KV_SEMI) {}
+        else if (d->k[k].kind == KV_SEMI || d->k[k].kind == KV_DJ) {}
         else *put_num(val[k], d->k[k].kind == KV_PAT ? v % (m + 1u) + 1u : pedal_level(v), 1) = 0;
     }
 }
@@ -2087,7 +2197,7 @@ static const uint8_t PL_FOCUS[NLOOK][2] = {
     {125, 165}, {120, 175}, {120, 160}, {100, 160}, {120, 170}, {120, 175}, {110, 185}, {120, 180}, {180, 160}, {122, 180},
     {140, 140}, {120, 160}, {120, 180}, {120, 165}, {120, 175}, {62, 150}, {120, 160}, {120, 165}, {120, 130}, {120, 165},
     {120, 172}, {110, 180}, {120, 165}, {160, 165}, {100, 158}, {120, 170}, {120, 170}, {120, 108}, {100, 170}, {140, 170},
-    {120, 175}};
+    {120, 176}, {130, 160}, {120, 168}, {120, 164}, {118, 168}, {120, 172}, {110, 180}, {120, 175}};
 static void art_window(uint32_t lk, int32_t dx, int32_t dy, int32_t w, int32_t h, int32_t r)
 {                                               /* a window of a pedal's art (round its focus) at dx, dy, w x h */
     int32_t ox = cv_ox, oy = cv_oy, wx = PL_FOCUS[lk % NLOOK][0] - w / 2, wy = PL_FOCUS[lk % NLOOK][1] - h / 2;
@@ -3018,6 +3128,7 @@ static void proj_scan(void)                     /* which slots hold a project (a
 }
 static int proj_save(uint32_t i)                /* 0 = saved */
 {
+    ws_home_all();                              /* (WRONG STATION: the real sounds are what is kept) */
     set.mute = (uint8_t)trk_mute;
     if (slot_save(i, &set, sizeof set)) return -1;
     proj_bpm[i] = set.bpm;
@@ -3778,6 +3889,7 @@ static void app_main(void)
         }
 
         midi_in();
+        ws_hold = (uint8_t)(spage == PG_SOUND);   /* (WRONG STATION: the real sound while it is being edited) */
         if (mclk_bpm && fm1_ms - mclk_t0 > 2000u) mclk_bpm = 0, mclk_run = 0;   /* the MIDI clock has stopped coming */
 
         trk = sel_trk;
@@ -4042,6 +4154,7 @@ static void app_main(void)
 
         if (dirty && quiet() && fm1_ms - t_change > 2000u) {   /* 2 s after the change, when silent (an erase stalls the sound) */
             set.mute = (uint8_t)trk_mute;
+            ws_home_all();
             song_save();
             dirty = 0;
         }

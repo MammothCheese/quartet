@@ -3,7 +3,7 @@
 
 **Four instruments. One little band.**
 
-Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 23 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 30 pedals, live recording and a song arranger.
+Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 23 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 37 pedals, live recording and a song arranger.
 
 > **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, go to the **home screen**, **hold REC for one second** until **CLEAR ALL?** appears, then **press REC again within three seconds** (any other button cancels). This erases the demo groove for good, but not your four saved projects.
 
@@ -126,7 +126,7 @@ OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose
 
 ## Effects pedals and arpeggiator
 
-The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 30**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **PRESETS** chooses the **type** (category, shown beside the instrument's name) and **ALGORITHM** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Loose, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. Every pedal is drawn like a screen-printed boutique pedal, with its own art across the case: a storm and a lightning bolt on Distortion, a volcano on Fuzz, a lighthouse on Tremolo, ripples on Delay, a night swirl on Reverb, a comet on Shimmer, tape reels on Tape Echo, a melting clock on Loose, confetti on Glitch, and so on. Its name is lettered on the case, its three knobs are coloured knurled caps or black skirted ones with their names and values underneath (digital pedals in %), and its LED glows when it is on; off, the LED goes dark with OFF beside it.
+The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 37**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **PRESETS** chooses the **type** (category, shown beside the instrument's name) and **ALGORITHM** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Loose, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. Every pedal is drawn like a screen-printed boutique pedal, with its own art across the case: a storm and a lightning bolt on Distortion, a volcano on Fuzz, a lighthouse on Tremolo, ripples on Delay, a night swirl on Reverb, a comet on Shimmer, tape reels on Tape Echo, a melting clock on Loose, confetti on Glitch, and so on. Its name is lettered on the case, its three knobs are coloured knurled caps or black skirted ones with their names and values underneath (digital pedals in %), and its LED glows when it is on; off, the LED goes dark with OFF beside it.
 
 ![A pedal](guide/pedal.png) A new project starts with Reverb, Delay, Distortion and Chorus in the four slots. (**EDIT** is no longer a pedal slot: it is the sound editor.)
 
@@ -140,6 +140,8 @@ The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the sele
 | | Bitcrusher: fewer bits and a lower sample rate, crunchy digital grit | Bits | Rate | Mix |
 | **Filter** | Filter Seq: the filter steps in time with the tempo | Rate 1/4–1/16 | Depth | Resonance |
 | | Wah: opens as you play louder | Sensitivity | Range | Resonance |
+| | DJ Filter: one knob from low-pass (muffled) through open to high-pass (thin) | Filter LP–OPEN–HP | Resonance | Level |
+| | Acid: a resonant filter that snaps open on every note (on drums: every hit) | Cutoff | Resonance | Decay |
 | **Modulation** | Chorus | Rate | Depth | Level |
 | | Phaser | Rate | Depth | Feedback |
 | | Flanger: jet-plane sweep | Rate | Depth | Feedback |
@@ -155,6 +157,7 @@ The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the sele
 | | Spring Reverb: the splashy, metallic spring of an old amp | Level | Tone | Time |
 | **Pitch** | Shifter: the notes moved up or down | Semitones −12…+12 | Octave −2…+2 | Mix |
 | | Harmonizer: a second note at an interval above or below | Interval (octave, 5th, 4th, 3rd, minor 3rd, down or up) | Level | Tone |
+| | Ring Mod: the sound multiplied by a tone: metallic, bell-like | Frequency | Mix | Wobble |
 | **Other** | Old Media: a worn tape or record: wobble, hiss and crackle, a dull and squashed sound | Wear | Noise | Tone |
 | | Glitch: on a step, now and then, a slice repeats, reverses or stutters | Chance | Length 1/32–1/8 | Mix |
 | | Underwater: muffled and drifting | Depth | Wobble | Level |
@@ -162,6 +165,10 @@ The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the sele
 | | Lo-Fi: lower sample rate, noise and a worn digital sound | Rate | Noise | Dirt |
 | | Loose: some notes play late (now and then twice), and a second player follows a step behind | Late | Double | Drift |
 | | Music Box: a little plucked metal bell on each note, slightly uneven | Decay | Tone | Mix |
+| | Wrong Station: now and then tunes to a neighbouring sound (drums: kit) with a burst of static, then back | Chance | Drift (how far along the list) | Hold 1/4 bar–2 bars |
+| | Mech Failure: wears out as it plays (missed and stuck notes, out of tune) until it suddenly recovers | Wear | Stick | Recovery |
+| | Memory Loss: each time round more steps are forgotten, down to a floor; Recall brings them back in waves | Speed | Floor | Recall |
+| | Tape Worm: keeps the last steps played and now and then loops a fragment of them | Chance | Length 1/8–1 bar | Repeats 1–4 |
 
 Most values run 0–20. **Space pedals are shared**: there is one of each (Reverb, Delay, Tape Echo, Shimmer, Reverse Delay, Spring Reverb) for the whole band. Each instrument sets **how much it sends** (Level / Echo); the other two knobs belong to the shared pedal and change it for every instrument using it. All other pedals are each instrument's own, slot by slot, and run in slot order (FX first).
 
