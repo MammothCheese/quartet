@@ -2,7 +2,7 @@
 
 # QUARTET
 
-A four-track groovebox for the M-VAVE FM-1 built around traditional instruments and effects pedals that simulates a four-piece band: lead, pads, bass and drums. Featuring 72 sounds and 18 drum kits in banks (plus your own), ten patterns per instrument, 36 pedals, live recording, and a song sequencer where each instrument follows its own arrangement.
+A four-track groovebox for the M-VAVE FM-1 built around traditional instruments and effects pedals that simulates a four-piece band: lead, pads, bass and drums. Featuring 46 sounds and 15 drum kits (plus your own), ten patterns per instrument, 30 pedals, live recording, and a song sequencer where each instrument follows its own arrangement.
 
 <p align="center"><img src="docs/screens.png" width="900" alt="QUARTET's screens: home, the sound browser, the signal chain, a pedal, the step recorder, the drum grid, the mixer, SUPER SEQ"></p>
 
@@ -14,22 +14,21 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
   pattern starts when the playing one comes round.
 - **Step recorder and live recorder**: write notes step by step, or play them in while the music runs; live notes
   are placed on the beat.
-- **72 sounds in banks**, 24 per type: ORIGINAL (piano, brass, Hammond, theremin, strings, choir, handpan, acid bass,
-  Reese, wobble ...), CLASSIC (Mini Lead, Sync Lead, Juno Strings, Solina, Moog Bass, 303 Line, DX Bass ...) and
-  EXPERIMENTAL (Glass Harp, Broken Radio, Frozen, Cathedral, Growl, Womp ...), from a 2-oscillator synth with pulse
+- **46 sounds**, grouped by what they are: lead KEYS (piano, music box ...), BAND (Hammond, brass, guitar), SYNTH
+  (Mini Lead, Sync Lead ...) and ODD (theremin, glass harp); pad STRINGS, KEYS, SYNTH and ATMOS; bass ACOUSTIC (upright,
+  slap ...), ANALOG (Moog, 303 line ...), DIGITAL (DX, Reese) and WILD (fuzz, wobble, growl). From a 2-oscillator synth with pulse
   width modulation, hard sync, FM, glide, a resonant filter, envelope and LFO. Every sound can be tweaked and **saved to
   a USER bank** (8 per type, 4 drum kits).
-- **18 drum kits**: Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi, Industrial, ELECTRONIC (Electro,
-  Techno, Trap, Breaks) and EXPERIMENTAL (Metal, Glitch, Toy, Noise): synthesised, with toms,
+- **15 drum kits**: GROOVE (Rock, Hip-Hop, Lo-Fi, Breaks), MACHINES (CR-78, Mini Pops, LM-1, 606, 808, 909), ELECTRO
+  (Electro, Techno, Trap) and ODD (Toy, Glitch): synthesised, with toms,
   congas, shakers and more on PERC, and the LM-1 played from samples of a real Linn LM-1 (rossf, Sampling+ 1.0: see
   [LICENSING.md](LICENSING.md)).
-- **Four pedal slots** per track (tap FX, SEL, ENV, LFO: on / off), each holding any of **36 pedals**, each with its own colour, three knobs and a footswitch that glows when on: drives (distortion, overdrive,
-  fuzz, octave fuzz, gated fuzz, wavefolder, bitcrusher), filters (filter sequencer, wah), modulation (chorus, phaser,
-  flanger, tremolo, slicer, vibrato, uni, pump), space (reverb, delay, tape echo, shimmer, reverse delay, spring reverb),
-  pitch (shifter, harmonizer) and oddities (cassette, vinyl, glitch, underwater, synth, lo-fi, slow, ghost, music box,
-  broken clock, shadow).
+- **Four pedal slots** per track (tap FX, SEL, ENV, LFO: on / off), each holding any of **30 pedals**, drawn as stompboxes: drives (distortion, overdrive,
+  fuzz, octave fuzz, wavefolder, bitcrusher), filters (filter sequencer, wah), modulation (chorus, phaser,
+  flanger, tremolo, slicer, vibrato, pump), space (reverb, delay, tape echo, shimmer, reverse delay, spring reverb),
+  pitch (shifter, harmonizer) and oddities (old media, glitch, underwater, synth, lo-fi, loose, music box).
 - **Arpeggiator** (rate, octaves, direction), locked to the beat, for the keys and for the recorded patterns.
-- **Sound editor** (EDIT): the slot's type, bank and sound on a menu page (INSTR), every synth's oscillators, filter,
+- **Sound editor** (EDIT): the slot's type, group and sound on a browser page (INSTR), every synth's oscillators, filter,
   envelope, LFO and glide, each drum; REC twice saves to the USER bank. EDIT again: the **signal chain**, the sound
   and its four pedals in order, each switched, swapped and tuned from one page.
 - **Copy a pattern** from any synth slot into another (hold SEQ in the step recorder), so the pads can take the lead's

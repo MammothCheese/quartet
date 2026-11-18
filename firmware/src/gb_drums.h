@@ -64,9 +64,21 @@ static const dsnd_t KITS[NKIT][NDR] = {
     {{30, 110, 90}, {40, 110, 86}, {60, 90, 66}, {60, 120, 64}, {40, 110, 84}, {24, 110, 82}}};   /* NOISE: huge, long, crushed bursts */
 static const char *const KIT_NAME[NKIT] = {"ROCK", "HIP-HOP", "MINI POPS", "CR-78", "LM-1", "606", "808", "909", "LO-FI", "INDUSTRIAL",
                                            "ELECTRO", "TECHNO", "TRAP", "BREAKS", "METAL", "GLITCH", "TOY", "NOISE"};
-static const char *const KBANK_NAME[4] = {"ORIGINAL", "ELECTRONIC", "EXPERIMENTAL", "USER"};
+static const char *const KBANK_NAME[5] = {"GROOVE", "MACHINES", "ELECTRO", "ODD", "USER"};
+static const uint8_t KIT_GRP[4][6] = {          /* the kits offered, group by group (0xFF: the end; INDUSTRIAL, METAL,
+                                                   NOISE are not offered any more, but an older save keeps its kit) */
+    {0, 1, 8, 13, 0xFFu, 0xFFu},                /* GROOVE: rock, hip-hop, lo-fi, breaks */
+    {3, 2, 4, 5, 6, 7},                         /* MACHINES: CR-78, Mini Pops, LM-1, 606, 808, 909 */
+    {10, 11, 12, 0xFFu, 0xFFu, 0xFFu},          /* ELECTRO: electro, techno, trap */
+    {16, 15, 0xFFu, 0xFFu, 0xFFu, 0xFFu}};      /* ODD: toy, glitch */
 #define KUID(u) (96u + (u))                     /* a USER kit's id */
-static uint32_t kit_bank(uint32_t id) { return id >= KUID(0) ? 3u : id >= 14u ? 2u : id >= 10u ? 1u : 0u; }
+static uint32_t kit_bank(uint32_t id)           /* a kit's group (0-3), USER 4; one no longer offered: 0xFF */
+{
+    uint32_t g, i;
+    if (id >= KUID(0)) return 4u;
+    for (g = 0; g < 4u; g++) for (i = 0; i < 6u; i++) if (KIT_GRP[g][i] == id) return g;
+    return 0xFFu;
+}
 static uint32_t kit_now(void)                   /* the kit the engine plays (a USER kit: the one it was made from) */
 {
     uint32_t id = set.dkit;

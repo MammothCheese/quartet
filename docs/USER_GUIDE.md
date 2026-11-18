@@ -3,7 +3,7 @@
 
 **Four instruments. One little band.**
 
-Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 18 drum kits in banks, ten patterns per instrument, four pedal slots each with a library of 36 pedals, live recording and a song arranger.
+Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 46 sounds and 15 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 30 pedals, live recording and a song arranger.
 
 > **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, go to the **home screen**, **hold REC for one second** until **CLEAR ALL?** appears, then **press REC again within three seconds** (any other button cancels). This erases the demo groove for good, but not your four saved projects.
 
@@ -11,7 +11,7 @@ Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72
 
 **Lead** (gold) plays melodies; **pads** (violet) plays pads and chords; **bass** (cyan) plays basslines; **drums** (green) has six percussion voices. Each home card shows its instrument (keys, waves, a bass guitar, a drum). Muted instruments turn red.
 
-Turn **ALGORITHM** to choose an instrument and **SELECT** to choose its sound or drum kit (one click per choice, through every bank in turn; the new sound's name shows, without playing a test note). Play the keys; for drums, the first six white keys play the six sounds. **OCT− / OCT+** change octave and **MASTER** sets overall volume. **PLAY** starts or stops all instruments from step one.
+Turn **ALGORITHM** to choose an instrument and **SELECT** to choose its sound or drum kit (one click per choice, through every group in turn; the new sound's name shows, without playing a test note). Play the keys; for drums, the first six white keys play the six sounds. **OCT− / OCT+** change octave and **MASTER** sets overall volume. **PLAY** starts or stops all instruments from step one.
 
 The **home screen** shows the selected instrument and pattern (A–J), tempo, beat lights and octave, then a card per track: its badge, its sound, the steps of its pattern (the playing step white) and its pattern. The chosen card glows. The bottom line shows the chosen track's four pedals, glowing in their colours when on. **A > C** means pattern C is queued after A.
 
@@ -75,41 +75,26 @@ The first three tracks are **synth slots**: each can be a **LEAD**, a **PAD** or
 
 The synths share nine voices: a LEAD or PAD slot gets four, a BASS one. Three LEAD/PAD slots would need twelve, so the busiest gives one up (4 + 3 + 2 and so on). Changing a slot's type keeps its patterns (a BASS plays only the first note of each step).
 
-### Banks
+### Groups
 
-Every sound lives in a **bank**:
+Each player's sounds come in **four groups**, by what they are, then **USER** (up to 8 of your own per type, 4 drum kits):
 
-| Bank | Lead | Pads | Bass |
-|---|---|---|---|
-| **ORIGINAL** | the ten below | the ten below | the ten below |
-| **CLASSIC** | Mini Lead, Sync Lead, PWM Lead, Acid Lead, Synth Brass, Mono Square, FM Bell, Porta Lead | Juno Strings, Prophet Brass, Solina, Poly Synth, PWM Pad, DX Piano, Warm Analog, Digital Choir | Moog Bass, 303 Line, DX Bass, Deep Reese, Sub Bass, Synth Pluck, Rubber Bass, Electro Bass |
-| **EXPERIMENTAL** | Glass Harp, Broken Radio, Sine Swarm, Laser, Bowed Metal, Stepper | Frozen, Tidal, Dust, Cathedral, Pulsar, Spectral | Growl, Sync Bass, Bubble, Dirt Bass, Slide Sub, Womp |
-| **USER** | up to 8 of your own | up to 8 | up to 8 |
+| Lead | | Pads | | Bass | | Drums | |
+|---|---|---|---|---|---|---|---|
+| **KEYS** | Piano, Xylophone, Music Box, FM Bell | **STRINGS** | Strings, Solina, Choir, Acoustic Guitar | **ACOUSTIC** | Upright, Slap, Plucked, Tuba | **GROOVE** | Rock, Hip-Hop, Lo-Fi, Breaks |
+| **BAND** | Hammond, Brass, Electric Guitar | **KEYS** | Electric Piano, DX Piano, Organ, Handpan | **ANALOG** | Moog Bass, 303 Line, Sub Bass, Synth Bass | **MACHINES** | CR-78, Mini Pops, LM-1, 606, 808, 909 |
+| **SYNTH** | Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune | **SYNTH** | Juno Strings, Poly Synth, PWM Pad, Prophet Brass | **DIGITAL** | DX Bass, Reese, Electro Bass | **ELECTRO** | Electro, Techno, Trap |
+| **ODD** | Theremin, Glass Harp, Laser | **ATMOS** | Drone, Frozen, Cathedral, Sweep | **WILD** | Fuzz, Wobble, Growl, Bubble | **ODD** | Toy, Glitch |
 
-Drum kits: **ORIGINAL** (the ten below), **ELECTRONIC** (Electro, Techno, Trap, Breaks), **EXPERIMENTAL** (Metal, Glitch, Toy, Noise) and **USER** (up to 4 of your own). Each type has its own sounds: a slot switched to BASS chooses from the bass sounds.
-
-On the home screen, turn **SELECT** to step through every sound of the slot's type, bank after bank (in the step recorder it moves the cursor instead). Selecting another sound loads its settings, replacing your tweaks. The **ORIGINAL** bank:
-
-| # | Lead | Pads | Bass | Drums |
-|---|---|---|---|---|
-| 1 | Piano | Strings | Upright | Rock |
-| 2 | Xylophone | Choir | Tuba | Hip-Hop |
-| 3 | Brass | Acoustic Guitar | Slap | Mini Pops |
-| 4 | Music Box | Organ | Plucked | CR-78 |
-| 5 | Electric Guitar | Electric Piano | Fuzz | LM-1 |
-| 6 | Hammond | Handpan | Synth Bass | 606 |
-| 7 | Theremin | Warm Synth | FM | 808 |
-| 8 | Synth | Glass Pad | Acid | 909 |
-| 9 | Square Lead | Drone | Reese | Lo-Fi |
-| 10 | Chiptune | Sweep | Wobble | Industrial |
+Each type has its own sounds: a slot switched to BASS chooses from the bass sounds. On the home screen, turn **SELECT** to step through every sound of the slot's type, group after group (in the step recorder it moves the cursor instead). Selecting another sound loads its settings, replacing your tweaks. A sound or kit from an older save that is no longer on the list still loads and plays as it did, and shows at the top of the list while it is chosen.
 
 The drum kits are synthesised, except the **LM-1**, which plays samples of a real Linn LM-1; on it the CLAP and PERC keys are its **low and high toms** (TL / TH on the drum grid). PERC is a different instrument per kit: a conga on CR-78, a shaker on Mini Pops and 606, a high tom on 808 and a low tom on Lo-Fi.
 
-**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, a sound browser: the banks on the left (an empty USER bank is dimmed), the chosen bank's sounds on the right with the one playing glowing, and underneath the type and the USER slot to save to. **ALGORITHM** moves to another instrument's page, **SELECT** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
+**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, a sound browser: the groups on the left (an empty USER group is dimmed), the chosen group's sounds on the right with the one playing glowing, and underneath the type and the USER slot to save to. **ALGORITHM** moves to another instrument's page, **SELECT** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
 
 | Page | KNOB1 | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|
-| **INSTR** | Type: LEAD / PAD / BASS | Bank | Sound in the bank (e.g. 3/8) | USER slot to save to (U1–U8) |
+| **INSTR** | Type: LEAD / PAD / BASS | Group | Sound in the group (e.g. 3/8) | USER slot to save to (U1–U8) |
 | **MAIN** | Glide | Cutoff | Resonance | Filter envelope |
 | **OSC** | Wave 1 | Wave 2 | Wave 2 tuning (−24 to +24) | Mix / FM amount |
 | **ENV** | Attack | Decay | Sustain | Release |
@@ -119,7 +104,7 @@ The drum kits are synthesised, except the **LM-1**, which plays samples of a rea
 
 **Glide** (MAIN, KNOB1) slides each note's pitch from the last one: off at 0, up to about half a second. Tempo is on KNOB1 of the home screen.
 
-OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose width the LFO can move: set the LFO target to **PWM**) and **sync** (wave 2 only: a saw restarted by wave 1, hard sync; the filter envelope sweeps it). For drums the first page is **KIT** (KNOB2 bank, KNOB3 kit, KNOB4 USER slot, REC twice saves the kit), then a tab per drum (BD SD HH OH CP PC): **SELECT** chooses the page, **KNOB1–3** the drum's pitch, decay and level.
+OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose width the LFO can move: set the LFO target to **PWM**) and **sync** (wave 2 only: a saw restarted by wave 1, hard sync; the filter envelope sweeps it). For drums the first page is **KIT** (KNOB2 group, KNOB3 kit, KNOB4 USER slot, REC twice saves the kit), then a tab per drum (BD SD HH OH CP PC): **SELECT** chooses the page, **KNOB1–3** the drum's pitch, decay and level.
 
 **The signal chain (EDIT twice).** The track's four pedals as cards, in the order the sound flows through them (FX, SEL, then ENV, LFO), each with its power sign, three small knobs and their values; one that is off is grey, the chosen one glows. **SELECT** moves between them and **KNOB2–4** turn the chosen pedal's knobs (named on the bottom line); **KNOB1** switches it on or off; **PRESETS** swaps it for another pedal from the whole library, category by category (one already in another slot is skipped, and a pedal that would overload the chip stays off: **CPU FULL**).
 
@@ -127,7 +112,7 @@ OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose
 
 ## Effects pedals and arpeggiator
 
-The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 36**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **SELECT** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Ghost, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. The pedal page is the stompbox itself, in its own colour: the red lamp lights and a faint glow surrounds it when it is on, and its three knobs show their values underneath.
+The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 30**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **SELECT** chooses the **category** (shown beside the instrument's name) and **PRESETS** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Loose, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. The pedal page is the stompbox itself, in its own colour: the red lamp lights and a faint glow surrounds it when it is on, and its three knobs show their values underneath.
 
 ![A pedal](guide/pedal.png) A new project starts with Reverb, Delay, Distortion and Chorus in the four slots. (**EDIT** is no longer a pedal slot: it is the sound editor.)
 
@@ -137,7 +122,6 @@ The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the sele
 | | Overdrive: soft, warm | Level | Tone | Drive |
 | | Fuzz: hard, buzzy | Level | Tone | Fuzz |
 | | Octave Fuzz: an octave up, fuzzed | Level | Tone | Fuzz |
-| | Gated Fuzz: splutters and cuts out as notes die | Level | Gate | Fuzz |
 | | Wavefolder: metallic, folds back on itself | Level | Tone | Fold |
 | | Bitcrusher: fewer bits and a lower sample rate, crunchy digital grit | Bits | Rate | Mix |
 | **Filter** | Filter Seq: the filter steps in time with the tempo | Rate 1/4–1/16 | Depth | Resonance |
@@ -149,7 +133,6 @@ The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the sele
 | | Slicer: rhythmic chopping, in time | Rate 1/8–1/32 | Depth | Pattern 1–8 |
 | | Pump: ducks the instrument on every kick, the sidechain "breathing" | Depth | Release | Source: kick / 1/4 / 1/8 |
 | | Vibrato: pitch wobble | Rate | Depth | Mix |
-| | Uni: throbbing 60s swirl | Rate | Depth | Mix |
 | **Space** | Reverb | Level | Tone | Time |
 | | Delay | Repeat rate | Echo | Intensity |
 | | Tape Echo: wobbly, darkening repeats | Echo | Time | Repeats |
@@ -158,23 +141,19 @@ The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the sele
 | | Spring Reverb: the splashy, metallic spring of an old amp | Level | Tone | Time |
 | **Pitch** | Shifter: the notes moved up or down | Semitones −12…+12 | Octave −2…+2 | Mix |
 | | Harmonizer: a second note at an interval above or below | Interval (octave, 5th, 4th, 3rd, minor 3rd, down or up) | Level | Tone |
-| **Other** | Cassette: wow, flutter and hiss | Wow | Hiss | Tone |
-| | Vinyl: crackle and an old, narrow sound | Crackle | Age | Level |
+| **Other** | Old Media: a worn tape or record: wobble, hiss and crackle, a dull and squashed sound | Wear | Noise | Tone |
 | | Glitch: on a step, now and then, a slice repeats, reverses or stutters | Chance | Length 1/32–1/8 | Mix |
 | | Underwater: muffled and drifting | Depth | Wobble | Level |
 | | Synth: a square wave following the lowest note | Octave 0/−1/−2 | Tone | Mix |
 | | Lo-Fi: lower sample rate, noise and a worn digital sound | Rate | Noise | Dirt |
-| | Slow: no attack, each note swells in like a bowed string | Rise | Depth | Sensitivity |
-| | Ghost: a quiet, slightly late copy, like a second player following | Delay | Level | Drift |
+| | Loose: some notes play late (now and then twice), and a second player follows a step behind | Late | Double | Drift |
 | | Music Box: a little plucked metal bell on each note, slightly uneven | Decay | Tone | Mix |
-| | Broken Clock: notes now and then late or twice, like a worn mechanism | Amount | Chance | Hiccup |
-| | Shadow: a quieter, darker copy an octave (or two) below | Level | Tone | Octave −1/−2 |
 
 Most values run 0–20. **Space pedals are shared**: there is one of each (Reverb, Delay, Tape Echo, Shimmer, Reverse Delay, Spring Reverb) for the whole band. Each instrument sets **how much it sends** (Level / Echo); the other two knobs belong to the shared pedal and change it for every instrument using it. All other pedals are each instrument's own, slot by slot, and run in slot order (FX first).
 
-**PLAY / STOP**: stopping silences every pedal at once: echoes, reverb tails, loops, Glitch, Ghost and late Broken Clock notes all end (the space pedals fade out in a few milliseconds), and nothing left over is heard when you start again. While stopped, the pedals come back as soon as you play a key.
+**PLAY / STOP**: stopping silences every pedal at once: echoes, reverb tails, loops, Glitch, and Loose's late notes and second player all end (the space pedals fade out in a few milliseconds), and nothing left over is heard when you start again. While stopped, the pedals come back as soon as you play a key.
 
-The chip can only do so much at once: if switching a pedal on (or choosing a heavier one) would overload it, the pedal stays off and **CPU FULL** shows. Switch another pedal off first. Phaser, Uni, Filter Seq and Wah are the heaviest; the drives, Tremolo, Slicer, Glitch and Synth the lightest.
+The chip can only do so much at once: if switching a pedal on (or choosing a heavier one) would overload it, the pedal stays off and **CPU FULL** shows. Switch another pedal off first. Phaser, Filter Seq and Wah are the heaviest; the drives, Tremolo, Slicer, Glitch and Synth the lightest.
 
 The **arpeggiator** plays held notes or pattern chords in sequence. Like a pedal button, **tap ARP** to switch it on or off (**ARP ON** shows; ARP is lit while it is on) and **hold it 0.5 seconds** for its screen: **KNOB1** on/off, **KNOB2** rate (1/4–1/32), **KNOB3** octaves (1–4), **KNOB4** direction (up/down/random). Its notes are **locked to the beat**: they always fall on the grid of its rate, from the bar's start (a key pressed between two beats starts on the next).
 

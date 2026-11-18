@@ -148,10 +148,20 @@ static void repeat_step(uint32_t step, int restart)   /* a new step, after the t
 static uint8_t brk_wait[NTRK], brk_again[NTRK];
 static uint32_t brk_rnd = 0x2545F491u;
 static void track_step(uint32_t t) { if (t == T_DRUMS) drums_step(); else synth_step_t(t); }
-static const uint8_t *broken_k(uint32_t t)      /* the track's BROKEN CLOCK knobs, if it has one on */
+static const uint8_t *broken_k(uint32_t t)      /* the track's BROKEN CLOCK knobs, if it has one on (or LOOSE: its LATE
+                                                   as how late and how often, a hiccup now and then) */
 {
+    static uint8_t lk[3];
     uint32_t e;
-    for (e = 0; e < NPED_SLOTS; e++) if (set.fx[t].on >> e & 1u && set.ped[t][e] % NPD == PD_BROKEN) return set.pk[t][e];
+    for (e = 0; e < NPED_SLOTS; e++) {
+        uint32_t p = set.ped[t][e] % NPD;
+        if (!(set.fx[t].on >> e & 1u)) continue;
+        if (p == PD_BROKEN) return set.pk[t][e];
+        if (p == PD_LOOSE && set.pk[t][e][0]) {
+            lk[0] = set.pk[t][e][0]; lk[1] = (uint8_t)(set.pk[t][e][0] * 3u / 4u); lk[2] = (uint8_t)(set.pk[t][e][0] / 8u);
+            return lk;
+        }
+    }
     return 0;
 }
 static void steps_fire(void)                    /* a new step: each track plays it, now or (broken) a little later */

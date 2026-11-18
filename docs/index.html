@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QUARTET for the M-VAVE FM-1</title>
-<meta name="description" content="Custom firmware that turns the M-VAVE FM-1 into a four-track groovebox: three synth slots and drums, 72 sounds in banks plus your own, 36 effects pedals, step and live recording and a song arranger.">
+<meta name="description" content="Custom firmware that turns the M-VAVE FM-1 into a four-track groovebox: three synth slots and drums, 46 sounds and 15 kits in groups plus your own, 30 effects pedals, step and live recording and a song arranger.">
 <style>
 :root {
   --bg: #0D0D11; --panel: #16161B; --card: #1C1C23; --line: #2C2C36; --txt: #E8E8EF; --sub: #A3A3B0; --dim: #6C6C7A;
@@ -99,7 +99,7 @@ footer a { color: var(--sub); }
   <div>
     <div class="kicker">Custom firmware for the M-VAVE FM-1 &middot; free and open source</div>
     <h1>A whole band<br>in your <em>pocket</em>.</h1>
-    <p class="lede">QUARTET turns the FM-1 into a four-track groovebox. Three synth slots, each a lead, a pad or a bass, plus a drum machine. Pick from 72 sounds and 18 kits, or save your own. Write patterns step by step or play them in live, put four pedals from a library of 36 on every track, and chain it all into songs.</p>
+    <p class="lede">QUARTET turns the FM-1 into a four-track groovebox. Three synth slots, each a lead, a pad or a bass, plus a drum machine. Pick from 46 sounds and 15 kits, or save your own. Write patterns step by step or play them in live, put four pedals from a library of 30 on every track, and chain it all into songs.</p>
     <a class="btn primary" href="https://github.com/MammothCheese/quartet/releases/latest">Download</a>
     <a class="btn ghost" href="https://github.com/MammothCheese/quartet#install">How to install</a>
     <a class="btn ghost" href="https://github.com/MammothCheese/quartet">Source</a>
@@ -116,11 +116,11 @@ footer a { color: var(--sub); }
   <p class="sub">Everything runs on the FM-1's own keys, knobs and buttons. No computer or app needed.</p>
   <div class="grid">
     <div class="card"><h4>FOUR TRACKS</h4><p>Three synth slots that you set to LEAD, PAD or BASS, so you can run two leads or three pads. Track four is always DRUMS.</p></div>
-    <div class="card"><h4>72 SOUNDS, 18 KITS</h4><p>In banks: ORIGINAL (piano, Hammond, theremin...), CLASSIC (Juno strings, 303 line, Moog bass...) and EXPERIMENTAL (Frozen, Broken Radio, Womp...).</p></div>
+    <div class="card"><h4>46 SOUNDS, 15 KITS</h4><p>Grouped by what they are: keys, band, synths and oddities for the lead; strings, keys, synths and atmospheres for the pads; acoustic, analog, digital and wild basses.</p></div>
     <div class="card"><h4>YOUR OWN SOUNDS</h4><p>Tweak a sound in the editor and save it to the USER bank: 8 per type and 4 drum kits.</p></div>
     <div class="card"><h4>A REAL SYNTH</h4><p>Two oscillators (including FM, pulse width and hard sync), a resonant filter, an envelope, an LFO and glide.</p></div>
     <div class="card"><h4>TEN PATTERNS EACH</h4><p>A to J, one to four bars long. Notes have a length and a dynamic, from <i>p</i> to an accent.</p></div>
-    <div class="card"><h4>36 PEDALS</h4><p>Four slots per track: drives, filters, modulation, reverbs and delays, pitch and odd ones like Ghost and Broken Clock.</p></div>
+    <div class="card"><h4>30 PEDALS</h4><p>Four slots per track: drives, filters, modulation, reverbs and delays, pitch and odd ones like Loose and Old Media.</p></div>
     <div class="card"><h4>PLAY IT LIVE</h4><p>Live recording, an arpeggiator locked to the beat, beat repeat, a key lock and a mixer.</p></div>
     <div class="card"><h4>SONGS AND SAVES</h4><p>SUPER SEQ chains the patterns into ten songs. Your work saves itself, and there are four save slots too.</p></div>
   </div>
@@ -173,7 +173,7 @@ footer a { color: var(--sub); }
       <h3>On the home screen</h3>
       <div class="grid">
         <div class="card"><h4>ALGORITHM</h4><p>The track.</p></div>
-        <div class="card"><h4>SELECT</h4><p>Its sound, through every bank in turn (drums: the kit).</p></div>
+        <div class="card"><h4>SELECT</h4><p>Its sound, through every group in turn (drums: the kit).</p></div>
         <div class="card"><h4>PRESETS</h4><p>Its pattern, A&ndash;J. Hold <kbd>ARP</kbd> and turn: copy it into the next letter.</p></div>
         <div class="card"><h4>KNOB 1</h4><p>The tempo. (The sound itself is shaped in <kbd>EDIT</kbd>.)</p></div>
         <div class="card"><h4>PLAY</h4><p>Every track starts together from step one, or stops.</p></div>
@@ -189,19 +189,32 @@ footer a { color: var(--sub); }
 
 <section id="sounds">
   <h2>Sounds</h2>
-  <p class="sub">Every sound lives in a bank. <kbd>SELECT</kbd> on the home screen steps through all of a slot's sounds, bank after bank. Picking a sound loads its settings and replaces your tweaks, so save anything you want to keep.</p>
+  <p class="sub">Each player's sounds come in four groups, by what they are, then USER. <kbd>SELECT</kbd> on the home screen steps through all of a slot's sounds, group after group. Picking a sound loads its settings and replaces your tweaks, so save anything you want to keep.</p>
   <table class="t grid4">
-    <tr><th>Bank</th><th>Lead</th><th>Pads</th><th>Bass</th></tr>
-    <tr><td>ORIGINAL</td><td class="c-lead">Piano, Xylophone, Brass, Music Box, Electric Guitar, Hammond, Theremin, Synth, Square Lead, Chiptune</td><td class="c-pad">Strings, Choir, Acoustic Guitar, Organ, Electric Piano, Handpan, Warm Synth, Glass Pad, Drone, Sweep</td><td class="c-bass">Upright, Tuba, Slap, Plucked, Fuzz, Synth Bass, FM, Acid, Reese, Wobble</td></tr>
-    <tr><td>CLASSIC</td><td class="c-lead">Mini Lead, Sync Lead, PWM Lead, Acid Lead, Synth Brass, Mono Square, FM Bell, Porta Lead</td><td class="c-pad">Juno Strings, Prophet Brass, Solina, Poly Synth, PWM Pad, DX Piano, Warm Analog, Digital Choir</td><td class="c-bass">Moog Bass, 303 Line, DX Bass, Deep Reese, Sub Bass, Synth Pluck, Rubber Bass, Electro Bass</td></tr>
-    <tr><td>EXPERIMENTAL</td><td class="c-lead">Glass Harp, Broken Radio, Sine Swarm, Laser, Bowed Metal, Stepper</td><td class="c-pad">Frozen, Tidal, Dust, Cathedral, Pulsar, Spectral</td><td class="c-bass">Growl, Sync Bass, Bubble, Dirt Bass, Slide Sub, Womp</td></tr>
-    <tr><td>USER</td><td colspan="3">Your own: up to 8 per type.</td></tr>
+    <tr><th>Lead</th><th>Sounds</th></tr>
+    <tr><td>KEYS</td><td class="c-lead">Piano, Xylophone, Music Box, FM Bell</td></tr>
+    <tr><td>BAND</td><td class="c-lead">Hammond, Brass, Electric Guitar</td></tr>
+    <tr><td>SYNTH</td><td class="c-lead">Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune</td></tr>
+    <tr><td>ODD</td><td class="c-lead">Theremin, Glass Harp, Laser</td></tr>
+    <tr><th>Pads</th><th></th></tr>
+    <tr><td>STRINGS</td><td class="c-pad">Strings, Solina, Choir, Acoustic Guitar</td></tr>
+    <tr><td>KEYS</td><td class="c-pad">Electric Piano, DX Piano, Organ, Handpan</td></tr>
+    <tr><td>SYNTH</td><td class="c-pad">Juno Strings, Poly Synth, PWM Pad, Prophet Brass</td></tr>
+    <tr><td>ATMOS</td><td class="c-pad">Drone, Frozen, Cathedral, Sweep</td></tr>
+    <tr><th>Bass</th><th></th></tr>
+    <tr><td>ACOUSTIC</td><td class="c-bass">Upright, Slap, Plucked, Tuba</td></tr>
+    <tr><td>ANALOG</td><td class="c-bass">Moog Bass, 303 Line, Sub Bass, Synth Bass</td></tr>
+    <tr><td>DIGITAL</td><td class="c-bass">DX Bass, Reese, Electro Bass</td></tr>
+    <tr><td>WILD</td><td class="c-bass">Fuzz, Wobble, Growl, Bubble</td></tr>
+    <tr><td>USER</td><td>Your own: up to 8 per type.</td></tr>
   </table>
+  <p class="note">A sound from an older save that is no longer on the list still loads and plays as it did, and shows at the top of the list while it is chosen.</p>
   <table class="t grid4">
-    <tr><th>Bank</th><th>Drum kits</th></tr>
-    <tr><td>ORIGINAL</td><td class="c-drums">Rock, Hip-Hop, Mini Pops, CR-78, LM-1, 606, 808, 909, Lo-Fi, Industrial</td></tr>
-    <tr><td>ELECTRONIC</td><td class="c-drums">Electro, Techno, Trap, Breaks</td></tr>
-    <tr><td>EXPERIMENTAL</td><td class="c-drums">Metal, Glitch, Toy, Noise</td></tr>
+    <tr><th>Drums</th><th>Kits</th></tr>
+    <tr><td>GROOVE</td><td class="c-drums">Rock, Hip-Hop, Lo-Fi, Breaks</td></tr>
+    <tr><td>MACHINES</td><td class="c-drums">CR-78, Mini Pops, LM-1, 606, 808, 909</td></tr>
+    <tr><td>ELECTRO</td><td class="c-drums">Electro, Techno, Trap</td></tr>
+    <tr><td>ODD</td><td class="c-drums">Toy, Glitch</td></tr>
     <tr><td>USER</td><td>Your own: up to 4.</td></tr>
   </table>
   <p>The kits are synthesised, except the <b>LM-1</b>, which plays samples of a real Linn LM-1 (its CLAP and PERC keys are its low and high toms). PERC changes from kit to kit: a conga, a shaker, a tom.</p>
@@ -209,24 +222,24 @@ footer a { color: var(--sub); }
   <div class="split" style="margin-top:28px">
     <div>
       <h3>The sound editor (<kbd>EDIT</kbd>)</h3>
-      <p>Press <kbd>EDIT</kbd> for the SOUND page of the chosen track. It opens on <b>INSTR</b>, a sound browser: the banks on the left (<kbd>KNOB 2</kbd>; an empty USER bank is dimmed), the chosen bank's sounds on the right (<kbd>KNOB 3</kbd>) with the one playing glowing, and underneath the type (<kbd>KNOB 1</kbd>) and the USER slot to save to (<kbd>KNOB 4</kbd>). <kbd>SELECT</kbd> chooses the page, <kbd>KNOB 1&ndash;4</kbd> edit it, <kbd>ALGORITHM</kbd> moves to another track. <kbd>EDIT</kbd> again opens the <a href="#chain">signal chain</a>; <kbd>HOME</kbd> goes back.</p>
+      <p>Press <kbd>EDIT</kbd> for the SOUND page of the chosen track. It opens on <b>INSTR</b>, a sound browser: the groups on the left (<kbd>KNOB 2</kbd>; an empty USER group is dimmed), the chosen group's sounds on the right (<kbd>KNOB 3</kbd>) with the one playing glowing, and underneath the type (<kbd>KNOB 1</kbd>) and the USER slot to save to (<kbd>KNOB 4</kbd>). <kbd>SELECT</kbd> chooses the page, <kbd>KNOB 1&ndash;4</kbd> edit it, <kbd>ALGORITHM</kbd> moves to another track. <kbd>EDIT</kbd> again opens the <a href="#chain">signal chain</a>; <kbd>HOME</kbd> goes back.</p>
       <table class="t grid4">
         <tr><th>Page</th><th>KNOB 1</th><th>KNOB 2</th><th>KNOB 3</th><th>KNOB 4</th></tr>
-        <tr><td>INSTR</td><td>Type: lead, pad, bass</td><td>Bank</td><td>Sound in the bank</td><td>USER slot to save to</td></tr>
+        <tr><td>INSTR</td><td>Type: lead, pad, bass</td><td>Group</td><td>Sound in the group</td><td>USER slot to save to</td></tr>
         <tr><td>MAIN</td><td>Glide</td><td>Cutoff</td><td>Resonance</td><td>Filter envelope</td></tr>
         <tr><td>OSC</td><td>Wave 1</td><td>Wave 2</td><td>Wave 2 tuning</td><td>Mix / FM amount</td></tr>
         <tr><td>ENV</td><td>Attack</td><td>Decay</td><td>Sustain</td><td>Release</td></tr>
         <tr><td>LFO</td><td>Rate</td><td>Depth</td><td>Target: pitch, filter, volume, PWM</td><td>Wave: tri, square, saw, random</td></tr>
       </table>
       <p><b>Waves:</b> sine, triangle, saw, square, noise, FM, <b>pulse</b> (set the LFO target to PWM and its width sways) and <b>sync</b> (wave 2 only: hard sync, swept by the filter envelope for that screaming lead). <b>Glide</b> slides each note from the one before, from off up to about half a second.</p>
-      <p><b>Drums:</b> the first page is <b>KIT</b> (bank, kit, USER slot), then a page per drum (BD SD HH OH CP PC) with its pitch, decay and level on <kbd>KNOB 1&ndash;3</kbd>.</p>
+      <p><b>Drums:</b> the first page is <b>KIT</b> (group, kit, USER slot), then a page per drum (BD SD HH OH CP PC) with its pitch, decay and level on <kbd>KNOB 1&ndash;3</kbd>.</p>
       <h3>The signal chain (<kbd>EDIT</kbd> twice)</h3>
       <p>The track's four pedals as cards, in the order the sound flows through them (FX, SEL, then ENV, LFO), each with its power sign, three small knobs and their values. A pedal that is off is grey; the chosen card glows. <kbd>SELECT</kbd> moves between them, <kbd>KNOB 2&ndash;4</kbd> turn the chosen pedal's knobs (named on the bottom line); <kbd>KNOB 1</kbd> switches it on or off, and <kbd>PRESETS</kbd> swaps it for another pedal from the whole library, category by category. <kbd>EDIT</kbd> once more goes home.</p>
       <h3>Saving your own sound</h3>
       <p>Tweak the sound, go to <b>INSTR</b> (or <b>KIT</b>), choose a USER slot with <kbd>KNOB 4</kbd> and press <kbd>REC</kbd> <b>twice</b> (the bottom line asks first). <b>SAVED USER 3</b> shows, and the track now plays your sound from the USER bank. Saving over a used slot replaces it. The USER bank is kept with your work and inside each saved project, and <i>clear all</i> leaves it alone.</p>
     </div>
     <div>
-      <div class="shot"><img src="guide/instr.png" alt="The INSTR page"><p>INSTR: banks on the left, the bank's sounds on the right.</p></div>
+      <div class="shot"><img src="guide/instr.png" alt="The INSTR page"><p>INSTR: groups on the left, the group's sounds on the right.</p></div>
       <div class="shot" style="margin-top:18px"><img src="guide/editor.png" alt="The OSC page"><p>OSC: two pulse waves.</p></div>
       <div class="shot" style="margin-top:18px"><img src="guide/kit.png" alt="The KIT page"><p>Drums: the KIT page.</p></div>
       <div class="shot" style="margin-top:18px" id="chain"><img src="guide/chain.png" alt="The signal chain"><p>The signal chain: <kbd>EDIT</kbd> twice.</p></div>
@@ -276,7 +289,7 @@ footer a { color: var(--sub); }
 
 <section id="pedals">
   <h2>Pedals</h2>
-  <p class="sub"><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are four pedal slots for the chosen track, and each holds any pedal from a library of 36. <b>Tap</b> a button to switch its pedal on or off (its name shows: <b>GLITCH ON</b>; lit = on). <b>Hold</b> it half a second to open the pedal. To see and set all four at once, press <kbd>EDIT</kbd> twice for the <a href="#chain">signal chain</a>.</p>
+  <p class="sub"><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are four pedal slots for the chosen track, and each holds any pedal from a library of 30. <b>Tap</b> a button to switch its pedal on or off (its name shows: <b>GLITCH ON</b>; lit = on). <b>Hold</b> it half a second to open the pedal. To see and set all four at once, press <kbd>EDIT</kbd> twice for the <a href="#chain">signal chain</a>.</p>
   <p>The pedal page is the stompbox itself, in its own colour: the red lamp lights and a faint glow surrounds it when it is on, and its three knobs show their values underneath.</p>
   <div class="split">
     <div>
@@ -289,16 +302,16 @@ footer a { color: var(--sub); }
       </table>
       <table class="t grid4">
         <tr><th>Category</th><th>Pedals</th></tr>
-        <tr><td>DRIVE</td><td>Distortion &middot; Overdrive &middot; Fuzz &middot; Octave Fuzz &middot; Gated Fuzz &middot; Wavefolder &middot; Bitcrusher</td></tr>
+        <tr><td>DRIVE</td><td>Distortion &middot; Overdrive &middot; Fuzz &middot; Octave Fuzz &middot; Wavefolder &middot; Bitcrusher</td></tr>
         <tr><td>FILTER</td><td>Filter Seq (steps in time) &middot; Wah (opens as you play harder)</td></tr>
-        <tr><td>MODULATION</td><td>Chorus &middot; Phaser &middot; Flanger &middot; Tremolo &middot; Slicer (chops in time) &middot; Vibrato &middot; Uni &middot; Pump (ducks on every kick)</td></tr>
+        <tr><td>MODULATION</td><td>Chorus &middot; Phaser &middot; Flanger &middot; Tremolo &middot; Slicer (chops in time) &middot; Vibrato &middot; Pump (ducks on every kick)</td></tr>
         <tr><td>SPACE</td><td>Reverb &middot; Delay &middot; Tape Echo &middot; Shimmer &middot; Reverse Delay &middot; Spring Reverb</td></tr>
         <tr><td>PITCH</td><td>Shifter (up or down) &middot; Harmonizer (a second note at an interval)</td></tr>
-        <tr><td>OTHER</td><td>Cassette &middot; Vinyl &middot; Glitch &middot; Underwater &middot; Synth &middot; Lo-Fi &middot; Slow (swells) &middot; Ghost (a second player behind) &middot; Music Box &middot; Broken Clock (late notes) &middot; Shadow (an octave below)</td></tr>
+        <tr><td>OTHER</td><td>Old Media (worn tape and records: wobble, hiss, crackle) &middot; Glitch &middot; Underwater &middot; Synth &middot; Lo-Fi &middot; Loose (late notes, and a second player a step behind) &middot; Music Box</td></tr>
       </table>
-      <p><b>Space pedals are shared</b>: one of each for the whole band. Each track sets how much it sends; the other two knobs change the shared pedal for everyone. All the other pedals belong to their slot. A pedal already in another of the track's slots isn't offered again (nor Glitch beside Ghost). A new project starts with Reverb, Delay, Distortion and Chorus.</p>
+      <p><b>Space pedals are shared</b>: one of each for the whole band. Each track sets how much it sends; the other two knobs change the shared pedal for everyone. All the other pedals belong to their slot. A pedal already in another of the track's slots isn't offered again (nor Glitch beside Loose). A new project starts with Reverb, Delay, Distortion and Chorus.</p>
       <p><kbd>PLAY</kbd> to stop silences every pedal at once: no echo or late note carries on.</p>
-      <div class="tip">If switching a pedal on would overload the chip, it stays off and <b>CPU FULL</b> shows. Switch another one off first. Phaser, Uni, Filter Seq and Wah are the heaviest.</div>
+      <div class="tip">If switching a pedal on would overload the chip, it stays off and <b>CPU FULL</b> shows. Switch another one off first. Phaser, Filter Seq and Wah are the heaviest.</div>
     </div>
     <div class="shot"><img src="guide/pedal.png" alt="A distortion pedal"><p>The <kbd>ENV</kbd> slot holding a Distortion, switched on.</p></div>
   </div>
@@ -381,7 +394,7 @@ footer a { color: var(--sub); }
 
   <h3>Home screen</h3>
   <table class="t">
-    <tr><td><kbd>SELECT</kbd></td><td>The sound or kit, through every bank.</td></tr>
+    <tr><td><kbd>SELECT</kbd></td><td>The sound or kit, through every group.</td></tr>
     <tr><td><kbd>KNOB 1</kbd></td><td>Tempo.</td></tr>
     <tr><td><kbd>REC</kbd></td><td>Hold 1 s, then REC again: clear everything.</td></tr>
   </table>

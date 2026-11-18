@@ -12,13 +12,15 @@
  *   gb_drums.h  track 4 DRUMS: KICK, SNARE, HAT, OPEN HAT, CLAP, PERC (synthesised; pitch, decay, level each)
  *   gb_synth.h  tracks 1-3, each a LEAD (4 voices), BASS (1 voice) or PAD (4 voices), 9 voices shared: 2 oscillators
  *               (sine, triangle, saw, square, noise, FM, pulse, sync), resonant filter, ADSR, LFO, glide; the sound
- *               library (banks ORIGINAL, CLASSIC, EXPERIMENTAL, USER)
+ *               library (offered in four groups a type, then USER; gb_synth.h SND_GRP)
  *   gb_fx.h     the pedals: distortion and phaser per track; reverb, delay, chorus shared (sends)
  *
  * Sound (outside edit mode): SELECT picks the chosen track's sound, a click each through every sound of the slot's
  * type, bank after bank (no test note; the library: gb_synth.h SND_LEAD / SND_BASS / SND_PAD, gb_drums.h KITS):
- *   ORIGINAL (ids 0-9, every older save's), CLASSIC (32-39), EXPERIMENTAL (64-69), USER (96-103, set.mu.ub)
- *   DRUMS  ORIGINAL (0-9), ELECTRONIC (10-13), EXPERIMENTAL (14-17), USER (96-99)
+ *   the library's ids: 0-9, 32-39, 64-69 (never renumbered: every save keeps its sound), USER 96-103 (set.mu.ub);
+ *   offered in four groups a type (SND_GRP: LEAD keys, band, synth, odd; PAD strings, keys, synth, atmos; BASS
+ *   acoustic, analog, digital, wild), the others loadable still. DRUMS: kits 0-17 (KIT_GRP: groove, machines,
+ *   electro, odd), USER 96-99
  * (its name shows big). Home: KNOB1 tempo (KNOB2-4 nothing: the sound is EDIT's). EDIT: the SOUND page, the sound in
  * depth (EDIT again: the signal chain, again: home; HOME: home; ALGORITHM another track):
  *   SELECT the page: INSTR a menu: type (LEAD/PAD/BASS), bank, sound (the bank's listed), USER slot (REC twice: save)
@@ -600,17 +602,28 @@ static const pdef_t PDEF[NPD] = {
     {"MUSIC BOX", 5, {230, 170, 190}, 1, {KL("DECAY", 0, 70), KL("TONE", 1, 70), KL("MIX", 2, 100)}},
     {"BROKEN CLOCK", 5, {140, 110, 60}, 0, {KL("AMOUNT", 0, 70), KL("CHANCE", 1, 50), KL("HICCUP", 2, 20)}},
     {"SHADOW", 5, {50, 50, 70}, 0, {KL("LEVEL", 0, 60), KL("TONE", 1, 40), {"OCTAVE", 2, 1, 0, KV_OCT2}}},
+    {"LOOSE", 5, {200, 170, 110}, 1, {KL("LATE", 0, 50), KL("DOUBLE", 1, 50), KL("DRIFT", 2, 40)}},   /* GHOST + BROKEN CLOCK */
+    {"OLD MEDIA", 5, {120, 70, 45}, 0, {KL("WEAR", 0, 60), KL("NOISE", 1, 45), KL("TONE", 2, 60)}},   /* CASSETTE + VINYL */
 };
+/* pedals no longer offered (an older save that has one keeps it, as it was): SHADOW (SHIFTER / HARMONIZER do it), GATED
+ * FUZZ, SLOW (the sound's attack does it), UNI; GHOST and BROKEN CLOCK (now LOOSE), CASSETTE and VINYL (now OLD MEDIA) */
+static int ped_shown(uint32_t p)
+{
+    return p != PD_SHADOW && p != PD_GATEF && p != PD_SLOW && p != PD_UNI && p != PD_GHOST && p != PD_BROKEN
+        && p != PD_CASS && p != PD_VINYL;
+}
 #define NPCAT 6u
 static const char *const PCAT_NAME[NPCAT] = {"DRIVE", "FILTER", "MODULATION", "SPACE", "PITCH", "OTHER"};
 static uint32_t ped_free(uint32_t t, uint32_t e, uint32_t p)   /* can slot e of track t take pedal p? Not one already in
                                                    another of its slots, nor GLITCH beside GHOST (they share the track's line) */
 {
     uint32_t e2;
+    if (!ped_shown(p)) return 0;                /* (one no longer offered) */
     for (e2 = 0; e2 < NPED_SLOTS; e2++) {
         uint32_t q = set.ped[t][e2] % NPD;
+        uint32_t ql = q == PD_GHOST || q == PD_LOOSE, pl = p == PD_GHOST || p == PD_LOOSE;   /* (they use the track's line) */
         if (e2 == e) continue;
-        if (q == p || (q == PD_GLITCH && p == PD_GHOST) || (q == PD_GHOST && p == PD_GLITCH)) return 0;
+        if (q == p || (q == PD_GLITCH && pl) || (ql && p == PD_GLITCH)) return 0;
     }
     return 1;
 }
@@ -658,7 +671,7 @@ static void pedal_knobs(uint32_t trk, uint32_t e, pknob_t k[3])
  * each pedal in 20 slots; a shared pedal once, plus a little per send). The five original pedals on all four tracks
  * come to 156 (on the FM-1 ~40 % of the CPU, on top of the instruments); more than PED_BUDGET is refused */
 static const uint8_t PD_COST[NPD] = {5, 8, 4, 5, 6, 4, 17, 16, 7, 18, 5, 2, 4, 5, 19, 1, 1, 1, 1, 9, 5, 3, 6, 4, 3,
-                                     2, 1, 1, 9, 10, 3, 4, 5, 10, 1, 10};   /* (MUSIC BOX: with four notes ringing) */
+                                     2, 1, 1, 9, 10, 3, 4, 5, 10, 1, 10, 6, 11};   /* (LOOSE, OLD MEDIA) */   /* (MUSIC BOX: with four notes ringing) */
 static const uint8_t SP_COST[NSPACE_ALL] = {19, 9, 17, 18, 6, 15};   /* reverb, delay, tape echo, shimmer, reverse, spring */
 #define PED_BUDGET 170u
 static int ped_fits(void)
@@ -869,7 +882,7 @@ static void bottom_bar(const char *s, uint16_t dot)   /* the bottom bar: the tex
     cv_blit(0, Y_BOT);
 }
 
-static uint32_t kit_list(uint8_t *ids);
+static uint32_t kit_list(uint8_t *ids, uint32_t cur);
 static uint32_t id_bank(uint32_t t, uint32_t id);
 static uint32_t snd_pg;                         /* the sound editor's page: 0 INSTR (drums: KIT), then MAIN OSC ENV LFO (drums: a drum each) */
 static uint32_t usr_slot, usr_ask, usr_t;       /* INSTR: the USER slot to save to; "sure?" (REC again within 3 s) */
@@ -1645,18 +1658,19 @@ static void draw_instr(uint32_t trk)
 {
     static const char *const TAB[NPAGE + 1u] = {"INSTR", "MAIN", "OSC", "ENV", "LFO"};
     static const char *const DTAB[NDR + 1u] = {"KIT", "BD", "SD", "HH", "OH", "CP", "PC"};
-    static const char *const BK[2][NBANK] = {{"ORIGINAL", "CLASSIC", "EXPERIM.", "USER"}, {"ORIGINAL", "ELECTRO", "EXPERIM.", "USER"}};
+
     static const uint16_t YEL = RGB(255, 200, 60);
     const uint8_t *rgb = trk_rgb(trk);
     uint16_t col = rgbk(rgb, 100);
     uint8_t ids[40], sub[40];
     uint32_t now = trk < NSYN ? set.snd[trk].preset : set.dkit, bk = id_bank(trk, now), n, m = 0, at = 0, i, half, top, b;
-    uint32_t ntab = trk < NSYN ? NPAGE + 1u : NDR + 1u, inb[NBANK] = {0, 0, 0, 0};
+    uint32_t ntab = trk < NSYN ? NPAGE + 1u : NDR + 1u, inb[NBANK] = {0, 0, 0, 0, 0};
+    const char *const *bkn = trk < NSYN ? BANK_NAME[TTYPE(trk)] : KBANK_NAME;
     uint32_t used = trk < NSYN ? set.mu.ub.snd[TTYPE(trk)][usr_slot % NUSND].preset != 0u : set.mu.ub.kit[usr_slot % NUKIT].used != 0u;
     char ty[16], us[16], *p;
-    n = trk < NSYN ? sound_list(TTYPE(trk), ids) : kit_list(ids);
+    n = trk < NSYN ? sound_list(TTYPE(trk), ids, now) : kit_list(ids, now);
     for (i = 0; i < n; i++) {
-        inb[id_bank(trk, ids[i]) % NBANK]++;
+        if (id_bank(trk, ids[i]) < NBANK) inb[id_bank(trk, ids[i])]++;
         if (id_bank(trk, ids[i]) == bk) { if (ids[i] == now) at = m; sub[m++] = ids[i]; }
     }
     top = at > 2u ? at - 2u : 0u;               /* the list: seven of the bank's sounds, the one playing among them */
@@ -1674,28 +1688,28 @@ static void draw_instr(uint32_t trk)
             cv_rrect(tx + 1, 2, tw - 3, 20, 10, i == 0u ? col : C_PANEL);
             cv_text_bg(tx + tw / 2 - 1 - text_w(&FONT_S, tn) / 2, 4, &FONT_S, tn, i == 0u ? C_BG : C_SUB, i == 0u ? col : C_PANEL);
         }
-        cv_rrect(4, 28, 76, 134, 8, C_PANEL);   /* the banks (K2); the type (K1); the USER slot (K4) */
-        for (b = 0; b < NBANK; b++) {
-            int32_t y = 34 + (int32_t)b * 22;
+        cv_rrect(4, 28, 80, 134, 8, C_PANEL);   /* the banks (K2); the type (K1); the USER slot (K4) */
+        for (b = 0; b < NBANK; b++) {           /* the groups, then USER */
+            int32_t y = 32 + (int32_t)b * 19;
             uint32_t me = b == bk;
-            if (me) glow_card(8, y, 68, 19, 6, rgb, C_PANEL2);
-            cv_text_bg(14, y + 1, &FONT_S, BK[trk >= NSYN][b], me ? C_TXT : inb[b] ? C_SUB : C_DIMC, me ? C_PANEL2 : C_PANEL);
+            if (me) glow_card(8, y, 72, 17, 6, rgb, C_PANEL2);
+            cv_text_bg(44 - text_w(&FONT_S, bkn[b]) / 2, y, &FONT_S, bkn[b], me ? C_TXT : inb[b] ? C_SUB : C_DIMC, me ? C_PANEL2 : C_PANEL);
         }
-        cv_rrect(8, 124, 68, 17, 8, C_BG);
-        cv_text_bg(42 - text_w(&FONT_S, ty) / 2, 124, &FONT_S, ty, trk < NSYN ? C_TXT : C_SUB, C_BG);
-        cv_rrect(8, 143, 68, 17, 8, usr_ask ? YEL : C_BG);
-        cv_text_bg(42 - text_w(&FONT_S, us) / 2, 143, &FONT_S, us, usr_ask ? C_BG : used ? C_TXT : C_SUB, usr_ask ? YEL : C_BG);
-        cv_rrect(84, 28, 152, 134, 8, C_PANEL); /* the bank's sounds (K3) */
+        cv_rrect(8, 128, 72, 16, 8, C_BG);
+        cv_text_bg(44 - text_w(&FONT_S, ty) / 2, 128, &FONT_S, ty, trk < NSYN ? C_TXT : C_SUB, C_BG);
+        cv_rrect(8, 146, 72, 16, 8, usr_ask ? YEL : C_BG);
+        cv_text_bg(44 - text_w(&FONT_S, us) / 2, 146, &FONT_S, us, usr_ask ? C_BG : used ? C_TXT : C_SUB, usr_ask ? YEL : C_BG);
+        cv_rrect(88, 28, 148, 134, 8, C_PANEL); /* the bank's sounds (K3) */
         for (i = 0; i < 7u && top + i < m; i++) {
             uint32_t id = sub[top + i], me = top + i == at;
             int32_t y = 33 + (int32_t)i * 18;
             const char *nm = (trk < NSYN ? sound_name(TTYPE(trk), id) : kit_name_id(id));
             if (me) {
-                glow_card(88, y, 144, 17, 5, rgb, C_PANEL2);
+                glow_card(92, y, 140, 17, 5, rgb, C_PANEL2);
                 cv_line(212, y + 9, 215, y + 4, col); cv_line(215, y + 4, 218, y + 13, col);   /* (a little wave) */
                 cv_line(218, y + 13, 221, y + 5, col); cv_line(221, y + 5, 224, y + 9, col);
             }
-            cv_text_bg(96, y, &FONT_S, nm, me ? C_TXT : C_SUB, me ? C_PANEL2 : C_PANEL);
+            cv_text_bg(100, y, &FONT_S, nm, me ? C_TXT : C_SUB, me ? C_PANEL2 : C_PANEL);
         }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
@@ -1929,10 +1943,12 @@ static void pat_copy(uint32_t t, uint32_t from, uint32_t to)
 
 /* the library, step by step: synth slots through every sound of their type, the drums through every kit (bank: only
  * within the bank the sound is in, for the SOUND page's SOUND knob) */
-static uint32_t kit_list(uint8_t *ids)
+static uint32_t kit_list(uint8_t *ids, uint32_t cur)   /* the kits offered, group by group, then USER (cur first, if it
+                                                   is one no longer offered) */
 {
-    uint32_t i, n = 0;
-    for (i = 0; i < NKIT; i++) ids[n++] = (uint8_t)i;
+    uint32_t g, i, n = 0;
+    if (kit_bank(cur) == 0xFFu && cur < NKIT) ids[n++] = (uint8_t)cur;
+    for (g = 0; g < 4u; g++) for (i = 0; i < 6u && KIT_GRP[g][i] != 0xFFu; i++) ids[n++] = KIT_GRP[g][i];
     for (i = 0; i < NUKIT; i++) if (set.mu.ub.kit[i].used) ids[n++] = (uint8_t)KUID(i);
     return n;
 }
@@ -1944,11 +1960,11 @@ static void kit_load(uint32_t id)               /* the drums take kit id: its si
     else { id %= NKIT; for (i = 0; i < NDR; i++) set.dsnd[i] = KITS[id][i]; }
     set.dkit = (uint8_t)id;
 }
-static uint32_t id_bank(uint32_t t, uint32_t id) { return t < NSYN ? (id >= UID(0) ? BK_USER : id >> 5) : kit_bank(id); }
+static uint32_t id_bank(uint32_t t, uint32_t id) { return t < NSYN ? sound_group(TTYPE(t), id) : kit_bank(id); }
 static void snd_step(uint32_t t, int32_t e, int bank_only)   /* e sounds on (bank_only: staying in its bank) */
 {
     uint8_t ids[40], sub[40];
-    uint32_t n = t < NSYN ? sound_list(TTYPE(t), ids) : kit_list(ids), i, k = 0, m = 0, now = t < NSYN ? set.snd[t].preset : set.dkit;
+    uint32_t now = t < NSYN ? set.snd[t].preset : set.dkit, n = t < NSYN ? sound_list(TTYPE(t), ids, now) : kit_list(ids, now), i, k = 0, m = 0;
     for (i = 0; i < n; i++) if (!bank_only || id_bank(t, ids[i]) == id_bank(t, now)) sub[m++] = ids[i];
     if (!m) return;
     for (i = 0; i < m; i++) if (sub[i] == now) k = i;
@@ -1958,7 +1974,9 @@ static void snd_step(uint32_t t, int32_t e, int bank_only)   /* e sounds on (ban
 static int snd_bank(uint32_t t, int32_t e)      /* another bank: its first sound (an empty USER bank is passed by) */
 {
     uint8_t ids[40];
-    uint32_t n = t < NSYN ? sound_list(TTYPE(t), ids) : kit_list(ids), b = id_bank(t, t < NSYN ? set.snd[t].preset : set.dkit), tries, i;
+    uint32_t now = t < NSYN ? set.snd[t].preset : set.dkit, n = t < NSYN ? sound_list(TTYPE(t), ids, now) : kit_list(ids, now);
+    uint32_t b = id_bank(t, now), tries, i;
+    if (b >= NBANK) b = e > 0 ? NBANK - 1u : 0u;   /* (from one no longer offered: the first group, or the last) */
     for (tries = 0; tries < NBANK; tries++) {
         b = (uint32_t)(((int32_t)b + (e > 0 ? 1 : -1) + (int32_t)NBANK) % (int32_t)NBANK);
         for (i = 0; i < n; i++) if (id_bank(t, ids[i]) == b) { if (t < NSYN) sound_load(t, ids[i]); else kit_load(ids[i]); return 1; }

@@ -93,8 +93,24 @@ static const uint32_t SEMI[49] = {
  * (Envelope times: 0 = instant, 60 ~ 36 ms, 72 ~ 80 ms, 88 ~ 0.25 s, 96 ~ 0.4 s, 100 ~ 0.6 s.) */
 typedef struct { const char *name; uint8_t id, glide; snd_t s; } sdef_t;
 #define SD(nm, id, gl, cu, re, fe, w1, w2, tu, mx, a, d, su, r, lr, ld, lt, lw) {nm, id, gl, {cu, re, fe, w1, w2, tu, mx, a, d, su, r, lr, ld, lt, lw, id}}
-enum { BK_ORIG, BK_CLASSIC, BK_EXP, BK_USER, NBANK };   /* a bank: id >> 5 */
-static const char *const BANK_NAME[NBANK] = {"ORIGINAL", "CLASSIC", "EXPERIMENTAL", "USER"};
+#define NBANK 5u                                /* the groups a type's sounds are browsed in: four, then USER */
+#define BK_USER 4u
+static const char *const BANK_NAME[NSYN][NBANK] = {   /* by type: T_LEAD, T_BASS, T_PAD */
+    {"KEYS", "BAND", "SYNTH", "ODD", "USER"}, {"ACOUSTIC", "ANALOG", "DIGITAL", "WILD", "USER"},
+    {"STRINGS", "KEYS", "SYNTH", "ATMOS", "USER"}};
+/* the sounds offered, group by group (0xFF: the end). The library's others are not offered any more but stay here,
+ * loadable, so an older save sounds as it did (its ids never change) */
+#define GX 0xFFu
+static const uint8_t SND_GRP[NSYN][4][6] = {
+    {{0, 1, 3, 38, GX, GX}, {5, 2, 4, GX, GX, GX}, {32, 33, 34, 35, 9, GX}, {6, 64, 67, GX, GX, GX}},
+    /* LEAD: KEYS piano, xylophone, music box, FM bell; BAND Hammond, brass, electric guitar; SYNTH mini, sync, PWM,
+       acid lead, chiptune; ODD theremin, glass harp, laser */
+    {{0, 2, 3, 1, GX, GX}, {32, 33, 36, 5, GX, GX}, {34, 8, 39, GX, GX, GX}, {4, 9, 64, 66, GX, GX}},
+    /* BASS: ACOUSTIC upright, slap, plucked, tuba; ANALOG Moog, 303 line, sub, synth bass; DIGITAL DX bass, Reese,
+       electro bass; WILD fuzz, wobble, growl, bubble */
+    {{0, 34, 1, 2, GX, GX}, {4, 37, 3, 5, GX, GX}, {32, 35, 36, 33, GX, GX}, {8, 64, 67, 9, GX, GX}}};
+    /* PAD: STRINGS strings, Solina, choir, acoustic guitar; KEYS electric piano, DX piano, organ, handpan; SYNTH Juno
+       strings, poly synth, PWM pad, Prophet brass; ATMOS drone, frozen, cathedral, sweep */
 #define UID(u) (96u + (u))                      /* a USER sound's id */
 static const sdef_t SND_LEAD[] = {
     /* ORIGINAL */
@@ -197,10 +213,19 @@ static int sound_ok(uint32_t ty, uint32_t id)   /* a sound that exists: in the l
     if (id >= UID(0) && id < UID(NUSND)) return set.mu.ub.snd[ty % NSYN][id - UID(0)].preset != 0;
     return sound_def(ty, id) != 0;
 }
-static uint32_t sound_list(uint32_t ty, uint8_t *ids)   /* every sound of a type, in order: the library, then USER */
+static uint32_t sound_group(uint32_t ty, uint32_t id)   /* a sound's group (0-3), USER 4; one no longer offered: GX */
 {
-    uint32_t i, n = 0;
-    for (i = 0; i < SND_N[ty % NSYN]; i++) ids[n++] = SND_LIB[ty % NSYN][i].id;
+    uint32_t g, i;
+    if (id >= UID(0)) return BK_USER;
+    for (g = 0; g < 4u; g++) for (i = 0; i < 6u; i++) if (SND_GRP[ty % NSYN][g][i] == id) return g;
+    return GX;
+}
+static uint32_t sound_list(uint32_t ty, uint8_t *ids, uint32_t cur)   /* the sounds offered, group by group, then USER
+                                                   (cur first, if it is one no longer offered: an older save's) */
+{
+    uint32_t g, i, n = 0;
+    if (sound_group(ty, cur) == GX && sound_def(ty, cur)) ids[n++] = (uint8_t)cur;
+    for (g = 0; g < 4u; g++) for (i = 0; i < 6u && SND_GRP[ty % NSYN][g][i] != GX; i++) ids[n++] = SND_GRP[ty % NSYN][g][i];
     for (i = 0; i < NUSND; i++) if (set.mu.ub.snd[ty % NSYN][i].preset) ids[n++] = (uint8_t)UID(i);
     return n;
 }

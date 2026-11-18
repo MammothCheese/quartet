@@ -38,6 +38,7 @@ enum { PD_DIST, PD_OD, PD_FUZZ, PD_OCTF, PD_GATEF, PD_FOLD,              /* DRIV
        PD_CRUSH, PD_REVD, PD_SPRING,            /* (later still: DRIVE, SPACE, SPACE) */
        PD_SHIFT, PD_HARM,                       /* PITCH */
        PD_LOFI, PD_SLOW, PD_GHOST, PD_MBOX, PD_BROKEN, PD_SHADOW,   /* OTHER */
+       PD_LOOSE, PD_OLDM,                       /* (OTHER: GHOST + BROKEN CLOCK, CASSETTE + VINYL in one each) */
        NPD };
 enum { SP_REV, SP_DLY, SP_TAPE, SP_SHIM, SP_REVD, SP_SPRING, NSPACE_ALL };   /* the shared pedals (and their buses); the
                                                    first NSPACE keep their knobs in set.spk, the later ones in set.spk2 */
@@ -630,6 +631,35 @@ static void other_block(uint32_t t, uint32_t type, pst_t *st, int16_t *b, const 
         }
         break;
     }
+    case PD_OLDM: {                             /* OLD MEDIA: WEAR, NOISE, TONE; a worn tape or record: wobbly, dark,
+                                                   squashed, with hiss and crackle */
+        int32_t kt = 3000 + (int32_t)k[2] * 150;
+        uint32_t chance = (uint32_t)k[1];
+        st->ph += LFO_INC[14] * n; st->ph2 += LFO_INC[60] * n;
+        d = (150 << 8) + ((sine(st->ph) * (int32_t)k[0]) >> 8) + ((sine(st->ph2) * (int32_t)k[0]) >> 10);
+        if (!pl) pl = d;
+        sd = (d - pl) / (int32_t)n;
+        for (i = 0; i < n; i++) {
+            uint32_t r = rnd_next(&st->rnd);
+            int32_t y, nz;
+            b[w] = sat16(x[i]);
+            pl += sd;
+            y = tap(b, PB_N - 1u, w, pl);
+            w = (w + 1u) & (PB_N - 1u);
+            lp += ((y - lp) * kt) >> 15; lp2 += ((lp - lp2) * kt) >> 15;
+            c4 += (lp2 - c4) * (300 + (int32_t)k[0] * 10) >> 15;   /* (the bass thinned as it wears) */
+            if (((r >> 8) & 0xFFFFu) < chance) {   /* a crackle, either way, of any size */
+                uint32_t r2 = rnd_next(&st->rnd);
+                c3 = (int32_t)((r2 >> 8) & 0xFFF) + 600;
+                if (r2 >> 31) c3 = -c3;
+            }
+            c3 = (c3 * 21) / 32;
+            nz = (int32_t)(r >> 17) - 16384;
+            y = clampv(lp2 - c4 + c3 + ((nz * (int32_t)k[1]) >> 14), 32767);
+            x[i] = (3 * y - ((y * ((y * y) >> 15)) >> 15)) >> 1;   /* (the tape squashes the peaks) */
+        }
+        break;
+    }
     case PD_WATER: {                            /* UNDERWATER: DEPTH, WOBBLE, LEVEL; muffled and drifting */
         int32_t kt = 6000 - (int32_t)k[0] * 40, lv = ((int32_t)k[2] * (127 + k[0])) >> 7;
         st->ph += LFO_INC[16] * n;
@@ -849,7 +879,7 @@ static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, 
         uint8_t *z = (uint8_t *)st;
         for (i = 0; i < sizeof *st; i++) z[i] = 0;
         for (i = 0; i < PB_N; i++) b[i] = 0;
-        if (type == PD_GLITCH || type == PD_GHOST) for (i = 0; i < GL_N; i++) glbuf[t][i] = 0;   /* (the track's line) */
+        if (type == PD_GLITCH || type == PD_GHOST || type == PD_LOOSE) for (i = 0; i < GL_N; i++) glbuf[t][i] = 0;   /* (the track's line) */
         st->type = (uint8_t)(type + 1u);
         st->rnd = 0x9E3779B9u * (t * NFX + e + 1u);
     }
@@ -862,6 +892,11 @@ static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, 
     else if (type == PD_SHIFT || type == PD_HARM || type == PD_SHADOW) pitch_block(type, st, pbuf[t][e], k, x, n);
     else if (type == PD_SLOW) slow_block(st, k, x, n);
     else if (type == PD_GHOST) ghost_block(t, st, k, x, n);
+    else if (type == PD_LOOSE) {                /* LOOSE: LATE (gb_clock.h), DOUBLE, DRIFT: the ghost player behind */
+        uint8_t gk[3];
+        gk[0] = 60; gk[1] = k[1]; gk[2] = k[2];
+        if (k[1]) ghost_block(t, st, gk, x, n);
+    }
     else if (type == PD_MBOX) mbox_block(t, st, pbuf[t][e], k, x, n);
     else if (type == PD_BROKEN) {}              /* (BROKEN CLOCK changes when the track plays: gb_clock.h) */
     else if (type <= PD_UNI) mod_block(type, st, pbuf[t][e], k, x, n);
@@ -892,7 +927,7 @@ static void fx_process(int32_t *out, uint32_t n)
         int32_t gv = (int32_t)set.vol[t] * 4096 / 100;   /* the mixer: 100 = as is (Q12), 127 = x1.27, after the pedals */
         for (e = 0; e < NFX; e++) {
             uint32_t p = set.ped[t][e] % NPD;
-            if (e < NPED_SLOTS && on >> e & 1u && !PD_SPACE(p) && !(fx_quiet && (p == PD_GHOST || p == PD_GLITCH))) ped_insert(t, e, p, set.pk[t][e], tb[t], n);
+            if (e < NPED_SLOTS && on >> e & 1u && !PD_SPACE(p) && !(fx_quiet && (p == PD_GHOST || p == PD_GLITCH || p == PD_LOOSE))) ped_insert(t, e, p, set.pk[t][e], tb[t], n);
             else pst[t][e].live = 0;
         }
         if (gv != 4096) {
