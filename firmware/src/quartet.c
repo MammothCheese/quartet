@@ -145,6 +145,7 @@ static void app_idle(void);
 #define Y_BOT 216
 #define H_BOT 24
 #include "platform.c"
+#include "serif_font.h"                        /* FONT_T: the pedal names, the battery warning */
 
 /* ---- shared sound helpers */
 static int32_t sine(uint32_t ph)                /* a full cycle over 2^32 -> -32767..32767 (a refined parabola, ~0.1 %) */
@@ -857,6 +858,58 @@ static void head_text(const char *s, uint16_t c, uint16_t tab)   /* a sound's na
     cv_text_bg(124 - text_w(&FONT_L, s) / 2, 3, &FONT_L, s, c, C_PANEL);
     cv_blit(0, Y_BIG);
 }
+/* ---- the battery: a low-battery warning (as in Conductor). The battery reaches the ADC (ch3) through a divider whose
+ * values no document gives: BATT_LOW is about 10 % left for a lithium cell (~3.6 V) through an assumed 1:2 divider, an
+ * ESTIMATE. The reading does not follow USB power, so the warning hides while a computer is connected */
+#define BATT_LOW 558
+#define BATT_OK 570                             /* (the warning clears above this) */
+static int32_t batt_avg = -1;                   /* the raw reading x16, smoothed over ~4 s; -1 = none yet */
+static uint32_t batt_low;
+static int32_t batt_read(void)
+{
+#ifdef DINGHY_HOST
+#ifdef HOST_BATT
+    return HOST_BATT;                           /* (a host build can pretend: -DHOST_BATT=500) */
+#else
+    return -1;
+#endif
+#else
+    return fm1_adc_read(FM1_ADC_BATT);
+#endif
+}
+static uint32_t usb_powered(void)              /* plugged in to a computer: the host is sending USB frames */
+{
+#ifdef DINGHY_HOST
+#ifdef HOST_USB
+    return 1u;
+#else
+    return 0u;
+#endif
+#else
+    return usb.up && usb.config && !usb.suspended;
+#endif
+}
+static void batt_poll(void)                     /* main loop, 4 times a second */
+{
+    static uint32_t t;
+    int32_t v;
+    if (fm1_ms - t < 250u) return;
+    t = fm1_ms;
+    if ((v = batt_read()) < 0) return;
+    if (batt_avg < 0) batt_avg = v * 16;
+    batt_avg += (v * 16 - batt_avg) / 16;
+    if (!batt_low && batt_avg < BATT_LOW * 16) batt_low = 1;
+    else if (batt_low && batt_avg > BATT_OK * 16) batt_low = 0;
+}
+static void head_batt(void)                     /* the top bar: an empty battery, LOW BATTERY */
+{
+    head_begin(C_MUTE);
+    cv_rect(16, 12, 20, 14, C_MUTE); cv_rect(18, 14, 16, 10, C_PANEL);   /* (the battery: its case, empty...) */
+    cv_rect(36, 16, 3, 6, C_MUTE);              /* (...its nub, and a last sliver of charge) */
+    cv_rect(20, 16, 3, 6, C_MUTE);
+    cv_text_bg(52, 8, &FONT_T, "LOW BATTERY", C_MUTE, C_PANEL);
+    cv_blit(0, Y_BIG);
+}
 static void head_track(uint32_t trk, const char *name, int chips)
 {
     uint16_t col = trk_c(trk, 100);
@@ -1260,7 +1313,6 @@ static void lcd_value(int32_t cx, int32_t y, int32_t w, const char *s, uint16_t 
  * face for the digital ones), three knobs (KNOB2-4: knurled coloured caps or black skirted ones) with their names and
  * values, an LED that glows when it is on (dark, with OFF beside it, when off) and often a footswitch.
  * Everything is lines, polygons and circles, in screen coordinates: the case is 6..234 x 44..208, drawn in two halves */
-#include "serif_font.h"
 typedef struct { const char *name; uint32_t v, mx; const char *val; } kview_t;
 
 static int32_t ab_x0, ab_y0, ab_x1, ab_y1;      /* the art's clip box: the case */
@@ -1391,7 +1443,7 @@ static void astars(uint32_t seed, int32_t x0, int32_t y0, int32_t x1, int32_t y1
 }
 static uint32_t rnd_n(uint32_t *s, uint32_t n) { *s = *s * 1664525u + 1013904223u; return (*s >> 16) % n; }
 static int32_t atext(int32_t x, int32_t y, const felucca_font_t *f, const char *s, uint16_t c, int32_t sp)
-{                                               /* text blended onto whatever is under it, sp more px between letters */
+{                                               /* text blended onto whatever is under it, sp more px between letters, inside the art's box */
     for (; *s; s++) {
         uint32_t gi = glyph(f, (uint8_t)*s), gx, gy, w = f->bw[gi], bpr = (w + 1u) / 2u;
         const uint8_t *gd = f->data + f->off[gi];
@@ -1402,7 +1454,8 @@ static int32_t atext(int32_t x, int32_t y, const felucca_font_t *f, const char *
                 uint32_t v = gd[gy * bpr + gx / 2u];
                 int32_t xx = x - f->pad + (int32_t)gx;
                 v = (gx & 1u) ? (v & 15u) : (v >> 4);
-                if (v) cv_pset(xx, yy, v == 15u ? c : mix565(cv_get(xx, yy), c, (int32_t)v * 100 / 15));
+                if (v && xx >= ab_x0 && xx < ab_x1 && yy >= ab_y0 && yy < ab_y1)   /* (kept inside the art's box) */
+                    cv_pset(xx, yy, v == 15u ? c : mix565(cv_get(xx, yy), c, (int32_t)v * 100 / 15));
             }
         }
         x += f->adv[gi] + sp;
@@ -2024,6 +2077,7 @@ static const uint8_t PL_FOCUS[NLOOK][2] = {
 static void art_window(uint32_t lk, int32_t dx, int32_t dy, int32_t w, int32_t h, int32_t r)
 {                                               /* a window of a pedal's art (round its focus) at dx, dy, w x h */
     int32_t ox = cv_ox, oy = cv_oy, wx = PL_FOCUS[lk % NLOOK][0] - w / 2, wy = PL_FOCUS[lk % NLOOK][1] - h / 2;
+    if (lk == LK_GLITCH && h < 40) wy += 34;    /* (a thin slice of GLITCH: its confetti, not its big name) */
     if (wx > 234 - w) wx = 234 - w;
     if (wx < 6) wx = 6;
     if (wy > Y_PEDAL + H_PEDAL - h) wy = Y_PEDAL + H_PEDAL - h;
@@ -3060,6 +3114,7 @@ static void app_main(void)
     static const char *const REP_MSG[5] = {"REPEAT 1/2", "REPEAT 1/4", "REPEAT 1/8", "REPEAT 1/16", "REPEAT 1/32"};
     const char *msg = 0;                        /* shown big for 1.5 s: SAVED 3, LOAD FAILED, ALL CLEARED ... */
     uint32_t pedal_mode = 0, head_drawn = ~0u, pedal_drawn = ~0u;   /* the pedal screen up?, what it shows */
+    uint32_t batt_shown = 0, bt_hd = 0, bt_bd = 0, bt_pd = 0;   /* the battery's warning as shown (0 none, 1 off, 2 on); the top bar before */
     /* SELECT: a click either way goes to the next / the previous track, LEAD, PAD, BASS, DRUMS, round and round */
     static const uint8_t ALG_TRK[4] = {T_LEAD, T_PAD, T_BASS, T_DRUMS};
     /* ALGORITHM and PRESETS work the same way, one turn of ALG_CLICKS clicks per track: ALGORITHM in tenths (the 10 sounds),
@@ -3785,6 +3840,8 @@ static void app_main(void)
             cpu_t = fm1_ms;
             cpu_drawn = pct;                    /* (shown on the mixer's bottom line) */
         }
+        batt_poll();
+        bt_hd = head_drawn; bt_bd = big_drawn; bt_pd = pedal_drawn;   /* (the top bar as drawn, for the battery's warning) */
         /* each screen part is redrawn when what it shows changed. The middle shows one of: the sequencer (0), a pedal
          * (1), the arpeggiator (2), the mixer (3) */
         {
@@ -3912,6 +3969,16 @@ static void app_main(void)
             }
         }
         }                                       /* (end of the sequencer screen's parts) */
+        {                                       /* the battery: LOW BATTERY blinking in the top bar (1 s on, 1 s off), over
+                                                   what it shows; a message or CLEAR ALL? goes first; not on USB power */
+            uint32_t busy = (msg && fm1_ms - msg_t < 1500u) || wipe_ask;
+            uint32_t bw = batt_low && !usb_powered() && !busy ? 1u + ((fm1_ms / 1000u) & 1u) : 0u;
+            if (bw != batt_shown) {
+                if (batt_shown == 2u) head_drawn = big_drawn = pedal_drawn = ~0u;   /* (the top bar back as it was, next time round) */
+                else if (bw == 2u) head_batt();
+                batt_shown = bw;
+            } else if (bw == 2u && (head_drawn != bt_hd || big_drawn != bt_bd || pedal_drawn != bt_pd)) head_batt();   /* (drawn over again) */
+        }
         {
             uint32_t show_ch = fm1_ms - ch_t < 1500u && ch_t;
             const uint8_t *sb = trk < NSYN ? (const uint8_t *)&set.snd[trk] : (const uint8_t *)&set.dsnd[drum];
