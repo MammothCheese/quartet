@@ -1,5 +1,5 @@
 {
-  "what": "A four-track groovebox that plays like a four-piece band: lead, pads, bass and drums. 40 sounds and 10 drum kits, 5 effect pedals, an arpeggiator, step and live recording, and a song sequencer where each instrument follows its own arrangement.",
+  "what": "A pedal-driven groovebox for musicians: lead, pads, bass and drums, each through its own board of 30 effect pedals. 72 sounds, 23 kits, step and live recording, and a song sequencer.",
   "author": "MammothCheese",
   "kinds": ["groove"],
   "play": "https://joakimeriksson.github.io/fm1-emu/?fw=quartet&mhz=60",
