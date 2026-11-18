@@ -110,10 +110,10 @@ footer a { color: var(--sub); }
   <a class="brand" href="#top"><span class="bars"><i style="background:#FFB824"></i><i style="background:#B27CFF"></i><i style="background:#24C6F0"></i><i style="background:#5CE268"></i></span>QUARTET</a>
   <ul>
     <li><a href="#start">Quick start</a></li>
+    <li><a href="#sounds">Sounds</a></li>
     <li><a href="#pedals">Pedalboard</a></li>
     <li><a href="#meet">Meet the pedals</a></li>
     <li><a href="#write">Beats</a></li>
-    <li><a href="#sounds">Sounds</a></li>
     <li><a href="#perform">Live</a></li>
     <li><a href="#songs">Songs</a></li>
     <li><a href="#editor">Sound editing</a></li>
@@ -216,6 +216,74 @@ footer a { color: var(--sub); }
     <div class="card"><h4>HOME</h4><p>Back home, from anywhere.</p></div>
   </div>
   <div class="tip">To start from scratch, hold <kbd>REC</kbd> on the home screen, then press it again when <b>CLEAR ALL?</b> shows. Saves and your own sounds are kept.</div>
+</section>
+
+<!-- ============================================================ INSTRUMENTS AND SOUNDS -->
+<section id="sounds">
+  <h2>Instruments and sounds</h2>
+  <p class="sub">Four instruments, each in its own colour. <kbd>SELECT</kbd> picks one, <kbd>ALGORITHM</kbd> changes its sound.</p>
+  <div class="split">
+    <div>
+      <table class="t">
+        <tr><th>Instrument</th><th>Plays</th></tr>
+        <tr><td><span class="tk lead">LEAD</span></td><td>melodies and riffs, up to four notes</td></tr>
+        <tr><td><span class="tk padc">PAD</span></td><td>chords, up to four notes</td></tr>
+        <tr><td><span class="tk bassc">BASS</span></td><td>basslines, one note at a time</td></tr>
+        <tr><td><span class="tk drumc">DRUMS</span></td><td>kick, snare, hi-hat, open hat, clap and percussion</td></tr>
+      </table>
+
+      <h3>Changing sounds</h3>
+      <p>Turn <kbd>ALGORITHM</kbd> on the home screen to step through the sounds (on drums, the kits). It works while the music plays. For a list by group, press <kbd>EDIT</kbd>: <kbd>KNOB 2</kbd> picks the group, <kbd>KNOB 3</kbd> the sound.</p>
+      <div class="tip">Choosing a sound replaces any changes you made to it. To keep them, <a href="#ownsound">save it</a> first.</div>
+
+      <h3>Two leads, three pads</h3>
+      <p>The first three instruments can each be a lead, pad or bass: press <kbd>EDIT</kbd> and turn <kbd>KNOB 1</kbd>. Two of a kind show as LEAD 1 and LEAD 2. Drums are always the fourth.</p>
+    </div>
+    <div class="shots">
+      <div class="shot"><img src="guide/instr.png" alt="The INSTR sound browser"><p>The sound browser.</p></div>
+      <div class="shot"><img src="guide/slots.png" alt="The home screen with two leads, L1 and L2"><p>Two leads.</p></div>
+    </div>
+  </div>
+
+  <div class="tries">
+    <div class="try"><b class="h">Try this</b><p>Put the bass on Upright or Tuba.</p></div>
+    <div class="try" style="--c: var(--pad)"><b class="h">Try this</b><p>Put the pads on Choir or Organ.</p></div>
+    <div class="try" style="--c: var(--drums)"><b class="h">Try this</b><p>Play one beat on Jazz, CR-78 and Kitchen kits.</p></div>
+  </div>
+
+  <h3>All the sounds</h3>
+  <p>Four groups each, plus your own (USER).</p>
+  <table class="t grid4">
+    <tr><th>Lead</th><th>Sounds</th></tr>
+    <tr><td>KEYS</td><td class="c-lead">Piano, Xylophone, Music Box, FM Bell, Tine Keys, Clavinet</td></tr>
+    <tr><td>BAND</td><td class="c-lead">Hammond, Brass, Electric Guitar, Synth Brass, Flute, Harmonica</td></tr>
+    <tr><td>SYNTH</td><td class="c-lead">Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead</td></tr>
+    <tr><td>ODD</td><td class="c-lead">Theremin, Glass Harp, Laser, Bowed Metal, Sine Swarm, Stepper</td></tr>
+    <tr><th>Pads</th><th></th></tr>
+    <tr><td>STRINGS</td><td class="c-pad">Strings, Solina, Choir, Acoustic Guitar, Harp, Digital Choir</td></tr>
+    <tr><td>KEYS</td><td class="c-pad">Electric Piano, DX Piano, Organ, Handpan, Vibes, Marimba</td></tr>
+    <tr><td>SYNTH</td><td class="c-pad">Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth</td></tr>
+    <tr><td>ATMOS</td><td class="c-pad">Drone, Frozen, Cathedral, Sweep, Glass Pad, Tidal</td></tr>
+    <tr><th>Bass</th><th></th></tr>
+    <tr><td>ACOUSTIC</td><td class="c-bass">Upright, Slap, Plucked, Tuba, Fretless, Picked</td></tr>
+    <tr><td>ANALOG</td><td class="c-bass">Moog Bass, 303 Line, Sub Bass, Synth Bass, Rubber Bass, Slide Sub</td></tr>
+    <tr><td>DIGITAL</td><td class="c-bass">DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck</td></tr>
+    <tr><td>WILD</td><td class="c-bass">Fuzz, Wobble, Growl, Bubble, Womp, Dirt Bass</td></tr>
+    <tr><td>USER</td><td>Your own: up to 8 per type.</td></tr>
+  </table>
+  <table class="t grid4">
+    <tr><th>Drums</th><th>Kits</th></tr>
+    <tr><td>GROOVE</td><td class="c-drums">Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk</td></tr>
+    <tr><td>MACHINES</td><td class="c-drums">CR-78, Mini Pops, LM-1, 606, 808, 909</td></tr>
+    <tr><td>ELECTRO</td><td class="c-drums">Electro, Techno, Trap, House, Dub, Industrial</td></tr>
+    <tr><td>ODD</td><td class="c-drums">Toy, Glitch, Metal, Noise, Kitchen</td></tr>
+    <tr><td>USER</td><td>Your own: up to 4.</td></tr>
+  </table>
+  <p>The LM-1 kit uses samples of a real Linn LM-1 (its clap and perc keys are toms). The perc drum changes with the kit.</p>
+  <p class="note">Sounds from older saves that are no longer listed still load and play.</p>
+
+  <h3>The home screen</h3>
+  <p>A row per instrument shows its sound and pattern; the chosen one opens to show its steps. <b>A&gt;C</b> means C plays next. A muted instrument turns red. The top line shows tempo, swing (<b>SW</b>) and octave; the bottom shows the chosen instrument's pedals, lit when on.</p>
 </section>
 
 <!-- ============================================================ PEDALBOARD -->
@@ -363,74 +431,6 @@ footer a { color: var(--sub); }
 
   <h3>Tempo and swing</h3>
   <p>On the home screen, <kbd>KNOB 1</kbd> is the tempo and <kbd>KNOB 2</kbd> the swing, from straight (50 %) to a heavy shuffle (66 %).</p>
-</section>
-
-<!-- ============================================================ INSTRUMENTS AND SOUNDS -->
-<section id="sounds">
-  <h2>Instruments and sounds</h2>
-  <p class="sub">Four instruments, each in its own colour. <kbd>SELECT</kbd> picks one, <kbd>ALGORITHM</kbd> changes its sound.</p>
-  <div class="split">
-    <div>
-      <table class="t">
-        <tr><th>Instrument</th><th>Plays</th></tr>
-        <tr><td><span class="tk lead">LEAD</span></td><td>melodies and riffs, up to four notes</td></tr>
-        <tr><td><span class="tk padc">PAD</span></td><td>chords, up to four notes</td></tr>
-        <tr><td><span class="tk bassc">BASS</span></td><td>basslines, one note at a time</td></tr>
-        <tr><td><span class="tk drumc">DRUMS</span></td><td>kick, snare, hi-hat, open hat, clap and percussion</td></tr>
-      </table>
-
-      <h3>Changing sounds</h3>
-      <p>Turn <kbd>ALGORITHM</kbd> on the home screen to step through the sounds (on drums, the kits). It works while the music plays. For a list by group, press <kbd>EDIT</kbd>: <kbd>KNOB 2</kbd> picks the group, <kbd>KNOB 3</kbd> the sound.</p>
-      <div class="tip">Choosing a sound replaces any changes you made to it. To keep them, <a href="#ownsound">save it</a> first.</div>
-
-      <h3>Two leads, three pads</h3>
-      <p>The first three instruments can each be a lead, pad or bass: press <kbd>EDIT</kbd> and turn <kbd>KNOB 1</kbd>. Two of a kind show as LEAD 1 and LEAD 2. Drums are always the fourth.</p>
-    </div>
-    <div class="shots">
-      <div class="shot"><img src="guide/instr.png" alt="The INSTR sound browser"><p>The sound browser.</p></div>
-      <div class="shot"><img src="guide/slots.png" alt="The home screen with two leads, L1 and L2"><p>Two leads.</p></div>
-    </div>
-  </div>
-
-  <div class="tries">
-    <div class="try"><b class="h">Try this</b><p>Put the bass on Upright or Tuba.</p></div>
-    <div class="try" style="--c: var(--pad)"><b class="h">Try this</b><p>Put the pads on Choir or Organ.</p></div>
-    <div class="try" style="--c: var(--drums)"><b class="h">Try this</b><p>Play one beat on Jazz, CR-78 and Kitchen kits.</p></div>
-  </div>
-
-  <h3>All the sounds</h3>
-  <p>Four groups each, plus your own (USER).</p>
-  <table class="t grid4">
-    <tr><th>Lead</th><th>Sounds</th></tr>
-    <tr><td>KEYS</td><td class="c-lead">Piano, Xylophone, Music Box, FM Bell, Tine Keys, Clavinet</td></tr>
-    <tr><td>BAND</td><td class="c-lead">Hammond, Brass, Electric Guitar, Synth Brass, Flute, Harmonica</td></tr>
-    <tr><td>SYNTH</td><td class="c-lead">Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead</td></tr>
-    <tr><td>ODD</td><td class="c-lead">Theremin, Glass Harp, Laser, Bowed Metal, Sine Swarm, Stepper</td></tr>
-    <tr><th>Pads</th><th></th></tr>
-    <tr><td>STRINGS</td><td class="c-pad">Strings, Solina, Choir, Acoustic Guitar, Harp, Digital Choir</td></tr>
-    <tr><td>KEYS</td><td class="c-pad">Electric Piano, DX Piano, Organ, Handpan, Vibes, Marimba</td></tr>
-    <tr><td>SYNTH</td><td class="c-pad">Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth</td></tr>
-    <tr><td>ATMOS</td><td class="c-pad">Drone, Frozen, Cathedral, Sweep, Glass Pad, Tidal</td></tr>
-    <tr><th>Bass</th><th></th></tr>
-    <tr><td>ACOUSTIC</td><td class="c-bass">Upright, Slap, Plucked, Tuba, Fretless, Picked</td></tr>
-    <tr><td>ANALOG</td><td class="c-bass">Moog Bass, 303 Line, Sub Bass, Synth Bass, Rubber Bass, Slide Sub</td></tr>
-    <tr><td>DIGITAL</td><td class="c-bass">DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck</td></tr>
-    <tr><td>WILD</td><td class="c-bass">Fuzz, Wobble, Growl, Bubble, Womp, Dirt Bass</td></tr>
-    <tr><td>USER</td><td>Your own: up to 8 per type.</td></tr>
-  </table>
-  <table class="t grid4">
-    <tr><th>Drums</th><th>Kits</th></tr>
-    <tr><td>GROOVE</td><td class="c-drums">Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk</td></tr>
-    <tr><td>MACHINES</td><td class="c-drums">CR-78, Mini Pops, LM-1, 606, 808, 909</td></tr>
-    <tr><td>ELECTRO</td><td class="c-drums">Electro, Techno, Trap, House, Dub, Industrial</td></tr>
-    <tr><td>ODD</td><td class="c-drums">Toy, Glitch, Metal, Noise, Kitchen</td></tr>
-    <tr><td>USER</td><td>Your own: up to 4.</td></tr>
-  </table>
-  <p>The LM-1 kit uses samples of a real Linn LM-1 (its clap and perc keys are toms). The perc drum changes with the kit.</p>
-  <p class="note">Sounds from older saves that are no longer listed still load and play.</p>
-
-  <h3>The home screen</h3>
-  <p>A row per instrument shows its sound and pattern; the chosen one opens to show its steps. <b>A&gt;C</b> means C plays next. A muted instrument turns red. The top line shows tempo, swing (<b>SW</b>) and octave; the bottom shows the chosen instrument's pedals, lit when on.</p>
 </section>
 
 <!-- ============================================================ PLAYING LIVE -->
