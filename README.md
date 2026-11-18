@@ -10,7 +10,7 @@ A four-track groovebox for the M-VAVE FM-1 built around traditional instruments 
 
 - **Four tracks**: three synth slots, each a LEAD, PAD or BASS (they start as LEAD, BASS, PAD; two of a kind show as
   L1 / L2), sharing nine voices, and DRUMS. Each type has its own colour.
-- **10 patterns per track** (A-J), 1 to 4 bars, every note with a length (1/16 to a whole bar) and an expression. A new
+- **10 patterns per track** (A-J), 1 to 4 bars, with swing, every note with a length (1/16 to a whole bar) and an expression. A new
   pattern starts when the playing one comes round.
 - **Step recorder and live recorder**: write notes step by step, or play them in while the music runs; live notes
   are placed on the beat.

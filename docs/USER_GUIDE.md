@@ -17,7 +17,7 @@ The **home screen** shows the selected instrument and pattern (A–J), tempo, be
 
 ![Quartet screens](screens.png)
 
-On the home screen, **KNOB1** sets tempo; the sound itself is shaped in **EDIT**. **PRESETS** chooses patterns, **SEQ** opens the sequencer (and SUPER SEQ), **EDIT** opens the sound editor, **GLO** opens the mixer and **SAVE** opens project storage. **HOME** always returns here.
+On the home screen, **KNOB1** sets tempo and **KNOB2** the **swing** for the whole song, 50 % (straight) to 66 % (a heavy shuffle), a click a step, shown as **SW** on the line under the title: every second 16th comes a little later, while the beat itself stays exactly in time. The sound itself is shaped in **EDIT**. **PRESETS** chooses patterns, **SEQ** opens the sequencer (and SUPER SEQ), **EDIT** opens the sound editor, **GLO** opens the mixer and **SAVE** opens project storage. **HOME** always returns here.
 
 ## How the controls work
 
@@ -207,7 +207,7 @@ Quartet **automatically remembers current work** after playback stops and the so
 
 Press **SAVE**; **KNOB1** chooses slot 1–4. Press **REC twice** (second press within three seconds) to **save**, or **PLAY twice** to **load**. Loading replaces current work; an empty slot says **EMPTY**. Saving or loading stops playback. Press **SAVE** to leave the page.
 
-To clear the current project, **hold REC on the home screen**, then confirm with REC. This resets patterns, sounds, effects, mixer, arpeggiators and SUPER SEQ, **not** the four saved slots or your USER sounds. MIDI channel and octave are retained.
+To clear the current project, **hold REC on the home screen**, then confirm with REC. This resets patterns, sounds, effects, mixer, swing, arpeggiators and SUPER SEQ, **not** the four saved slots or your USER sounds. MIDI channel and octave are retained.
 
 ## Complete control reference
 
@@ -216,7 +216,7 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 | **SELECT** | Select instrument | Select instrument | SUPER SEQ: select row; SOUND, chain: another instrument; copy page: the track to copy from |
 | **PRESETS** | Select pattern A–J | Select pattern | SUPER SEQ: select song; pedal: the type (category); chain: another pedal; copy page: the pattern to copy from |
 | **ALGORITHM** | Select sound/kit (no test note) | Melodic step cursor | Pedal: the pedal within its type; SOUND: the page; chain: the slot; copy page: the pattern; SUPER SEQ: the box; save: the slot; KEY: the key; arpeggiator, mixer: nothing |
-| **KNOB1–4** | Tempo (KNOB2–4: nothing) | Bars / note length / expression / note (drums: bars / — / expression / bar) | LIVE: bars / cursor / bar / —; KEY: lock / lights; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
+| **KNOB1–4** | Tempo / swing (KNOB3–4: nothing) | Bars / note length / expression / note (drums: bars / — / expression / bar) | LIVE: bars / cursor / bar / —; KEY: lock / lights; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
 | **Keys** | Play notes; drums: first six white keys | Melodic notes; drums: black keys choose voice, white keys toggle hits | LIVE: play and record |
 | **OCT− / OCT+** | Tap: octave; hold: the pattern an octave | Tap: drum step page; hold: the pattern an octave (synths) | Octave where applicable |
 | **PLAY** | Start/stop from step one | Start/stop | LIVE: start/stop (stopping ends recording); save: load |

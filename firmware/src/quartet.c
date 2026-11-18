@@ -21,7 +21,7 @@
  *   offered in four groups a type (SND_GRP: LEAD keys, band, synth, odd; PAD strings, keys, synth, atmos; BASS
  *   acoustic, analog, digital, wild), the others loadable still. DRUMS: kits 0-17 (KIT_GRP: groove, machines,
  *   electro, odd), USER 96-99
- * (its name shows big). Home: KNOB1 tempo (KNOB2-4 nothing: the sound is EDIT's). EDIT: the SOUND page, the sound in
+ * (its name shows big). Home: KNOB1 tempo, KNOB2 swing 50-66 % (KNOB3-4 nothing: the sound is EDIT's). EDIT: the SOUND page, the sound in
  * depth (EDIT again: the signal chain, again: home; HOME: home; SELECT another track):
  *   ALGORITHM the page: INSTR a menu: type (LEAD/PAD/BASS), bank, sound (the bank's listed), USER slot (REC twice: save)
  *                    MAIN glide, cutoff, resonance, filter envelope   OSC wave 1, wave 2, osc 2 tuning, mix
@@ -210,7 +210,7 @@ typedef struct {                                /* the USER bank: sounds you sav
 static struct {
     uint8_t oct, ch, bpm, mute;                 /* mute: bit t = track t muted */
     uint8_t dkit;                               /* the drum kit: 808, CR-78, LM-1, LO-FI (ALGORITHM on DRUMS) */
-    uint8_t swing;                              /* 0..127: 50 % (straight) .. 66 % (for now always 0: no knob) */
+    uint8_t swing;                              /* 0..127: 50 % (straight) .. 66 % (home's KNOB2; gb_clock.h) */
     uint8_t vol[NTRK];                          /* the mixer (GLO): each track's volume, 100 = as is */
     uint8_t arp_on, arp_rate[NSYN];             /* the arpeggiator (ARP): bit t on; 0..3 = 1/4 .. 1/32 */
     uint8_t arp_oct[NSYN], arp_dir[NSYN];       /* its octaves 0..3 = 1..4; direction 0 up, 1 down, 2 random */
@@ -979,6 +979,7 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
 /* the info line: little panels. Home: play / stop, the tempo, four beat lights, the octave. SEQ: one cell above each
  * knob: the step recorder BARS, LEN (the note's), DYN, the note; live BARS, STEP, PG, REC */
 static uint32_t syn_covers(uint32_t t, uint32_t pt, uint32_t s, uint32_t len);
+#define SWING_PCT(v) (50u + (((uint32_t)(v) & 127u) * 16u + 63u) / 127u)   /* set.swing -> 50 .. 66 % (nearest) */
 static void info_cell(int32_t x, const char *lab, const char *val, uint16_t lc, uint16_t vc)
 {
     int32_t tw = (lab[0] ? text_w(&FONT_S, lab) + 4 : 0) + text_w(&FONT_S, val), tx = x + 30 - tw / 2;
@@ -1017,17 +1018,23 @@ static void draw_info(uint32_t trk, uint32_t mode, uint32_t cur, uint32_t page, 
         }
     } else {
         uint32_t beat = (clk_step / 4u) % 4u;
-        cv_rrect(0, 1, 30, 20, 10, C_PANEL);
-        if (clk_run) for (i = 0; i < 10u; i++) cv_rect(11 + (int32_t)i, 6 + (int32_t)i / 2, 1, 11 - ((int32_t)i / 2) * 2, C_PLAYG);
-        else cv_rect(10, 6, 10, 10, C_SUB);
-        cv_rrect(34, 1, 84, 20, 10, C_PANEL);
+        int32_t bx;                             /* play, the tempo (KNOB1), the swing (KNOB2), the beat, the octave */
+        cv_rrect(0, 1, 26, 20, 10, C_PANEL);
+        if (clk_run) for (i = 0; i < 10u; i++) cv_rect(9 + (int32_t)i, 6 + (int32_t)i / 2, 1, 11 - ((int32_t)i / 2) * 2, C_PLAYG);
+        else cv_rect(8, 6, 10, 10, C_SUB);
+        cv_rrect(29, 1, 66, 20, 10, C_PANEL);
         *put_num(v, set.bpm, 1) = 0;
-        cv_text_bg(cv_text_bg(44, 3, &FONT_S, v, C_TXT, C_PANEL) + 6, 3, &FONT_S, "BPM", C_SUB, C_PANEL);
-        cv_rrect(122, 1, 58, 20, 10, C_PANEL);
-        for (i = 0; i < 4u; i++) disc(132 + (int32_t)i * 13, 11, i ? 3 : 4, clk_run && i == beat ? col : i ? C_DIMC : C_SUB);
-        cv_rrect(184, 1, 56, 20, 10, C_PANEL);
+        bx = 62 - (text_w(&FONT_S, v) + 4 + text_w(&FONT_S, "BPM")) / 2;
+        cv_text_bg(cv_text_bg(bx, 3, &FONT_S, v, C_TXT, C_PANEL) + 4, 3, &FONT_S, "BPM", C_SUB, C_PANEL);
+        cv_rrect(98, 1, 56, 20, 10, C_PANEL);
+        p = put(v, "SW "); p = put_num(p, SWING_PCT(set.swing), 2); *p++ = '%'; *p = 0;
+        cv_text_bg(126 - text_w(&FONT_S, v) / 2, 3, &FONT_S, v, set.swing ? C_TXT : C_SUB, C_PANEL);
+        cv_rrect(157, 1, 30, 20, 10, C_PANEL);
+        for (i = 0; i < 4u; i++) disc(163 + (int32_t)i * 6, 11, i ? 2 : 3, clk_run && i == beat ? col : i ? C_DIMC : C_SUB);
+        cv_rrect(190, 1, 50, 20, 10, C_PANEL);
         v[0] = oct < 0 ? '-' : '+'; v[1] = (char)('0' + (oct < 0 ? -oct : oct)); v[2] = 0;
-        cv_text_bg(cv_text_bg(192, 3, &FONT_S, "OCT", C_SUB, C_PANEL) + 4, 3, &FONT_S, v, C_TXT, C_PANEL);
+        bx = 215 - (text_w(&FONT_S, "OCT") + 2 + text_w(&FONT_S, v)) / 2;
+        cv_text_bg(cv_text_bg(bx, 3, &FONT_S, "OCT", C_SUB, C_PANEL) + 2, 3, &FONT_S, v, C_TXT, C_PANEL);
     }
     cv_blit(0, Y_INFO);
 }
@@ -2219,7 +2226,6 @@ static int proj_load(uint32_t i)                /* 0 = loaded; -1 = empty or bro
     if (n < sizeof set) slots_from_legacy();    /* (from before the slots' instruments) */
     if (!settings_ok()) { set_swap(); return -1; }   /* (broken: the work back, untouched) */
     trk_req++;                                  /* (the slots' instruments: the voices dealt again) */
-    set.swing = 0;                              /* (swing: off for now) */
     trk_mute = set.mute;
     clock_set_bpm(set.bpm);
     return 0;
@@ -2335,7 +2341,6 @@ static void app_main(void)
         if (song_loaded < sizeof set) slots_from_legacy();   /* (from before the slots' instruments) */
         if (!settings_ok()) set_defaults();
     }
-    set.swing = 0;                              /* (swing: off for now, no knob for it) */
     trk_req++;                                  /* (the slots' instruments: the voices dealt for them) */
     proj_scan();                                /* which project slots are full */
     knobs_sync(snd_pos, pat_pos);
@@ -2832,9 +2837,15 @@ static void app_main(void)
             fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
         } else if (spage == PG_COPY) {          /* the copy page: no knobs */
             fm1_enc_take(ENC_KNOB1); fm1_enc_take(ENC_KNOB2); fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
-        } else if (spage == PG_MAIN) {          /* home: KNOB1 the tempo (the sound itself: EDIT) */
+        } else if (spage == PG_MAIN) {          /* home: KNOB1 the tempo, KNOB2 the swing (the sound itself: EDIT) */
             if (knob(ENC_KNOB1, &set.bpm, BPM_MIN, BPM_MAX)) { clock_set_bpm(set.bpm); CHANGED(); }
-            fm1_enc_take(ENC_KNOB2); fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
+            if ((e = fm1_enc_take(ENC_KNOB2)) != 0) {   /* swing 50 % (straight) .. 66 %, 1 % a click (set.swing 0..127) */
+                int32_t pc = (int32_t)SWING_PCT(set.swing) + e;
+                pc = pc < 50 ? 50 : pc > 66 ? 66 : pc;
+                set.swing = (uint8_t)(((pc - 50) * 127 + 8) / 16);
+                CHANGED();
+            }
+            fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
         }
         /* REC: a tap = a rest (synth step recorder) / recording on, off (the live page: it starts the music too); held
          * 1 s = clear the pattern (live: the one playing). HOME: held 1 s asks "CLEAR ALL?", REC again clears everything */
