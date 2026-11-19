@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QUARTET in your browser</title>
+<meta name="description" content="Play QUARTET, the pedal-driven groovebox for the M-VAVE FM-1, in your web browser: the real firmware, running here.">
+<link rel="icon" href="../card.png">
+<style>
+:root {
+  --bg: #F0EEE9; --body: #FAF9F6; --line: #DAD8D2; --txt: #1A1A1E; --sub: #5C5C64; --cap: #E6E4DE; --capd: #CFCCC4;
+  --gold: #C86E00; --lit: #FFB020; --pad: #7A46DA; --bass: #0080BE; --drums: #188C32;
+  --narrow: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--txt); font: 15px/1.5 var(--sans); }
+a { color: var(--gold); }
+header { display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto; padding: 10px 20px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--narrow); letter-spacing: 3px; color: var(--txt); text-decoration: none; }
+.bars { display: inline-flex; gap: 3px; } .bars i { display: block; width: 5px; height: 18px; border-radius: 2px; }
+header nav a { margin-left: 16px; font-size: 14px; color: var(--sub); text-decoration: none; }
+header nav a:hover { color: var(--gold); }
+main { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+h1 { font: 700 28px/1.1 var(--narrow); margin: 2px 0 2px; letter-spacing: .5px; }
+.lede { color: var(--sub); margin: 0 0 12px; }
+
+/* the FM-1's layout in QUARTET's light look: a white case, pale plates and keycaps, dark knobs; laid out in the case's
+   own units (892 x 540, #dev) and scaled to the box's width (emu.js) */
+.fm1 { position: relative; width: 100%; max-width: 736px; margin: 0 auto; user-select: none; -webkit-user-select: none; touch-action: none; }
+#dev { position: absolute; left: 0; top: 0; width: 972px; height: 596px; transform-origin: 0 0; border-radius: 38px;
+  background: var(--body); border: 1.5px solid var(--line); box-shadow: 0 1px 0 #fff inset, 0 18px 40px rgba(60, 50, 30, .18); }
+#dev > * { position: absolute; }
+.lab { text-align: center; font: 700 12.5px var(--mono); letter-spacing: 1px; color: var(--sub); }
+.knob { border-radius: 50%; background: radial-gradient(circle at 40% 35%, #44444C, #1E1E22 70%); box-shadow: 0 3px 6px rgba(0, 0, 0, .25), 0 0 0 4px var(--cap);
+  cursor: ns-resize; touch-action: none; }
+.knob::after { content: ""; position: absolute; left: 50%; top: 5px; width: 3px; height: 11px; margin-left: -1.5px; border-radius: 2px;
+  background: var(--lit); transform-origin: 50% 15px; transform: rotate(var(--a, 0deg)); }
+.bezel { background: #1A1A1E; border-radius: 9px; box-shadow: 0 0 0 3px var(--cap); }
+#screen { position: absolute; z-index: 2; border-radius: 2px; background: #000; pointer-events: none; }
+.plate { background: #EEECE7; border: 1px solid var(--line); }
+.btn { border: 1px solid var(--capd); border-bottom-width: 3px; border-radius: 10px; background: var(--cap); color: var(--txt); font: 700 12px var(--mono);
+  letter-spacing: .3px; cursor: pointer; padding: 0; touch-action: none; line-height: 1.1; }
+.btn u { display: block; text-decoration: none; border-bottom: 1px solid var(--txt); margin: 0 6px 1px; padding-bottom: 1px; }
+.btn.down { border-bottom-width: 1px; transform: translateY(2px); background: var(--capd); }
+.btn.latch { outline: 2px solid var(--gold); outline-offset: 1px; }
+.btn i { position: absolute; top: 4px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: #C9C6BE; }
+.btn.lit i { background: var(--lit); box-shadow: 0 0 6px var(--lit); }
+.btn.rec.lit i { background: #FF4632; box-shadow: 0 0 6px #FF4632; }
+.key { border-radius: 21px; cursor: pointer; touch-action: none; }
+.key.w { background: #fff; border: 1px solid #B8B6B0; box-shadow: 0 3px 0 #D6D4CE; }
+.key.b { background: #2A2A2E; box-shadow: 0 3px 0 #111; }
+.key::before { content: ""; position: absolute; left: 50%; top: 18px; width: 4px; height: 24px; margin-left: -2px; border-radius: 2px; background: #3A3A40; }
+.key.b::before { background: #8A8A92; }
+.key.w::before { top: 22px; height: 38px; background: #C9C6BE; }
+.key.down { transform: translateY(2px); box-shadow: none; }
+.key.w.down { background: #F2E4CF; } .key.b.down { background: #5A4A36; }
+.key.lit::before { background: var(--lit); box-shadow: 0 0 6px var(--lit); }
+.key span { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font: 700 12px var(--mono); color: #9A988F; }
+.key.b span { color: #B8B8BE; }
+.keybed { pointer-events: none; }
+
+/* power on */
+.power { position: absolute; inset: 0; border-radius: 30px; background: rgba(240, 238, 233, .78); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px; z-index: 5; backdrop-filter: blur(2px); }
+.power button { font: 700 20px var(--narrow); letter-spacing: 2px; padding: 14px 34px; border: 0; border-radius: 12px; background: var(--gold); color: #fff; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(200, 110, 0, .35); }
+.power p { margin: 0; color: var(--sub); font-size: 14px; }
+.bar { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 12px 2px 0; font-size: 13.5px; color: var(--sub); }
+.bar label { display: flex; align-items: center; gap: 8px; }
+.bar button { border: 1px solid var(--line); background: var(--body); color: var(--txt); border-radius: 8px; padding: 5px 11px; font: 13px var(--sans); cursor: pointer; }
+.help { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 14px; }
+.help div { background: var(--body); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 13.5px; }
+.help h3 { margin: 0 0 6px; font: 700 17px var(--narrow); }
+.help p { margin: 4px 0; }
+kbd { font: 700 12px var(--mono); background: var(--cap); border: 1px solid var(--line); border-bottom: 2px solid #B8B6B0; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="../"><span class="bars"><i style="background:#C86E00"></i><i style="background:#7A46DA"></i><i style="background:#0080BE"></i><i style="background:#188C32"></i></span>QUARTET</a>
+  <nav><a href="../">Guide</a><a href="https://github.com/MammothCheese/quartet#install">Install</a><a href="https://github.com/MammothCheese/quartet">GitHub</a></nav>
+</header>
+<main>
+  <h1>Play it in your browser</h1>
+  <p class="lede">The real QUARTET firmware, running right here. Click the buttons and keys, or use your computer's keyboard. Your songs are kept in this browser.</p>
+
+  <div class="fm1" id="fm1">
+    <div id="dev"></div>
+    <canvas id="screen" width="240" height="240"></canvas>
+    <div class="power" id="power"><button id="on">POWER ON</button><p>Sound starts when you press it.</p></div>
+  </div>
+
+  <div class="bar">
+    <button id="midi">Connect a MIDI keyboard</button>
+    <span id="midist"></span>
+    <button id="wipe" title="Forget the songs and settings kept in this browser">Clear saved data</button>
+  </div>
+
+  <div class="help">
+    <div><h3>The keys</h3>
+      <p><kbd>Z</kbd> <kbd>X</kbd> <kbd>C</kbd> <kbd>V</kbd> <kbd>B</kbd> <kbd>N</kbd> <kbd>M</kbd> <kbd>,</kbd> <kbd>.</kbd> <kbd>/</kbd> are the ten white keys in the middle (B3 to D5).</p>
+      <p>The row above, <kbd>A</kbd> to <kbd>'</kbd>, plays the black keys between them, just as on a piano. <kbd>1</kbd> <kbd>2</kbd> shift the octave.</p></div>
+    <div><h3>The buttons</h3>
+      <p><kbd>7</kbd> <kbd>8</kbd> <kbd>9</kbd> <kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> FX SEL ENV LFO EDIT GLO (the top row)</p>
+      <p><kbd>U</kbd> <kbd>I</kbd> <kbd>O</kbd> <kbd>P</kbd> <kbd>[</kbd> <kbd>]</kbd> HOME SAVE ARP SEQ PLAY REC &nbsp; <kbd>1</kbd> <kbd>2</kbd> OCT&minus; OCT+</p>
+      <p><kbd>&larr;</kbd><kbd>&rarr;</kbd> SELECT &nbsp; <kbd>&uarr;</kbd><kbd>&darr;</kbd> ALGORITHM &nbsp; <kbd>PgUp</kbd><kbd>PgDn</kbd> PRESETS. Hold a key for combos (HOME + PRESETS), or shift-click a button.</p></div>
+    <div><h3>The knobs</h3>
+      <p>Drag a knob up or down, or scroll on it. MASTER is the volume.</p>
+      <p>New here? The <a href="../#start">quick start</a> takes five minutes: press PLAY first.</p></div>
+  </div>
+</main>
+<script src="quartet.js"></script>
+<script src="emu.js"></script>
+</body>
+</html>
