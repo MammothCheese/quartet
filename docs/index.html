@@ -7,8 +7,8 @@
 <meta name="description" content="Custom firmware that turns the M-VAVE FM-1 into a pedal-driven groovebox for musicians: drums, bass, pads and a lead, each through its own board of effects pedals. Make a beat in seconds, stomp on pedals, play over it and arrange songs.">
 <style>
 :root {
-  --bg: #0D0D11; --panel: #16161B; --card: #1C1C23; --line: #2C2C36; --txt: #E8E8EF; --sub: #A3A3B0; --dim: #6C6C7A;
-  --gold: #FFB824; --pad: #B27CFF; --bass: #24C6F0; --drums: #5CE268; --mute: #EE382E;
+  --bg: #F0EEE9; --panel: #E6E4DE; --card: #FAF9F6; --line: #DAD8D2; --txt: #1A1A1E; --sub: #5C5C64; --dim: #96969E;
+  --gold: #C86E00; --pad: #7A46DA; --bass: #0080BE; --drums: #188C32; --mute: #D63026;
   --narrow: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -18,7 +18,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 64px; }
 body { margin: 0; background: var(--bg); color: var(--txt); font: 16px/1.6 var(--sans); }
 a { color: var(--gold); }
 .wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
-header { position: sticky; top: 0; z-index: 5; background: rgba(13, 13, 17, .93); backdrop-filter: blur(4px); border-bottom: 1px solid var(--line); }
+header { position: sticky; top: 0; z-index: 5; background: rgba(240, 238, 233, .93); backdrop-filter: blur(4px); border-bottom: 1px solid var(--line); }
 nav { display: flex; align-items: center; justify-content: space-between; height: 54px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--narrow); letter-spacing: 3px; color: var(--txt); text-decoration: none; }
 .bars { display: inline-flex; gap: 3px; }
@@ -34,10 +34,10 @@ h2 { font: 700 32px var(--narrow); margin: 0 0 6px; letter-spacing: .5px; }
 h3 { font: 700 21px var(--narrow); margin: 26px 0 8px; letter-spacing: .3px; }
 .lede { color: var(--sub); font-size: 17.5px; margin: 0 0 22px; }
 .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 15px; margin: 0 10px 10px 0; }
-.btn.primary { background: var(--gold); color: #111; font-weight: 700; }
+.btn.primary { background: var(--gold); color: #fff; font-weight: 700; }
 .btn.ghost { border: 1px solid var(--gold); color: var(--gold); }
 .note { color: var(--sub); font-size: 13.5px; }
-.screen img, .shot img { width: 100%; max-width: 340px; image-rendering: pixelated; border: 10px solid #000; border-radius: 14px; box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0, 0, 0, .6); background: #000; }
+.screen img, .shot img { width: 100%; max-width: 340px; image-rendering: pixelated; border: 10px solid #1A1A1E; border-radius: 14px; box-shadow: 0 0 0 1px var(--line), 0 10px 28px rgba(60, 50, 30, .18); background: #1A1A1E; }
 .screen p, .shot p { color: var(--sub); font-size: 13px; margin: 8px 0 0; text-align: center; }
 section { padding: 46px 0; border-top: 1px solid var(--line); }
 .sub { color: var(--sub); margin: 0 0 22px; max-width: 780px; font-size: 17px; }
@@ -55,9 +55,9 @@ table.t td, table.t th { padding: 7px 9px; border-bottom: 1px solid var(--line);
 table.t th { font: 600 12px var(--mono); letter-spacing: 1px; color: var(--sub); text-transform: uppercase; }
 table.t td:first-child { white-space: nowrap; width: 1%; font-weight: 600; }
 table.t.grid4 td:first-child { width: auto; }
-kbd { font: 700 12.5px var(--mono); background: var(--panel); color: var(--txt); border: 1px solid var(--line); border-bottom: 2px solid #44444F; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+kbd { font: 700 12.5px var(--mono); background: var(--panel); color: var(--txt); border: 1px solid var(--line); border-bottom: 2px solid #B8B6B0; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
 .tip { background: var(--card); border-left: 4px solid var(--gold); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 15px; }
-.tk { display: inline-block; border-radius: 4px; font: 700 12px var(--mono); padding: 1px 8px; color: #111; margin-right: 2px; }
+.tk { display: inline-block; border-radius: 4px; font: 700 12px var(--mono); padding: 1px 8px; color: #fff; margin-right: 2px; }
 .lead { background: var(--gold); } .padc { background: var(--pad); } .bassc { background: var(--bass); } .drumc { background: var(--drums); } .mutec { background: var(--mute); }
 td.c-lead { color: var(--gold); } td.c-pad { color: var(--pad); } td.c-bass { color: var(--bass); } td.c-drums { color: var(--drums); }
 /* the quick start: five numbered stages, each a thing to do now */
@@ -67,8 +67,8 @@ td.c-lead { color: var(--gold); } td.c-pad { color: var(--pad); } td.c-bass { co
 .stage h3 { margin: 0 0 6px; color: var(--c, var(--gold)); }
 .stage ol { margin: 0; padding-left: 20px; }
 .stage li { margin: 3px 0; }
-.stage img { width: 100%; image-rendering: pixelated; border: 6px solid #000; border-radius: 10px; box-shadow: 0 0 0 1px var(--line); }
-.stage.big { border-color: #4a3d62; box-shadow: 0 0 0 1px #4a3d62 inset; }
+.stage img { width: 100%; image-rendering: pixelated; border: 6px solid #1A1A1E; border-radius: 10px; box-shadow: 0 0 0 1px var(--line); }
+.stage.big { border-color: #C9B8EA; box-shadow: 0 0 0 1px #C9B8EA inset; }
 /* "try this": small creative suggestions */
 .tries { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin: 18px 0; }
 .try { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--c, var(--gold)); border-radius: 10px; padding: 12px 15px; font-size: 14.5px; }
@@ -78,14 +78,14 @@ td.c-lead { color: var(--gold); } td.c-pad { color: var(--pad); } td.c-bass { co
 .rules .card p { font-size: 14px; }
 .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
 .gallery figure { margin: 0; text-align: center; }
-.gallery img { width: 100%; image-rendering: pixelated; border: 5px solid #000; border-radius: 8px; box-shadow: 0 0 0 1px var(--line); }
+.gallery img { width: 100%; image-rendering: pixelated; border: 5px solid #1A1A1E; border-radius: 8px; box-shadow: 0 0 0 1px var(--line); }
 .gallery figcaption { font-size: 12.5px; color: var(--sub); margin-top: 4px; }
 .kind { margin: 26px 0 10px; border-left: 4px solid var(--c); padding-left: 12px; }
 .kind h4 { margin: 0; font: 700 15px var(--mono); letter-spacing: 2px; color: var(--c); }
 .kind p { margin: 2px 0 0; color: var(--sub); font-size: 15px; }
 .pk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 .pk { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; }
-.pk img { width: 100%; image-rendering: pixelated; border-radius: 8px; display: block; background: #000; }
+.pk img { width: 100%; image-rendering: pixelated; border-radius: 8px; display: block; background: #1A1A1E; }
 .pk h5 { margin: 9px 0 2px; font: 700 18px var(--narrow); letter-spacing: .3px; }
 .pk p { margin: 0 0 4px; font-size: 14px; }
 .pk p.kn { font: 600 11.5px var(--mono); color: var(--sub); letter-spacing: .5px; }
@@ -107,7 +107,7 @@ footer a { color: var(--sub); }
 </head>
 <body id="top">
 <header><div class="wrap"><nav>
-  <a class="brand" href="#top"><span class="bars"><i style="background:#FFB824"></i><i style="background:#B27CFF"></i><i style="background:#24C6F0"></i><i style="background:#5CE268"></i></span>QUARTET</a>
+  <a class="brand" href="#top"><span class="bars"><i style="background:#C86E00"></i><i style="background:#7A46DA"></i><i style="background:#0080BE"></i><i style="background:#188C32"></i></span>QUARTET</a>
   <ul>
     <li><a href="#start">Quick start</a></li>
     <li><a href="#sounds">Sounds</a></li>
@@ -167,7 +167,7 @@ footer a { color: var(--sub); }
       </div>
       <img src="guide/sound.png" alt="A new sound chosen: its name shows big">
     </div>
-    <div class="stage big" style="--c: #E46BFF">
+    <div class="stage big" style="--c: #B23FCF">
       <div class="n">3</div>
       <div>
         <h3>Stomp on a pedal</h3>
@@ -366,8 +366,8 @@ footer a { color: var(--sub); }
     <div class="pk"><img src="guide/pedals/harmonizer.png" alt="The Harmonizer pedal" loading="lazy"><h5>Harmonizer</h5><p>Adds a second voice at an interval, like a third or a fifth.</p><p class="kn">INTERVAL · LEVEL · TONE</p><p class="on">Try it on lead melodies.</p></div>
     <div class="pk"><img src="guide/pedals/ring-mod.png" alt="The Ring Mod pedal" loading="lazy"><h5>Ring Mod</h5><p>Metallic, bell-like and robotic: the sound multiplied by a tone.</p><p class="kn">FREQ · MIX · WOBBLE</p><p class="on">Try it on drums or a lead.</p></div>
   </div>
-  <div class="kind" style="--c: #E46BFF"><h4>OTHER</h4><p>Strange and wonderful.</p></div>
-  <div class="pk-grid" style="--c: #E46BFF">
+  <div class="kind" style="--c: #B23FCF"><h4>OTHER</h4><p>Strange and wonderful.</p></div>
+  <div class="pk-grid" style="--c: #B23FCF">
     <div class="pk"><img src="guide/pedals/old-media.png" alt="The Old Media pedal" loading="lazy"><h5>Old Media</h5><p>A worn tape or record: wobble, hiss and crackle.</p><p class="kn">WEAR · NOISE · TONE</p><p class="on">Try it on strings or piano.</p></div>
     <div class="pk"><img src="guide/pedals/glitch.png" alt="The Glitch pedal" loading="lazy"><h5>Glitch</h5><p>Now and then a step stutters and repeats, locked to the beat.</p><p class="kn">CHANCE · LENGTH · MIX</p><p class="on">Try it on drums or a lead.</p></div>
     <div class="pk"><img src="guide/pedals/underwater.png" alt="The Underwater pedal" loading="lazy"><h5>Underwater</h5><p>Muffled and drifting, like hearing the band from the bottom of a pool.</p><p class="kn">DEPTH · WOBBLE · LEVEL</p><p class="on">Try it on a guitar or pad.</p></div>
@@ -468,8 +468,9 @@ footer a { color: var(--sub); }
       <h3>Key lock and lights</h3>
       <p>Tap <kbd>GLO</kbd> again for the <b>KEY</b> page. <kbd>ALGORITHM</kbd> picks the key; <kbd>KNOB 1</kbd> <b>LOCK</b> makes the keys play only notes in it; <kbd>KNOB 2</kbd> <b>LIGHTS</b> lights those keys.</p>
 
-      <h3>Octaves and MIDI</h3>
-      <p><kbd>OCT-</kbd> <kbd>OCT+</kbd> change octave. For MIDI, hold <kbd>HOME</kbd> and turn <kbd>PRESETS</kbd> to pick a channel (or OMNI).</p>
+      <h3>Octaves, MIDI and themes</h3>
+      <p><kbd>OCT-</kbd> <kbd>OCT+</kbd> change octave. For MIDI, hold <kbd>HOME</kbd> and turn <kbd>ALGORITHM</kbd> to pick a channel (or OMNI). A MIDI keyboard on USB or the TRS jack plays the chosen instrument and records just like the FM-1's own keys, in the step recorder and in live recording; on drums, the General MIDI notes (36 kick, 38 snare, 42 hat ...).</p>
+      <p>Hold <kbd>HOME</kbd> and turn <kbd>PRESETS</kbd> for the theme menu: <b>Paper</b> (light, the default), <b>Dark</b>, <b>Neon</b> or <b>LCD</b> (an old green pocket screen). The screen changes as you turn; let go of <kbd>HOME</kbd> to close the menu. The theme stays, even after clear all or loading a project.</p>
     </div>
     <div class="shots">
       <div class="shot"><img src="guide/arp.png" alt="The arpeggiator"><p>The arpeggiator.</p></div>
@@ -563,14 +564,14 @@ footer a { color: var(--sub); }
   <table class="t">
     <tr><td><kbd>PLAY</kbd></td><td>Start (from step one) and stop.</td></tr>
     <tr><td><kbd>SELECT</kbd></td><td>The player.</td></tr>
-    <tr><td><kbd>PRESETS</kbd></td><td>Its pattern, A&ndash;J. Hold <kbd>ARP</kbd>: copy into the next letter. Hold <kbd>HOME</kbd>: the MIDI channel.</td></tr>
+    <tr><td><kbd>PRESETS</kbd></td><td>Its pattern, A&ndash;J. Hold <kbd>ARP</kbd>: copy into the next letter. Hold <kbd>HOME</kbd>: the theme menu.</td></tr>
     <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd></td><td>Tap: the pedal on / off. Hold 0.5 s: the pedal's page.</td></tr>
     <tr><td><kbd>EDIT</kbd></td><td>The sound editor (from INSTR); again: the pedalboard; again: home.</td></tr>
     <tr><td><kbd>SEQ</kbd></td><td>The step recorder; again: SUPER SEQ; again: back to the step recorder. Held in the step recorder: the copy page.</td></tr>
     <tr><td><kbd>ARP</kbd></td><td>Tap: on / off. Hold 0.5 s: the arpeggiator's page.</td></tr>
     <tr><td><kbd>GLO</kbd></td><td>Tap: the mixer, then the KEY page, then home. Hold: beat repeat.</td></tr>
     <tr><td><kbd>SAVE</kbd></td><td>The save page (again: close).</td></tr>
-    <tr><td><kbd>HOME</kbd></td><td>Home.</td></tr>
+    <tr><td><kbd>HOME</kbd></td><td>Home. Held, with <kbd>PRESETS</kbd>: the theme menu (Paper, Dark, Neon, LCD); with <kbd>ALGORITHM</kbd>: the MIDI channel.</td></tr>
     <tr><td><kbd>OCT-</kbd> <kbd>OCT+</kbd></td><td>Tap: the keys' octave (drum step recorder: the bar). Hold 0.5 s: the pattern being edited moves down / up an octave.</td></tr>
     <tr><td><kbd>MASTER</kbd></td><td>The volume.</td></tr>
   </table>

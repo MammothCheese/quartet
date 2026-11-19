@@ -237,6 +237,6 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 | **SAVE** | Open save screen | Open save screen | Save screen: close |
 | **MASTER** | Overall volume | Overall volume | Overall volume |
 
-**Shortcuts:** **ARP + PRESETS** copies a pattern or song to the next letter; **HOME + PRESETS** changes MIDI channel. **Hold OCT− while powering on** for USB rescue mode.
+**Shortcuts:** **ARP + PRESETS** copies a pattern or song to the next letter; **HOME + PRESETS** opens the theme menu (Paper, Dark, Neon, LCD; let go of HOME to close it), and the theme stays through clear all and loading projects; **HOME + ALGORITHM** changes MIDI channel. A MIDI keyboard (USB or the TRS jack) plays the chosen instrument and records like the built-in keys, in the step recorder and in live recording (drums: General MIDI notes). **Hold OCT− while powering on** for USB rescue mode.
 
 **Knob clicks:** every knob moves one step per click.

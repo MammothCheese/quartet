@@ -24,6 +24,7 @@ The rest is in **[the guide](https://mammothcheese.github.io/quartet/)**.
 - **72 sounds and 23 drum kits**: pianos, organs, guitars, strings, choirs, basses, synths, and kits from Rock and Jazz to 808, 909 and a sampled Linn LM-1. Tweak any sound and save your own.
 - **Beats and parts**: ten patterns per instrument, drum grid, step and live recording, note lengths and expression, swing, copy.
 - **Play live**: arpeggiator, beat repeat, mixer with mutes, key lock.
+- **Four looks**: Paper, Dark, Neon and LCD (hold HOME, turn PRESETS).
 - **Songs**: SUPER SEQ chains patterns, each instrument following its own part. Work saves itself; four save slots.
 
 ## Install
