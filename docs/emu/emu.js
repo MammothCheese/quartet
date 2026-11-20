@@ -121,13 +121,15 @@
   const BLACK = (k) => [1, 3, 6, 8, 10].includes((k + 5) % 12);   // (C# D# F# G# A#; key 0 is F, 5 above C)
   const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const PCKEY = {};                                          // computer key -> FM-1 key
-  const ZROW = ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'], AROW = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'"];
-  const Z0 = 3;                                              // Z is the 4th white key (B3): Z to / are the middle ten
+  // the computer's keys: the 16 white keys are Q W E (the left three), Z to / (the middle ten), R T Y (the right three);
+  // the 11 black keys are A to ', in order
+  const WROW = ['q', 'w', 'e', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'r', 't', 'y'];
+  const AROW = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'"];
   const WHITE_KEYS = [], BLACK_KEYS = {};
-  { let wi = 0;
+  { let wi = 0, bi = 0;
     for (let k = 0; k < 27; k++) {
-      if (BLACK(k)) { const j = wi - Z0; if (j >= 0 && j < AROW.length) BLACK_KEYS[k] = AROW[j]; }   // (between white wi-1 and wi)
-      else { WHITE_KEYS[wi] = ZROW[wi - Z0]; wi++; }
+      if (BLACK(k)) BLACK_KEYS[k] = AROW[bi++];
+      else { WHITE_KEYS[wi] = WROW[wi]; wi++; }
     } }
   const keybed = plate(38, 364, 896, 200, 22); keybed.id = 'keys'; keybed.classList.add('keybed');
   (function layoutKeys() {
