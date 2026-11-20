@@ -780,8 +780,8 @@ static void pedal_knobs(uint32_t trk, uint32_t e, pknob_t k[3])
  * each pedal in 20 slots; a shared pedal once, plus a little per send). The five original pedals on all four tracks
  * come to 156 (on the FM-1 ~40 % of the CPU, on top of the instruments); more than PED_BUDGET is refused */
 static const uint8_t PD_COST[NPD] = {5, 8, 4, 5, 6, 4, 17, 16, 7, 18, 5, 2, 4, 5, 19, 1, 1, 1, 1, 9, 5, 3, 6, 4, 3,
-                                     2, 1, 1, 9, 10, 3, 4, 5, 10, 1, 10, 6, 11,    /* (LOOSE, OLD MEDIA) */
-                                     11, 11, 9, 2, 1, 1, 1};   /* (DJ FILTER, ACID, RING MOD measured as the rest; the note pedals: next to nothing) */   /* (MUSIC BOX: with four notes ringing) */
+                                     2, 1, 1, 9, 10, 3, 4, 5, 29, 1, 10, 6, 11,    /* (LOOSE, OLD MEDIA) */
+                                     11, 11, 9, 2, 1, 1, 1};   /* (DJ FILTER, ACID, RING MOD measured as the rest; the note pedals: next to nothing) */   /* (MUSIC BOX: measured with notes and drums playing on every track) */
 static const uint8_t SP_COST[NSPACE_ALL] = {19, 9, 17, 18, 6, 15};   /* reverb, delay, tape echo, shimmer, reverse, spring */
 #define PED_BUDGET 170u
 static int ped_fits(void)
