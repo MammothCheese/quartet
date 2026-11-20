@@ -3769,6 +3769,8 @@ static void app_main(void)
                 if (to != pt) {
                     if (!edit && fm1_in.buttons >> BTN_ARP & 1u) { pat_copy(trk, pt, to); arp_used = 1; }   /* (take this one along;
                                                    not in edit mode, where ARP is the tie) */
+                    else if (!pat_used(trk, to)) set.plen[trk][to] = set.plen[trk][pt];   /* an empty one: as long as the one
+                                                   before, so a part played straight on into it fits the same loop */
                     set.sel[trk] = (uint8_t)to;
                 }
             }

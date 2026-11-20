@@ -39,7 +39,7 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 | Control | Step recorder (synths) | Step recorder (drums) |
 |---|---|---|
 | **ALGORITHM** | The cursor, through every bar | — |
-| **KNOB1** | **BARS**: pattern length, 1–4 bars | Same |
+| **KNOB1** | **BARS**: pattern length, 1–4 bars (an empty pattern takes the length of the one you came from) | Same |
 | **KNOB2** | **LEN**: note length, **1/16, 1/8, dotted 1/8, 1/4, dotted 1/4, 1/2, dotted 1/2, whole**: the note at the cursor, and the notes you write next | — |
 | **KNOB3** | **EXP**: the expression, how the note is played, **NORMAL / SOFT / LOUD / SHORT / PUNCH / SMOOTH / PLUCKED** (see below) | Same, for new hits (or a held hit) |
 | **KNOB4** | **NOTE**: the cursor's note or chord up / down a semitone (heard when stopped) | The bar shown |
