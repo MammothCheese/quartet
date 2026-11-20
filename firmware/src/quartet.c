@@ -2615,24 +2615,58 @@ static void draw_save(uint32_t slot, uint32_t confirm, const char *msg, uint32_t
     }
 }
 
-/* ---- the startup screen: a pedalboard as pixel art, one pedal in each track's colour, under the name with a stripe
- * in the four colours. A chunky grid of 4 x 4 px "pixels" (60 x 60 of them), drawn in two halves */
-#define TI_BG RGB(10, 10, 16)
-static void ti_px(int32_t ux, int32_t uy, int32_t uw, int32_t uh, uint16_t c) { cv_rect(ux * 4, uy * 4, uw * 4, uh * 4, c); }
-static void ti_pedal(int32_t ux, int32_t uy, const uint8_t *rgb, int lit)   /* one pedal, 10 x 16: knobs, lamp, footswitch */
+/* ---- the startup screen (the tour's look, always Paper): the name; four pedals in the four colours, their lamps
+ * lighting one after another over the 2.5 s start; under them the signal, clean, then shaped by each pedal that is on
+ * (squared, doubled, echoed, shimmering), travelling left to right. ms: the time since switching on */
+static int32_t ti_sin(int32_t ph)               /* a sine from a phase (256 a turn): -128..128, as two parabolas */
 {
-    ti_px(ux, uy, 10, 16, RGB(6, 6, 8));        /* the outline */
-    ti_px(ux + 1, uy + 1, 8, 14, rgbk(rgb, 100));
-    ti_px(ux + 1, uy + 1, 8, 1, rgbl(rgb, 45)); /* a light top edge, a dark bottom one */
-    ti_px(ux + 1, uy + 14, 8, 1, rgbk(rgb, 60));
-    ti_px(ux + 2, uy + 3, 2, 2, RGB(16, 16, 20));   /* two knobs, their pointers */
-    ti_px(ux + 6, uy + 3, 2, 2, RGB(16, 16, 20));
-    ti_px(ux + 3, uy + 3, 1, 1, RGB(240, 240, 240));
-    ti_px(ux + 6, uy + 3, 1, 1, RGB(240, 240, 240));
-    ti_px(ux + 4, uy + 7, 2, 1, lit ? RGB(255, 60, 50) : RGB(90, 24, 20));   /* the lamp */
-    ti_px(ux + 2, uy + 10, 6, 4, RGB(16, 16, 20));  /* the footswitch */
-    ti_px(ux + 3, uy + 11, 4, 2, RGB(170, 170, 182));
-    ti_px(ux + 4, uy + 11, 2, 1, RGB(240, 240, 248));
+    int32_t x = ph & 255, h = x & 127, v = (h * (128 - h)) >> 5;
+    return x < 128 ? v : -v;
+}
+static void draw_title(uint32_t ms)
+{
+    static const uint8_t TI_TRK[4][3] = {{200, 110, 0}, {122, 70, 218}, {0, 128, 190}, {24, 140, 50}};   /* LEAD PAD BASS DRUMS */
+    const uint16_t paper = RGB(240, 238, 233), ink = RGB(26, 26, 30), sub = RGB(92, 92, 100), rule = RGB(214, 212, 206);
+    const char *ver = APP_VER;
+    char vs[16];
+    uint32_t half, on = 0;
+    int32_t i, x, y0 = 0;
+    for (i = 0; i < 4; i++) if (ms > (uint32_t)i * 625u + 312u) on |= 1u << i;   /* (a lamp every 625 ms) */
+    if (ver[0] == '0' && ver[1] == '.' && ver[2] == '0' && !ver[3]) { const char *t = "TEST BUILD"; for (i = 0; t[i]; i++) vs[i] = t[i]; vs[i] = 0; }
+    else { vs[0] = 'V'; for (i = 0; ver[i] && i < 14; i++) vs[i + 1] = ver[i]; vs[i + 1] = 0; }
+    for (half = 0; half < 2u; half++) {
+        cv_begin(240, 120, paper);
+        cv_oy = -(int32_t)half * 120;           /* (drawn in screen coordinates; the canvas is this half) */
+        cv_text_bg(120 - text_w(&FONT_L, "QUARTET") / 2, 18, &FONT_L, "QUARTET", ink, paper);
+        cv_text_bg(120 - text_w(&FONT_S, "A PEDAL-DRIVEN GROOVEBOX") / 2, 54, &FONT_S, "A PEDAL-DRIVEN GROOVEBOX", sub, paper);
+        for (i = 0; i < 4; i++) {               /* the pedals: an outline; lit: the colour's edge, a wash of it, the lamp red */
+            int32_t px = 16 + i * 54, lit = (int32_t)(on >> i & 1u);
+            uint16_t c = RGB(TI_TRK[i][0], TI_TRK[i][1], TI_TRK[i][2]), fill = lit ? mix565(c, paper, 86) : paper, edge = lit ? c : ink;
+            cv_rrect(px, 88, 46, 68, 8, edge);
+            cv_rrect(px + (lit ? 2 : 1), 88 + (lit ? 2 : 1), 46 - (lit ? 4 : 2), 68 - (lit ? 4 : 2), lit ? 6 : 7, fill);
+            disc(px + 14, 110, 6, ink); disc(px + 14, 110, 5, fill);   /* two knobs, the footswitch */
+            disc(px + 32, 110, 6, ink); disc(px + 32, 110, 5, fill);
+            disc(px + 23, 138, 8, ink); disc(px + 23, 138, 7, fill);
+            disc(px + 38, 96, 3, lit ? RGB(226, 60, 40) : RGB(178, 176, 170));
+        }
+        for (x = 8; x < 232; x++) {             /* the signal: shaped by every lit pedal to its left */
+            int32_t ph = x * 14 - (int32_t)(ms / 6u), v = ti_sin(ph), y, k, n = 0;
+            for (k = 0; k < 4; k++) if (on >> k & 1u && x > 16 + k * 54 + 46) n++;
+            if (n >= 1) { v = v * 22 / 10; v = v > 77 ? 77 : v < -77 ? -77 : v; v = v * 128 / 77; }   /* squared off */
+            if (n >= 2) v = v * 7 / 10 + ti_sin(ph * 107 / 100 + 61) * 3 / 10;   /* doubled */
+            if (n >= 3) v += ti_sin(ph - 90) * 3 / 10;                           /* an echo */
+            if (n >= 4) v += ti_sin(x * 49 + (int32_t)(ms / 3u)) * 15 / 100;     /* shimmer */
+            y = 184 - v * 6 / 128;
+            if (x == 8) y0 = y;
+            cv_rect(x, y < y0 ? y : y0, 1, (y < y0 ? y0 - y : y - y0) + 1, ink);
+            y0 = y;
+        }
+        cv_rect(14, 214, 212, 1, rule);         /* the foot: who it's for, the version */
+        cv_text_bg(16, 219, &FONT_S, "FOR THE M-VAVE FM-1", sub, paper);
+        cv_text_bg(224 - text_w(&FONT_S, vs), 219, &FONT_S, vs, RGB(200, 110, 0), paper);
+        cv_oy = 0;
+        cv_blit(0, half * 120u);
+    }
 }
 static void draw_theme_menu(uint32_t cur)        /* HOME + PRESETS: the themes, each with its colours, the one in use
                                                    outlined; over the middle of the screen */
@@ -2654,32 +2688,6 @@ static void draw_theme_menu(uint32_t cur)        /* HOME + PRESETS: the themes, 
         for (k = 0; k < 4u; k++) disc(102 + (int32_t)k * 11, y + 11, 4, RGB(t->trk[k][0], t->trk[k][1], t->trk[k][2]));
     }
     cv_blit(40, (uint32_t)(120 - h / 2));
-}
-static void draw_title(void)
-{
-    uint32_t half;
-    for (half = 0; half < 2u; half++) {
-        int32_t i;
-        cv_begin(240, 120, TI_BG);
-        cv_oy = -(int32_t)half * 120;           /* (draw in screen coordinates; the canvas is this half) */
-        cv_text_bg(120 - text_w(&FONT_L, "QUARTET") / 2, 16, &FONT_L, "QUARTET", RGB(246, 246, 250), TI_BG);
-        for (i = 0; i < 4; i++) cv_rect(56 + i * 32, 52, 30, 4, rgbk(TRK_RGB[SEQ_ORDER[i]], 100));
-        cv_text_bg(120 - text_w(&FONT_S, "4-TRACK GROOVEBOX") / 2, 64, &FONT_S, "4-TRACK GROOVEBOX", RGB(150, 150, 168), TI_BG);
-        ti_px(3, 22, 54, 26, RGB(6, 6, 8));     /* the board, its outline, its rails, its feet */
-        ti_px(4, 23, 52, 24, RGB(52, 52, 64));
-        ti_px(4, 30, 52, 1, RGB(30, 30, 38));
-        ti_px(4, 42, 52, 1, RGB(30, 30, 38));
-        ti_px(5, 47, 4, 2, RGB(6, 6, 8)); ti_px(51, 47, 4, 2, RGB(6, 6, 8));
-        ti_px(0, 31, 7, 1, RGB(120, 120, 132)); /* the cable in, a plug */
-        ti_px(6, 30, 1, 3, RGB(170, 170, 180));
-        for (i = 0; i < 4; i++) {               /* four pedals, LEAD PAD BASS DRUMS, patched together */
-            ti_pedal(7 + i * 12, 26, TRK_RGB[SEQ_ORDER[i]], i != 1);
-            ti_px(17 + i * 12, 31, i < 3 ? 2 : 7, 1, RGB(120, 120, 132));
-        }
-        for (i = 0; i < 60; i += 2) ti_px(i, 49, 1, 1, RGB(36, 36, 46));   /* the floor */
-        cv_oy = 0;
-        cv_blit(0, half * 120u);
-    }
 }
 
 /* ---- the KEY page (GLO from the mixer; Conductor's): the key, its relative minor, the lock and the lights; one
@@ -3472,7 +3480,7 @@ static void app_main(void)
     theme_set(0);
 #ifndef DINGHY_HOST
     uint32_t boot_t = fm1_ms;
-    draw_title();                               /* the startup screen, while the work loads */
+    draw_title(0);                              /* the startup screen, while the work loads */
 #endif
     set_defaults();
     if (song_load() != 0) set_defaults();       /* (an older save has other sizes: that fails, so defaults) */
@@ -3498,9 +3506,15 @@ static void app_main(void)
         for (k = 0; k < 128u; k++) mx_trk[k] = mx_at[k] = 0xFFu;   /* (no MIDI note held) */
     }
 #ifndef DINGHY_HOST
-    while (fm1_ms - boot_t < 2500u && !fm1_in.buttons && !fm1_in.notes)   /* the startup screen stays 2.5 s (a key or a
-                                                   button skips it); USB, the watchdog and updates go on meanwhile */
-        platform_poll();
+    {
+        uint32_t fr = ~0u;
+        while (fm1_ms - boot_t < 2500u && !fm1_in.buttons && !fm1_in.notes) {   /* the startup screen stays 2.5 s (a key
+                                                   or a button skips it), animated; USB, the watchdog and updates go on */
+            uint32_t f = (fm1_ms - boot_t) / 50u;
+            if (f != fr) { fr = f; draw_title(fm1_ms - boot_t); }
+            platform_poll();
+        }
+    }
 #endif
 
     lcd_fill(0, 0, 240, 240, C_BG);
