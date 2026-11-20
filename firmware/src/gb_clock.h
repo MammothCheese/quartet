@@ -333,6 +333,35 @@ static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
                                                    the step's notes from their first tick) */
 }
 
+/* the final mix: never clipped. A limiter: a peak over LIM_T turns the level down at once, just enough; it comes back
+ * up over ~50 ms. Then a soft knee: above LIM_K the sound bends gently towards full scale instead of being cut flat
+ * (what hard clipping does: a crackle on every loud beat) */
+#define LIM_T 26000                             /* the line (~ -2 dB) */
+#define LIM_K 24000                             /* where the knee starts */
+static int32_t lim_g = 32768;                   /* the level now, Q15 (32768: as is) */
+static inline int32_t lim_knee(int32_t v)
+{
+    int32_t a = v < 0 ? -v : v, o;
+    if (a <= LIM_K) return v;
+    o = a - LIM_K;                              /* over the knee: squeezed into what is left, 32767 - LIM_K */
+    o = (o * (32767 - LIM_K)) / (o + (32767 - LIM_K));
+    o += LIM_K;
+    return v < 0 ? -o : o;
+}
+static void master_limit(int32_t *out, uint32_t n)
+{
+    uint32_t i;
+    int32_t g = lim_g;
+    for (i = 0; i < n; i++) {
+        int32_t l = out[2u * i], r = out[2u * i + 1u], pk = l < 0 ? -l : l, pr = r < 0 ? -r : r;
+        if (pr > pk) pk = pr;
+        g += (32768 - g) >> 11;                 /* (back up, slowly) */
+        if (((pk >> 4) * (g >> 4)) >> 7 > LIM_T) g = (int32_t)(((uint32_t)LIM_T << 15) / (uint32_t)pk);   /* (down, at once) */
+        l = (int32_t)(((l >> 2) * (g >> 2)) >> 11); r = (int32_t)(((r >> 2) * (g >> 2)) >> 11);
+        out[2u * i] = lim_knee(l); out[2u * i + 1u] = lim_knee(r);
+    }
+    lim_g = g;
+}
 static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN frames */
 {
     static uint32_t go_done, was_run, pos_q8, tick, free_q8, free_tick;
@@ -375,6 +404,7 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
         if (run) pos_q8 += seg << 8;
     }
     fx_process(out, n);                         /* the tracks through their effects, mixed into out */
+    master_limit(out, n);
 }
 
 static void clock_audio(int32_t *out, uint32_t n)   /* audio interrupt: the whole block */

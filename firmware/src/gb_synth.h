@@ -493,15 +493,32 @@ static int synth_quiet(void)
 }
 
 static uint32_t osc_pw = 0x80000000u;           /* the pulse's width now (of a cycle: 2^31 = half, a square) */
-static inline int32_t osc_wave(uint32_t w, uint32_t ph)   /* one cycle over 2^32 -> -32767..32767 */
+/* a jump in a wave, rounded over the sample before it and the one after (PolyBLEP): p is the phase since the jump
+ * (2^32 a cycle), inc the step a sample. 0 away from it; near it -(1-t)^2 after, (1-t)^2 before, t the fraction of a
+ * step from the jump, Q15. A raw jump has every harmonic, and the ones above half the sample rate come back as
+ * whistles out of tune with the note; rounded, they mostly go */
+static inline int32_t osc_blep(uint32_t p, uint32_t inc)
+{
+    uint32_t b = inc >> 16, d, t, r;
+    if (!b) return 0;                           /* (a very low note: its jumps are already gentle) */
+    if (p < inc) { d = p >> 16; t = d >= b ? 32767u : (d << 15) / b; r = 32768u - t; return -(int32_t)((r * r) >> 15); }
+    d = 0u - p;
+    if (d < inc) { d >>= 16; t = d >= b ? 32767u : (d << 15) / b; r = 32768u - t; return (int32_t)((r * r) >> 15); }
+    return 0;
+}
+static inline int32_t osc_wave(uint32_t w, uint32_t ph, uint32_t inc)   /* one cycle over 2^32 -> -32767..32767; inc:
+                                                   its step a sample (for the rounded jumps) */
 {
     static uint32_t nz = 24680u;
-    int32_t s = (int32_t)ph;
+    int32_t s = (int32_t)ph, v;
     switch (w) {
     case W_TRI: return ((s ^ (s >> 31)) >> 15) - 32768;   /* |s| rising and falling */
-    case W_SAW: return s >> 16;
-    case W_SQR: return s < 0 ? -32767 : 32767;
-    case W_PULSE: return ph < osc_pw ? 32767 : -32767;   /* (its width: osc_pw, the LFO's with PWM) */
+    case W_SAW: v = (s >> 16) - osc_blep(ph + 0x80000000u, inc); return v > 32767 ? 32767 : v < -32767 ? -32767 : v;   /* (its jump: half way) */
+    case W_SQR: v = (s < 0 ? -32767 : 32767) + osc_blep(ph, inc) - osc_blep(ph + 0x80000000u, inc);
+        return v > 32767 ? 32767 : v < -32767 ? -32767 : v;
+    case W_PULSE: v = (ph < osc_pw ? 32767 : -32767) + osc_blep(ph, inc) - osc_blep(ph - osc_pw, inc);   /* (its width:
+                                                   osc_pw, the LFO's with PWM) */
+        return v > 32767 ? 32767 : v < -32767 ? -32767 : v;
     case W_SYNC: return s >> 16;                /* (a saw: restarted by osc 1, in the voice loop) */
     case W_NOISE: nz ^= nz << 13; nz ^= nz >> 17; nz ^= nz << 5; return (int32_t)nz >> 16;   /* breath, hiss */
     default: return sine(ph);                   /* SINE (and FM, as osc 2: the sine that does the bending) */
@@ -615,7 +632,7 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                         ph += i1;
                         if (ph < o1) ph2 = 0;
                         ph2 += i2s;
-                        x = (osc_wave(w1, ph) * (int32_t)(128u - mix) + (((int32_t)ph2 >> 16) * (int32_t)mix)) >> 8;
+                        x = (osc_wave(w1, ph, i1) * (int32_t)(128u - mix) + (((int32_t)ph2 >> 16) * (int32_t)mix)) >> 8;
                     } else {
                     ph += i1;
                     if (w1 == W_FM) {           /* FM: osc 2 (a sine) pushes osc 1's phase back and forth, up to ~half a cycle */
@@ -623,9 +640,9 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                         x = sine(ph + ((uint32_t)(sine(ph2) * (int32_t)fmi) << 9)) >> 1;
                     } else if (mix) {           /* two oscillators, mixed, half scale (room for the resonance) */
                         ph2 += i2;
-                        x = (osc_wave(w1, ph) * (int32_t)(128u - mix) + osc_wave(w2, ph2) * (int32_t)mix) >> 8;
+                        x = (osc_wave(w1, ph, i1) * (int32_t)(128u - mix) + osc_wave(w2, ph2, i2) * (int32_t)mix) >> 8;
                     } else
-                        x = osc_wave(w1, ph) >> 1;
+                        x = osc_wave(w1, ph, i1) >> 1;
                     }
                     low += (f * band) >> 14;    /* Chamberlin state-variable filter */
                     high = x - low - ((q * band) >> 13);
