@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F0EEE9">
+<title>QUARTET quick start: one step at a time</title>
+<meta name="description" content="Make your first QUARTET song on the M-VAVE FM-1, one screen at a time: a beat, a bassline, chords and a melody, from nothing.">
+<link rel="icon" href="card.png">
+<style>
+:root {
+  --bg: #F0EEE9; --card: #FAF9F6; --line: #DAD8D2; --ink: #1A1A1E; --sub: #5C5C64; --dim: #A8A69F; --cap: #E6E4DE;
+  --lead: #C86E00; --pad: #7A46DA; --bass: #0080BE; --drums: #188C32; --mute: #D63026;
+  --narrow: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; }
+body { background: #E4E2DC; color: var(--ink); font: 15.5px/1.45 var(--sans); overflow: hidden; }
+a { color: var(--lead); }
+kbd { font: 700 11.5px var(--mono); background: var(--cap); border: 1px solid var(--line); border-bottom: 2px solid #B8B6B0; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+
+/* the phone: one column, the full screen; on a big screen a phone-sized one in the middle */
+.app { position: relative; height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+@media (min-width: 520px) and (min-height: 700px) { .app { height: min(100dvh - 40px, 900px); margin-top: 20px; border-radius: 26px; box-shadow: 0 20px 60px rgba(60, 50, 30, .22); } }
+
+/* the top: back, where you are, the steps as segments */
+.top { flex: none; padding: calc(env(safe-area-inset-top) + 10px) 14px 8px; }
+.row { display: flex; align-items: center; gap: 10px; height: 34px; }
+.back { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); font: 700 18px/1 var(--sans); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0 0 2px; }
+.back:disabled { opacity: .3; }
+.where { flex: 1; min-width: 0; font: 700 11.5px var(--mono); letter-spacing: 1.6px; text-transform: uppercase; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.where b { color: var(--c, var(--ink)); }
+.brand { display: inline-flex; gap: 2px; } .brand i { width: 4px; height: 15px; border-radius: 2px; }
+.segs { display: flex; gap: 4px; margin-top: 8px; }
+.segs i { flex: 1; height: 4px; border-radius: 2px; background: var(--line); transition: background .3s; cursor: pointer; }
+.segs i.done { background: var(--ink); }
+.segs i.now { background: var(--c, var(--ink)); }
+
+/* the cards: one on screen, the others either side; they slide */
+.deck { position: relative; flex: 1; min-height: 0; }
+.card { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 0 18px; transform: translateX(100%); opacity: 0; visibility: hidden;
+  transition: transform .38s cubic-bezier(.3, .7, .2, 1), opacity .38s, visibility 0s .38s; }
+.card.on { transform: none; opacity: 1; visibility: visible; transition: transform .38s cubic-bezier(.3, .7, .2, 1), opacity .38s, visibility 0s; }
+.card.gone { transform: translateX(-100%); }
+.art { flex: none; height: clamp(120px, 27dvh, 250px); display: flex; flex-direction: column; justify-content: center; }
+.art svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.card.tight .art { height: clamp(84px, 17dvh, 190px); }
+.recipe > .kb { max-width: 330px; }
+.body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 0 10px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.kicker { font: 700 11px var(--mono); letter-spacing: 2px; text-transform: uppercase; color: var(--c, var(--lead)); }
+h1 { font: 700 40px/1 var(--narrow); margin: 6px 0 10px; } h1 em { font-style: normal; color: var(--lead); }
+h2 { font: 700 27px/1.05 var(--narrow); margin: 4px 0 8px; }
+p { margin: 0 0 8px; }
+.lede { color: var(--sub); }
+.do { list-style: none; padding: 0; margin: 4px 0 0; counter-reset: s; }
+.do li { position: relative; padding: 6px 0 6px 30px; border-top: 1px solid var(--line); }
+.do li::before { content: counter(s); counter-increment: s; position: absolute; left: 0; top: 7px; width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid var(--c, var(--ink)); color: var(--c, var(--ink)); font: 700 11px/17px var(--mono); text-align: center; }
+.recipe { margin: 8px 0 2px; }
+.recipe .lab { font: 700 10.5px var(--mono); letter-spacing: 1.2px; text-transform: uppercase; color: var(--sub); margin: 0 0 3px; }
+.kbs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+.kbs .lab b { color: var(--c, var(--ink)); }
+.kb, .beat { display: block; width: 100%; height: auto; overflow: visible; }
+details.keys { margin-top: 8px; font-size: 13px; color: var(--sub); }
+details.keys summary { cursor: pointer; font: 700 10.5px var(--mono); letter-spacing: 1.5px; color: var(--dim); list-style: none; }
+details.keys summary::before { content: "+ "; } details.keys[open] summary::before { content: "\2212  "; }
+details.keys p { margin: 6px 0 0; line-height: 1.9; }
+.tip { font-size: 13.5px; color: var(--sub); margin-top: 8px; }
+.tip b { color: var(--ink); }
+.rules { list-style: none; padding: 0; margin: 6px 0 0; }
+.rules li { padding: 6px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
+.rules b { font-family: var(--narrow); font-size: 16px; }
+audio { display: block; width: 100%; min-width: 220px; height: 40px; margin: 6px 0 4px; }
+.links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.links a { flex: 1; text-align: center; padding: 10px 8px; border-radius: 10px; border: 1.5px solid var(--ink); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; white-space: nowrap; }
+
+/* the bottom: how to tell it worked, and the one big button: tick it, on to the next */
+.foot { flex: none; padding: 8px 16px calc(env(safe-area-inset-bottom) + 12px); border-top: 1px solid var(--line); background: var(--bg); }
+.check { font-size: 13px; line-height: 1.35; color: var(--sub); margin: 0 0 8px; min-height: 2.7em; display: flex; gap: 8px; align-items: flex-start; }
+.check b { font: 700 10px var(--mono); letter-spacing: 1.2px; text-transform: uppercase; color: var(--c, var(--ink)); white-space: nowrap; padding-top: 2px; }
+.next { width: 100%; height: 54px; border: 0; border-radius: 14px; background: var(--c, var(--ink)); color: #fff; font: 700 17px var(--sans); display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .16); transition: transform .12s, background .3s; }
+.next:active { transform: scale(.98); }
+.next .box { width: 24px; height: 24px; border-radius: 7px; border: 2px solid rgba(255, 255, 255, .85); display: grid; place-items: center; transition: background .2s; }
+.next .box::after { content: ""; width: 6px; height: 11px; border: solid var(--c, var(--ink)); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) translate(-1px, -1px) scale(0); transition: transform .2s; }
+.next.ticked .box { background: #fff; }
+.next.ticked .box::after { transform: rotate(45deg) translate(-1px, -1px) scale(1); }
+.next.plain .box { display: none; }
+.next .arrow { font-size: 20px; margin-left: -4px; }
+@media (max-height: 700px) { h2 { font-size: 23px; margin-bottom: 4px; } .do li { padding: 4px 0 4px 30px; } .do li::before { top: 5px; } .art { height: clamp(96px, 21dvh, 180px); } .card.tight .art { height: clamp(76px, 14dvh, 150px); } body { font-size: 14.5px; } }
+@media (prefers-reduced-motion: reduce) { .card, .card.on { transition: none; } svg .draw { transition: none; stroke-dashoffset: 0; } svg .fade { transition: none; opacity: 1; } }
+
+/* the line drawings (as on the tour) */
+svg .ln { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+svg .thin { stroke-width: 1.1; }
+svg .ln:not([fill]) { fill: none; }
+svg .soft { stroke: var(--dim); }
+svg .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); transition: stroke-dashoffset 1.4s cubic-bezier(.6, .05, .3, 1); }
+.seen svg .draw { stroke-dashoffset: 0; }
+svg text { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; fill: var(--sub); }
+svg text.big { font-size: 13px; font-weight: 700; fill: var(--ink); }
+svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="top">
+    <div class="row">
+      <button class="back" id="back" aria-label="Back">&lsaquo;</button>
+      <div class="where" id="where"></div>
+      <span class="brand"><i style="background:var(--lead)"></i><i style="background:var(--pad)"></i><i style="background:var(--bass)"></i><i style="background:var(--drums)"></i></span>
+    </div>
+    <div class="segs" id="segs"></div>
+  </div>
+
+  <div class="deck" id="deck">
+    <!-- hello -->
+    <section class="card" style="--c: var(--lead)" data-name="Quick start" data-btn="Start" data-check="Fifteen minutes, from an empty FM-1 to a four-part song.">
+      <div class="art"><svg id="hero" viewBox="0 0 600 360"></svg></div>
+      <div class="body">
+        <div class="kicker">QUARTET for the M-VAVE FM-1</div>
+        <h1>Your first song,<br>from <em>nothing</em>.</h1>
+        <p class="lede">A beat, a bassline, chords and a melody in A minor. Every key is drawn for you, and it only uses the white keys.</p>
+        <audio controls preload="none" src="quickstart_song.wav"></audio>
+        <p class="tip">That's what you'll make. One step per screen: do it, tick it, next. Swipe to go back.</p>
+      </div>
+    </section>
+
+    <!-- 0 -->
+    <section class="card" data-step="0" style="--c: var(--ink)" data-name="Start empty" data-check="The screen says ALL CLEARED, and OCT +0 at the top.">
+      <div class="art"><svg viewBox="0 0 600 300"><g class="fade">
+        <rect x="150" y="20" width="300" height="200" rx="18" fill="#FAF9F6" stroke="#1A1A1E" stroke-width="1.6"/>
+        <text x="300" y="110" text-anchor="middle" style="font:700 34px var(--narrow);fill:#1A1A1E">ALL CLEARED</text>
+        <text x="300" y="150" text-anchor="middle">LEAD · PAD · BASS · DRUMS: EMPTY</text>
+        <rect x="230" y="240" width="140" height="44" rx="10" fill="none" stroke="#1A1A1E" stroke-width="1.6"/><text x="300" y="268" text-anchor="middle" class="big">HOLD REC</text></g></svg></div>
+      <div class="body">
+        <div class="kicker">Step 0 · 2 min</div>
+        <h2>Get it running, start empty.</h2>
+        <ul class="do">
+          <li>Install it: <a href="https://github.com/MammothCheese/quartet/releases/latest">download</a>, then the <a href="https://thefirmwarehub.com/">Firmware Hub</a> (<a href="https://github.com/MammothCheese/quartet#install">how</a>). Or <a href="emu/">play it in your browser</a>.</li>
+          <li>On the home screen, <b>hold</b> <kbd>REC</kbd> until it says <b>CLEAR ALL?</b></li>
+          <li>Press <kbd>REC</kbd> again. The demo is gone; your saved projects aren't touched.</li>
+        </ul>
+        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>U</kbd> HOME &nbsp; hold <kbd>]</kbd> REC, then <kbd>]</kbd> &nbsp; <kbd>1</kbd> <kbd>2</kbd> octave</p></details>
+      </div>
+    </section>
+
+    <!-- 1 -->
+    <section class="card" data-step="1" style="--c: var(--drums)" data-name="A beat" data-check="The grid matches the chart. PLAY to hear it, PLAY again to stop.">
+      <div class="art"><svg id="grid" viewBox="0 0 600 300"></svg></div>
+      <div class="body">
+        <div class="kicker">Step 1 · 2 min</div>
+        <h2>Kick, snare, hats.</h2>
+        <ul class="do">
+          <li><kbd>KNOB 1</kbd> to <b>90 BPM</b>, <kbd>KNOB 2</kbd> to <b>SW 53%</b>.</li>
+          <li><kbd>SELECT</kbd> to <b>DRUMS</b>, then <kbd>SEQ</kbd>.</li>
+          <li>A drum's black key, then its steps on the white keys:</li>
+        </ul>
+        <div class="recipe"><svg class="beat" data-beat="KICK:1:1,7,9|SNARE:2:5,13|HAT:3:1,3,5,7,9,11,13,15"></svg></div>
+        <details class="keys"><summary>BROWSER KEYS</summary><p>drag the knobs &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> SELECT &nbsp; <kbd>P</kbd> SEQ &nbsp; <kbd>[</kbd> PLAY &nbsp; kick <kbd>A</kbd> snare <kbd>S</kbd> hat <kbd>D</kbd> &nbsp; steps: the letters under the chart</p></details>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="card tight" data-step="2" style="--c: var(--bass)" data-name="A bassline" data-check="Eight long notes across four bars. PLAY: the bass joins the beat.">
+      <div class="art"><svg id="rollB" viewBox="0 0 600 300"></svg></div>
+      <div class="body">
+        <div class="kicker">Step 2 · 2 min</div>
+        <h2>Four chords, eight notes.</h2>
+        <ul class="do">
+          <li><kbd>HOME</kbd>, <kbd>SELECT</kbd> to <b>BASS</b>, <kbd>ALGORITHM</kbd> to <b>MOOG BASS</b>.</li>
+          <li><kbd>SEQ</kbd>. <kbd>KNOB 1</kbd> to <b>BARS 4</b>, <kbd>KNOB 2</kbd> to <b>HALF</b>.</li>
+          <li>Press these, in order. The cursor moves on by itself.</li>
+        </ul>
+        <div class="recipe"><p class="lab">A A · F F · C C · G G</p><svg class="kb" data-kb="3=1 2,1=3 4,5=5 6,2=7 8"></svg></div>
+        <p class="tip"><b>Wrong note?</b> <kbd>ALGORITHM</kbd> back to it, play the right key.</p>
+        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>U</kbd> HOME &nbsp; <kbd>&uarr;</kbd><kbd>&darr;</kbd> ALGORITHM &nbsp; <kbd>E</kbd> <kbd>E</kbd> <kbd>Q</kbd> <kbd>Q</kbd> <kbd>X</kbd> <kbd>X</kbd> <kbd>W</kbd> <kbd>W</kbd></p></details>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="card tight" data-step="3" style="--c: var(--pad)" data-name="Chords" data-check="Four stacks of three notes, one a bar. PLAY: chords over the bass.">
+      <div class="art"><svg id="rollP" viewBox="0 0 600 300"></svg></div>
+      <div class="body">
+        <div class="kicker">Step 3 · 2 min</div>
+        <h2>Three keys at once.</h2>
+        <ul class="do">
+          <li><kbd>HOME</kbd>, <kbd>SELECT</kbd> to <b>PAD</b>. Keep STRINGS.</li>
+          <li><kbd>SEQ</kbd>. <b>BARS 4</b>, <kbd>KNOB 2</kbd> to <b>WHOLE</b>.</li>
+          <li>Hold each chord's three keys together, let go:</li>
+        </ul>
+        <div class="recipe kbs">
+          <div><p class="lab">1 · <b>Am</b></p><svg class="kb" data-kb="3=A,5=C,7=E"></svg></div>
+          <div><p class="lab">2 · <b>F</b></p><svg class="kb" data-kb="3=A,5=C,8=F"></svg></div>
+          <div><p class="lab">3 · <b>C</b></p><svg class="kb" data-kb="2=G,5=C,7=E"></svg></div>
+          <div><p class="lab">4 · <b>G</b></p><svg class="kb" data-kb="2=G,4=B,6=D"></svg></div>
+        </div>
+        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>E</kbd><kbd>X</kbd><kbd>V</kbd> &middot; <kbd>E</kbd><kbd>X</kbd><kbd>B</kbd> &middot; <kbd>W</kbd><kbd>X</kbd><kbd>V</kbd> &middot; <kbd>W</kbd><kbd>Z</kbd><kbd>C</kbd> (all three at once)</p></details>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="card tight" data-step="4" style="--c: var(--lead)" data-name="A melody" data-check="Zig-zags of four notes a bar. PLAY: all four players together.">
+      <div class="art"><svg id="rollL" viewBox="0 0 600 300"></svg></div>
+      <div class="body">
+        <div class="kicker">Step 4 · 3 min</div>
+        <h2>Up each chord, and back.</h2>
+        <ul class="do">
+          <li><kbd>HOME</kbd>, <kbd>SELECT</kbd> to <b>LEAD</b>. Keep PIANO.</li>
+          <li><kbd>SEQ</kbd>. <b>BARS 4</b>, <kbd>KNOB 2</kbd> to <b>QUARTER</b>.</li>
+          <li>Sixteen notes, one at a time, in number order:</li>
+        </ul>
+        <div class="recipe kbs">
+          <div><p class="lab">1 · <b>Am</b></p><svg class="kb" data-kb="3=1,5=2 4,7=3"></svg></div>
+          <div><p class="lab">2 · <b>F</b></p><svg class="kb" data-kb="1=1,3=2 4,5=3"></svg></div>
+          <div><p class="lab">3 · <b>C</b></p><svg class="kb" data-kb="2=1,5=2 4,7=3"></svg></div>
+          <div><p class="lab">4 · <b>G</b></p><svg class="kb" data-kb="2=1,4=2 4,6=3"></svg></div>
+        </div>
+        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>E</kbd> <kbd>X</kbd> <kbd>V</kbd> <kbd>X</kbd> &middot; <kbd>Q</kbd> <kbd>E</kbd> <kbd>X</kbd> <kbd>E</kbd> &middot; <kbd>W</kbd> <kbd>X</kbd> <kbd>V</kbd> <kbd>X</kbd> &middot; <kbd>W</kbd> <kbd>Z</kbd> <kbd>C</kbd> <kbd>Z</kbd></p></details>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="card" data-step="5" style="--c: var(--lead)" data-name="Pedals" data-check="REVERB ON and DELAY ON show at the top, and the piano echoes.">
+      <div class="art"><svg id="chain" viewBox="0 0 600 270"></svg></div>
+      <div class="body">
+        <div class="kicker">Step 5 · 1 min</div>
+        <h2>Space around the piano.</h2>
+        <p><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are the chosen player's four pedals: Reverb, Delay, Distortion, Chorus.</p>
+        <ul class="do">
+          <li><kbd>HOME</kbd> and <kbd>PLAY</kbd>. With the lead chosen, tap <kbd>FX</kbd> and <kbd>SEL</kbd>.</li>
+          <li><kbd>SELECT</kbd> to <b>PAD</b> and tap <kbd>FX</kbd>: reverb on the pad too.</li>
+        </ul>
+        <p class="tip"><b>More:</b> hold a pedal button to open it. <kbd>KNOB 2</kbd>&ndash;<kbd>4</kbd> are its knobs, and <kbd>PRESETS</kbd> and <kbd>ALGORITHM</kbd> swap it for one of 37.</p>
+        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>7</kbd> FX &nbsp; <kbd>8</kbd> SEL &nbsp; <kbd>9</kbd> ENV &nbsp; <kbd>0</kbd> LFO</p></details>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="card" data-step="6" style="--c: var(--pad)" data-name="A song" data-check="The snare rolls every fourth bar, just as the chords come back to Am.">
+      <div class="art"><svg id="sseq" viewBox="0 0 600 330"></svg></div>
+      <div class="body">
+        <div class="kicker">Step 6 · 3 min</div>
+        <h2>A fill every fourth bar.</h2>
+        <ul class="do">
+          <li><kbd>HOME</kbd>, <kbd>SELECT</kbd> to <b>DRUMS</b>. Hold <kbd>ARP</kbd>, turn <kbd>PRESETS</kbd> one click: the beat is copied to <b>B</b>.</li>
+          <li><kbd>SEQ</kbd>, the snare's black key, white keys <b>14 15 16</b>.</li>
+          <li><kbd>SEQ</kbd> again: SUPER SEQ. <kbd>KNOB 1</kbd> <b>ON</b>, <kbd>KNOB 4</kbd> <b>LEN 4</b>.</li>
+          <li><kbd>ALGORITHM</kbd> to <b>BOX 4</b>, <kbd>KNOB 3</kbd> to <b>B</b>. <kbd>PLAY</kbd>.</li>
+        </ul>
+        <p class="tip"><b>Perform it:</b> <kbd>GLO</kbd>, then <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute and unmute the players.</p>
+        <details class="keys"><summary>BROWSER KEYS</summary><p>hold <kbd>O</kbd> (ARP) + <kbd>PgDn</kbd> &nbsp; snare <kbd>S</kbd>, steps <kbd>R</kbd> <kbd>T</kbd> <kbd>Y</kbd> &nbsp; <kbd>P</kbd> SEQ &nbsp; <kbd>&uarr;</kbd><kbd>&darr;</kbd> box &nbsp; <kbd>=</kbd> GLO</p></details>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="card" data-step="7" style="--c: var(--drums)" data-name="Save it" data-check="The slot no longer says EMPTY. PLAY twice loads it back.">
+      <div class="art"><svg id="save" viewBox="0 0 600 330"></svg></div>
+      <div class="body">
+        <div class="kicker">Step 7 · 30 s</div>
+        <h2>REC twice keeps it.</h2>
+        <p>Your work is remembered on its own a couple of seconds after you stop. To keep this song for good:</p>
+        <ul class="do">
+          <li>Press <kbd>SAVE</kbd>.</li>
+          <li><kbd>KNOB 1</kbd> to a slot, 1&ndash;4.</li>
+          <li><kbd>REC</kbd>, then <kbd>REC</kbd> again within three seconds.</li>
+        </ul>
+        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>I</kbd> SAVE &nbsp; <kbd>]</kbd> <kbd>]</kbd> save &nbsp; <kbd>[</kbd> <kbd>[</kbd> load. Saves stay in this browser.</p></details>
+      </div>
+    </section>
+
+    <!-- done -->
+    <section class="card" style="--c: var(--lead)" data-name="Done" data-btn="Start again" data-check="You made a song. These five rules work everywhere.">
+      <div class="art"><svg id="seq" viewBox="0 0 600 310"></svg></div>
+      <div class="body">
+        <div class="kicker">That's it</div>
+        <h2>You made a song.</h2>
+        <ul class="rules">
+          <li><b>HOME</b> always goes back home.</li>
+          <li><b>SELECT</b> is the player, <b>PRESETS</b> the pattern.</li>
+          <li><b>ALGORITHM</b> moves within a page, never off it.</li>
+          <li><b>Tap</b> a pedal or <b>ARP</b>: on/off. <b>Hold</b>: open it.</li>
+          <li><b>REC twice</b> confirms anything that keeps or replaces work.</li>
+        </ul>
+        <div class="links"><a href="guide.html">Full guide</a><a href="quickstart.html">Big-screen version</a></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <p class="check" id="check"></p>
+    <button class="next" id="next"><span class="box"></span><span id="nextLabel">It worked · Next</span><span class="arrow">&rsaquo;</span></button>
+  </div>
+</div>
+
+<script src="qs-art.js"></script>
+<script>
+(() => {
+  'use strict';
+  const { scenes, start, stop } = window.QSArt;
+  const cards = [...document.querySelectorAll('.card')], app = document.getElementById('app');
+  const $ = (id) => document.getElementById(id);
+  const KEY = 'quartet-quickstart-song', POS = 'quartet-quickstart-at';   // (the ticks: shared with the big-screen page)
+  let done = {}; try { done = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { done = {}; }
+  let at = 0; try { at = Math.min(cards.length - 1, Math.max(0, +localStorage.getItem(POS) || 0)); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(done)); localStorage.setItem(POS, String(at)); } catch (e) {} };
+  const segs = $('segs');
+  cards.forEach((c, i) => { const s = document.createElement('i'); s.title = c.dataset.name; s.addEventListener('click', () => go(i)); segs.appendChild(s); });
+  const sceneOf = (c) => scenes.find((S) => c.contains(S.svg));
+  function go(i, dir) {
+    i = Math.max(0, Math.min(cards.length - 1, i));
+    const prev = cards[at];
+    cards.forEach((c, k) => { c.classList.toggle('on', k === i); c.classList.toggle('gone', k < i); });
+    if (prev && prev !== cards[i]) { const S = sceneOf(prev); if (S) stop(S); }
+    at = i; const c = cards[i], st = c.dataset.step;
+    c.classList.add('seen'); const S = sceneOf(c); if (S) start(S);
+    app.style.setProperty('--c', getComputedStyle(c).getPropertyValue('--c'));
+    $('where').innerHTML = (st != null ? `<b>STEP ${st}</b> / 7 · ` : '') + c.dataset.name;
+    $('check').innerHTML = st != null ? `<b>It worked?</b><span>${c.dataset.check}</span>` : `<span>${c.dataset.check}</span>`;
+    const btn = $('next'), last = i === cards.length - 1;
+    btn.classList.toggle('plain', st == null); btn.classList.toggle('ticked', st != null && !!done[st]);
+    $('nextLabel').textContent = c.dataset.btn || (done[st] ? 'Next' : 'It worked · Next');
+    btn.querySelector('.arrow').style.display = last ? 'none' : '';
+    $('back').disabled = i === 0;
+    [...segs.children].forEach((s, k) => { const ks = cards[k].dataset.step; s.classList.toggle('now', k === i); s.classList.toggle('done', k !== i && ks != null && !!done[ks]); });
+    const b = c.querySelector('.body'); if (b) b.scrollTop = 0;
+    save();
+  }
+  $('next').addEventListener('click', () => {
+    const c = cards[at], st = c.dataset.step;
+    if (at === cards.length - 1) { go(0); return; }
+    if (st != null && !done[st]) {                  // tick it, let the tick be seen, then on
+      done[st] = 1; save(); $('next').classList.add('ticked');
+      setTimeout(() => go(at + 1), 320);
+    } else go(at + 1);
+  });
+  $('back').addEventListener('click', () => go(at - 1));
+  addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(at + 1); if (e.key === 'ArrowLeft') go(at - 1); });
+  // swipe: left for the next (without ticking), right for back
+  let x0 = null, y0 = 0;
+  $('deck').addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  $('deck').addEventListener('touchend', (e) => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(at + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+  go(at);
+})();
+</script>
+</body>
+</html>
