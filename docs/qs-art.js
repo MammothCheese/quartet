@@ -25,37 +25,43 @@
   document.querySelectorAll('svg.kb').forEach((svg) => {
     const c = getComputedStyle(svg).getPropertyValue('--c').trim() || COL.ink, col = c.startsWith('var') ? COL.ink : c;
     const hot = {}; svg.dataset.kb.split(',').forEach((p) => { const [k, l] = p.split('='); hot[+k - 1] = l; });
-    const W = 19, H = 58; svg.setAttribute('viewBox', `-1 -1 ${16 * W + 2} ${H + 24}`);
-    for (let i = 0; i < 16; i++) {
+    const n = +svg.dataset.n || 16, keys = !('nokeys' in svg.dataset), big = n < 16;   /* (data-n: only the first n white keys, drawn bigger) */
+    const W = 19, H = 58, F = big ? 12.5 : 9, FN = big ? 12 : 9.5;
+    svg.setAttribute('viewBox', `-1 -1 ${n * W + 2} ${H + (keys ? 24 : big ? 17 : 14)}`);
+    for (let i = 0; i < n; i++) {
       const on = i in hot;
       el(svg, 'rect', { x: i * W, y: 0, width: W, height: H, rx: 3, fill: on ? 'currentColor' : COL.card, stroke: COL.ink, 'stroke-width': 1, style: on ? `color:${col}` : '' });
       if (on) {
-        hot[i].split(' ').reverse().forEach((l, j) => el(svg, 'text', { x: i * W + W / 2, y: H - 7 - j * 10, 'text-anchor': 'middle', style: 'font:700 9px var(--mono);fill:#fff' }, l));
-        el(svg, 'text', { x: i * W + W / 2, y: H + 12, 'text-anchor': 'middle', style: 'font:700 9.5px var(--mono);fill:' + COL.ink }, WN[i]);
-        el(svg, 'text', { x: i * W + W / 2, y: H + 22, 'text-anchor': 'middle', style: 'font:600 7.5px var(--mono);fill:' + COL.dim }, WK[i]);
+        hot[i].split(' ').reverse().forEach((l, j) => el(svg, 'text', { x: i * W + W / 2, y: H - 6 - j * (F + 1.5), 'text-anchor': 'middle', style: `font:700 ${F}px var(--mono);fill:#fff` }, l));
+        el(svg, 'text', { x: i * W + W / 2, y: H + FN + 2, 'text-anchor': 'middle', style: `font:700 ${FN}px var(--mono);fill:` + COL.ink }, WN[i]);
+        if (keys) el(svg, 'text', { x: i * W + W / 2, y: H + 22, 'text-anchor': 'middle', style: 'font:600 7.5px var(--mono);fill:' + COL.dim }, WK[i]);
       }
     }
-    BLK.forEach((w) => el(svg, 'rect', { x: (w + 1) * W - 5.5, y: 0, width: 11, height: H * 0.58, rx: 2, fill: COL.ink }));
+    BLK.filter((w) => w < n - 1).forEach((w) => el(svg, 'rect', { x: (w + 1) * W - 5.5, y: 0, width: 11, height: H * 0.58, rx: 2, fill: COL.ink }));
   });
   // ---- the beat, as a chart: data-beat="KICK:1:1,7,9|..." (the drum, its black key, its steps); data-new: steps to mark new
   document.querySelectorAll('svg.beat').forEach((svg) => {
     const rows = svg.dataset.beat.split('|').map((r) => { const [n, b, s] = r.split(':'); return { n, b, s: s.split(',').map(Number) }; });
     const nw = svg.dataset.new ? svg.dataset.new.split(':')[1].split(',').map(Number) : [], nr = svg.dataset.new ? +svg.dataset.new.split(':')[0] : -1;
-    const X = 92, C = 23, R = 24;
-    svg.setAttribute('viewBox', `0 0 ${X + 16 * C} ${18 + rows.length * R + (nw.length ? 28 : 14)}`);
-    for (let s = 0; s < 16; s++) el(svg, 'text', { x: X + s * C + C / 2 - 1, y: 11, 'text-anchor': 'middle', style: 'font:700 9px var(--mono);fill:' + (s % 4 ? COL.dim : COL.sub) }, s + 1);
+    const keys = !('nokeys' in svg.dataset), big = 'big' in svg.dataset;   /* (data-big: bigger type, for a phone) */
+    const X = big ? 62 : 92, C = 23, R = big ? 27 : 24, T = big ? 22 : 18, FS = big ? 11 : 9;
+    const foot = (keys ? 14 : 4) + (nw.length ? 14 : 0);
+    svg.setAttribute('viewBox', `0 0 ${X + 16 * C} ${T + rows.length * R + foot}`);
+    for (let s = 0; s < 16; s++) el(svg, 'text', { x: X + s * C + C / 2 - 1, y: FS + 3, 'text-anchor': 'middle', style: `font:700 ${FS}px var(--mono);fill:` + (s % 4 ? COL.dim : COL.sub) }, s + 1);
     rows.forEach((r, i) => {
-      const y = 18 + i * R;
-      el(svg, 'text', { x: 0, y: y + 12, style: 'font:700 10px var(--mono);fill:' + COL.drums }, r.n);
-      el(svg, 'text', { x: 0, y: y + 21, style: 'font:600 7.5px var(--mono);fill:' + COL.dim }, 'BLACK KEY ' + r.b);
+      const y = T + i * R;
+      el(svg, 'text', { x: 0, y: y + (big ? 11 : 12), style: `font:700 ${big ? 12 : 10}px var(--mono);fill:` + COL.drums }, r.n);
+      el(svg, 'text', { x: 0, y: y + (big ? 22 : 21), style: `font:600 ${big ? 8.5 : 7.5}px var(--mono);fill:` + COL.dim }, (big ? 'BLACK ' : 'BLACK KEY ') + r.b);
       for (let s = 0; s < 16; s++) {
         const on = r.s.includes(s + 1), fresh = i === nr && nw.includes(s + 1);
         el(svg, 'rect', { x: X + s * C, y, width: C - 4, height: R - 5, rx: 4, fill: on ? (fresh ? COL.pad : COL.drums) : COL.card, stroke: on ? 'none' : (s % 4 ? COL.line || '#DAD8D2' : COL.dim), 'stroke-width': 1 });
       }
     });
-    for (let s = 0; s < 16; s++) el(svg, 'text', { x: X + s * C + C / 2 - 1, y: 18 + rows.length * R + 10, 'text-anchor': 'middle', style: 'font:600 8px var(--mono);fill:' + COL.dim }, WK[s]);
-    el(svg, 'text', { x: 0, y: 18 + rows.length * R + 10, style: 'font:600 7.5px var(--mono);fill:' + COL.dim }, 'COMPUTER KEY');
-    if (nw.length) el(svg, 'text', { x: X, y: 18 + rows.length * R + 24, style: 'font:600 8px var(--mono);fill:' + COL.pad }, 'NEW IN PATTERN B');
+    if (keys) {
+      for (let s = 0; s < 16; s++) el(svg, 'text', { x: X + s * C + C / 2 - 1, y: T + rows.length * R + 10, 'text-anchor': 'middle', style: 'font:600 8px var(--mono);fill:' + COL.dim }, WK[s]);
+      el(svg, 'text', { x: 0, y: T + rows.length * R + 10, style: 'font:600 7.5px var(--mono);fill:' + COL.dim }, 'COMPUTER KEY');
+    }
+    if (nw.length) el(svg, 'text', { x: X, y: T + rows.length * R + foot - 2, style: 'font:600 8px var(--mono);fill:' + COL.pad }, 'NEW IN PATTERN B');
   });
 
   // each scene: build() once, then tick(t) a few times a second while it's on screen
@@ -240,6 +246,38 @@
     $('svt').textContent = T >= 8 && T < 11 ? 'REC AGAIN?' : T >= 11 && T < 16 ? 'SAVED' : '';
     cap('saveCap', 'SLOT ' + (slot + 1), saved ? 'SAVED' : T >= 8 ? 'REC AGAIN TO SAVE' : 'EMPTY');
   }, 300);
+
+  // ---- going deeper: a track's sound changing (ALGORITHM), then a pedal swapped (PRESETS, ALGORITHM) and its knobs turned
+  const DEEP_SND = ['PIANO', 'FM BELL', 'TINE KEYS', 'THEREMIN', 'GLASS HARP', 'ACID LEAD'];
+  const DEEP_PED = [['OTHER', 'OLD MEDIA'], ['SPACE', 'TAPE ECHO'], ['OTHER', 'GLITCH'], ['SPACE', 'SHIMMER'], ['FILTER', 'WAH'], ['PITCH', 'RING MOD']];
+  scene('deep', (g) => {
+    el(g, 'path', { class: 'ln draw', d: rr(10, 60, 210, 150, 16) });
+    el(g, 'text', { x: 30, y: 92, fill: COL.lead, style: 'font-weight:700' }, 'LEAD');
+    el(g, 'text', { x: 30, y: 134, class: 'big', id: 'dsnd', style: 'font-size:20px' }, DEEP_SND[0]);
+    el(g, 'circle', { class: 'ln draw', cx: 115, cy: 250, r: 26 });
+    el(g, 'path', { d: 'M115,250V229', stroke: COL.ink, 'stroke-width': 3, 'stroke-linecap': 'round', id: 'dk0' });
+    el(g, 'text', { x: 115, y: 298, 'text-anchor': 'middle' }, 'ALGORITHM');
+    el(g, 'path', { class: 'ln draw', d: 'M235,135h60', 'stroke-dasharray': '3 5' });
+    el(g, 'path', { class: 'ln draw', d: rr(310, 20, 180, 250, 18), id: 'dped' });
+    el(g, 'text', { x: 400, y: 52, 'text-anchor': 'middle', id: 'dcat', fill: COL.sub }, 'OTHER');
+    el(g, 'text', { x: 400, y: 82, 'text-anchor': 'middle', class: 'big', id: 'dnm', style: 'font-size:17px' }, 'OLD MEDIA');
+    for (let k = 0; k < 3; k++) {
+      el(g, 'circle', { class: 'ln draw', cx: 350 + k * 50, cy: 140, r: 16 });
+      el(g, 'path', { d: `M${350 + k * 50},140V126`, stroke: COL.ink, 'stroke-width': 2.4, 'stroke-linecap': 'round', id: 'dpk' + k });
+      el(g, 'text', { x: 350 + k * 50, y: 176, 'text-anchor': 'middle' }, 'K' + (k + 2));
+    }
+    el(g, 'circle', { class: 'ln draw', cx: 400, cy: 228, r: 20 });
+    el(g, 'circle', { cx: 466, cy: 40, r: 5, fill: COL.dim, id: 'dled' });
+  }, (t) => {
+    const T = t % 48, ped = Math.floor(t / 48) % DEEP_PED.length;
+    $('dsnd').textContent = DEEP_SND[(Math.floor(t / 48) + (T < 24 ? Math.floor(T / 4) : 0)) % DEEP_SND.length];
+    $('dk0').setAttribute('transform', `rotate(${(T < 24 ? Math.floor(T / 4) : 6) * 30} 115 250)`);
+    $('dcat').textContent = DEEP_PED[ped][0]; $('dnm').textContent = DEEP_PED[ped][1];
+    const on = T >= 24;
+    $('dled').setAttribute('fill', on ? '#FF4632' : COL.dim);
+    $('dped').setAttribute('fill', on ? '#F8EBDA' : 'none');
+    for (let k = 0; k < 3; k++) $('dpk' + k).setAttribute('transform', `rotate(${on ? Math.sin((T - 24) / 4 + k * 2) * 110 : -60} ${350 + k * 50} 140)`);
+  }, 160);
 
   // ---- the end: the song you made, as four lanes with a playhead (one bar of it)
   const PAT = [[0, 4, 8, 12], [0], [0, 8], [0, 2, 4, 6, 8, 10, 12, 14]];

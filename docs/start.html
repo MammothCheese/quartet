@@ -49,7 +49,7 @@ kbd { font: 700 11.5px var(--mono); background: var(--cap); border: 1px solid va
 .art { flex: none; height: clamp(120px, 27dvh, 250px); display: flex; flex-direction: column; justify-content: center; }
 .art svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .card.tight .art { height: clamp(84px, 17dvh, 190px); }
-.recipe > .kb { max-width: 330px; }
+.recipe > .kb { max-width: 290px; }
 .body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 0 10px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .kicker { font: 700 11px var(--mono); letter-spacing: 2px; text-transform: uppercase; color: var(--c, var(--lead)); }
 h1 { font: 700 40px/1 var(--narrow); margin: 6px 0 10px; } h1 em { font-style: normal; color: var(--lead); }
@@ -124,9 +124,8 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
       <div class="body">
         <div class="kicker">QUARTET for the M-VAVE FM-1</div>
         <h1>Your first song,<br>from <em>nothing</em>.</h1>
-        <p class="lede">A beat, a bassline, chords and a melody in A minor. Every key is drawn for you, and it only uses the white keys.</p>
-        <audio controls preload="none" src="quickstart_song.wav"></audio>
-        <p class="tip">That's what you'll make. One step per screen: do it, tick it, next. Swipe to go back.</p>
+        <p class="lede">A beat, a bassline, chords and a melody in A minor, one step per screen: do it, tick it, next. Swipe to go back.</p>
+        <p class="tip"><b>Made a mistake?</b> Hold <kbd>REC</kbd> for a second to clear it. In the step recorder that clears the pattern you're on; on the home screen it asks <b>CLEAR ALL?</b> (press <kbd>REC</kbd> again to wipe everything).</p>
       </div>
     </section>
 
@@ -145,7 +144,6 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
           <li>On the home screen, <b>hold</b> <kbd>REC</kbd> until it says <b>CLEAR ALL?</b></li>
           <li>Press <kbd>REC</kbd> again. The demo is gone; your saved projects aren't touched.</li>
         </ul>
-        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>U</kbd> HOME &nbsp; hold <kbd>]</kbd> REC, then <kbd>]</kbd> &nbsp; <kbd>1</kbd> <kbd>2</kbd> octave</p></details>
       </div>
     </section>
 
@@ -160,13 +158,12 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
           <li><kbd>SELECT</kbd> to <b>DRUMS</b>, then <kbd>SEQ</kbd>.</li>
           <li>A drum's black key, then its steps on the white keys:</li>
         </ul>
-        <div class="recipe"><svg class="beat" data-beat="KICK:1:1,7,9|SNARE:2:5,13|HAT:3:1,3,5,7,9,11,13,15"></svg></div>
-        <details class="keys"><summary>BROWSER KEYS</summary><p>drag the knobs &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> SELECT &nbsp; <kbd>P</kbd> SEQ &nbsp; <kbd>[</kbd> PLAY &nbsp; kick <kbd>A</kbd> snare <kbd>S</kbd> hat <kbd>D</kbd> &nbsp; steps: the letters under the chart</p></details>
+        <div class="recipe"><svg class="beat" data-big data-nokeys data-beat="KICK:1:1,7,9|SNARE:2:5,13|HAT:3:1,3,5,7,9,11,13,15"></svg></div>
       </div>
     </section>
 
     <!-- 2 -->
-    <section class="card tight" data-step="2" style="--c: var(--bass)" data-name="A bassline" data-check="Eight long notes across four bars. PLAY: the bass joins the beat.">
+    <section class="card" data-step="2" style="--c: var(--bass)" data-name="A bassline" data-check="Eight long notes across four bars. PLAY: the bass joins the beat.">
       <div class="art"><svg id="rollB" viewBox="0 0 600 300"></svg></div>
       <div class="body">
         <div class="kicker">Step 2 · 2 min</div>
@@ -176,14 +173,13 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
           <li><kbd>SEQ</kbd>. <kbd>KNOB 1</kbd> to <b>BARS 4</b>, <kbd>KNOB 2</kbd> to <b>HALF</b>.</li>
           <li>Press these, in order. The cursor moves on by itself.</li>
         </ul>
-        <div class="recipe"><p class="lab">A A · F F · C C · G G</p><svg class="kb" data-kb="3=1 2,1=3 4,5=5 6,2=7 8"></svg></div>
+        <div class="recipe"><p class="lab">A A · F F · C C · G G</p><svg class="kb" data-n="9" data-nokeys data-kb="3=1 2,1=3 4,5=5 6,2=7 8"></svg></div>
         <p class="tip"><b>Wrong note?</b> <kbd>ALGORITHM</kbd> back to it, play the right key.</p>
-        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>U</kbd> HOME &nbsp; <kbd>&uarr;</kbd><kbd>&darr;</kbd> ALGORITHM &nbsp; <kbd>E</kbd> <kbd>E</kbd> <kbd>Q</kbd> <kbd>Q</kbd> <kbd>X</kbd> <kbd>X</kbd> <kbd>W</kbd> <kbd>W</kbd></p></details>
       </div>
     </section>
 
     <!-- 3 -->
-    <section class="card tight" data-step="3" style="--c: var(--pad)" data-name="Chords" data-check="Four stacks of three notes, one a bar. PLAY: chords over the bass.">
+    <section class="card" data-step="3" style="--c: var(--pad)" data-name="Chords" data-check="Four stacks of three notes, one a bar. PLAY: chords over the bass.">
       <div class="art"><svg id="rollP" viewBox="0 0 600 300"></svg></div>
       <div class="body">
         <div class="kicker">Step 3 · 2 min</div>
@@ -194,17 +190,16 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
           <li>Hold each chord's three keys together, let go:</li>
         </ul>
         <div class="recipe kbs">
-          <div><p class="lab">1 · <b>Am</b></p><svg class="kb" data-kb="3=A,5=C,7=E"></svg></div>
-          <div><p class="lab">2 · <b>F</b></p><svg class="kb" data-kb="3=A,5=C,8=F"></svg></div>
-          <div><p class="lab">3 · <b>C</b></p><svg class="kb" data-kb="2=G,5=C,7=E"></svg></div>
-          <div><p class="lab">4 · <b>G</b></p><svg class="kb" data-kb="2=G,4=B,6=D"></svg></div>
+          <div><p class="lab">1 · <b>Am</b></p><svg class="kb" data-n="9" data-nokeys data-kb="3=A,5=C,7=E"></svg></div>
+          <div><p class="lab">2 · <b>F</b></p><svg class="kb" data-n="9" data-nokeys data-kb="3=A,5=C,8=F"></svg></div>
+          <div><p class="lab">3 · <b>C</b></p><svg class="kb" data-n="9" data-nokeys data-kb="2=G,5=C,7=E"></svg></div>
+          <div><p class="lab">4 · <b>G</b></p><svg class="kb" data-n="9" data-nokeys data-kb="2=G,4=B,6=D"></svg></div>
         </div>
-        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>E</kbd><kbd>X</kbd><kbd>V</kbd> &middot; <kbd>E</kbd><kbd>X</kbd><kbd>B</kbd> &middot; <kbd>W</kbd><kbd>X</kbd><kbd>V</kbd> &middot; <kbd>W</kbd><kbd>Z</kbd><kbd>C</kbd> (all three at once)</p></details>
       </div>
     </section>
 
     <!-- 4 -->
-    <section class="card tight" data-step="4" style="--c: var(--lead)" data-name="A melody" data-check="Zig-zags of four notes a bar. PLAY: all four players together.">
+    <section class="card" data-step="4" style="--c: var(--lead)" data-name="A melody" data-check="Zig-zags of four notes a bar. PLAY: all four tracks together.">
       <div class="art"><svg id="rollL" viewBox="0 0 600 300"></svg></div>
       <div class="body">
         <div class="kicker">Step 4 · 3 min</div>
@@ -215,12 +210,11 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
           <li>Sixteen notes, one at a time, in number order:</li>
         </ul>
         <div class="recipe kbs">
-          <div><p class="lab">1 · <b>Am</b></p><svg class="kb" data-kb="3=1,5=2 4,7=3"></svg></div>
-          <div><p class="lab">2 · <b>F</b></p><svg class="kb" data-kb="1=1,3=2 4,5=3"></svg></div>
-          <div><p class="lab">3 · <b>C</b></p><svg class="kb" data-kb="2=1,5=2 4,7=3"></svg></div>
-          <div><p class="lab">4 · <b>G</b></p><svg class="kb" data-kb="2=1,4=2 4,6=3"></svg></div>
+          <div><p class="lab">1 · <b>Am</b></p><svg class="kb" data-n="9" data-nokeys data-kb="3=1,5=2 4,7=3"></svg></div>
+          <div><p class="lab">2 · <b>F</b></p><svg class="kb" data-n="9" data-nokeys data-kb="1=1,3=2 4,5=3"></svg></div>
+          <div><p class="lab">3 · <b>C</b></p><svg class="kb" data-n="9" data-nokeys data-kb="2=1,5=2 4,7=3"></svg></div>
+          <div><p class="lab">4 · <b>G</b></p><svg class="kb" data-n="9" data-nokeys data-kb="2=1,4=2 4,6=3"></svg></div>
         </div>
-        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>E</kbd> <kbd>X</kbd> <kbd>V</kbd> <kbd>X</kbd> &middot; <kbd>Q</kbd> <kbd>E</kbd> <kbd>X</kbd> <kbd>E</kbd> &middot; <kbd>W</kbd> <kbd>X</kbd> <kbd>V</kbd> <kbd>X</kbd> &middot; <kbd>W</kbd> <kbd>Z</kbd> <kbd>C</kbd> <kbd>Z</kbd></p></details>
       </div>
     </section>
 
@@ -230,13 +224,12 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
       <div class="body">
         <div class="kicker">Step 5 · 1 min</div>
         <h2>Space around the piano.</h2>
-        <p><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are the chosen player's four pedals: Reverb, Delay, Distortion, Chorus.</p>
+        <p><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are the chosen track's four pedals: Reverb, Delay, Distortion, Chorus.</p>
         <ul class="do">
           <li><kbd>HOME</kbd> and <kbd>PLAY</kbd>. With the lead chosen, tap <kbd>FX</kbd> and <kbd>SEL</kbd>.</li>
           <li><kbd>SELECT</kbd> to <b>PAD</b> and tap <kbd>FX</kbd>: reverb on the pad too.</li>
         </ul>
         <p class="tip"><b>More:</b> hold a pedal button to open it. <kbd>KNOB 2</kbd>&ndash;<kbd>4</kbd> are its knobs, and <kbd>PRESETS</kbd> and <kbd>ALGORITHM</kbd> swap it for one of 37.</p>
-        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>7</kbd> FX &nbsp; <kbd>8</kbd> SEL &nbsp; <kbd>9</kbd> ENV &nbsp; <kbd>0</kbd> LFO</p></details>
       </div>
     </section>
 
@@ -252,8 +245,7 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
           <li><kbd>SEQ</kbd> again: SUPER SEQ. <kbd>KNOB 1</kbd> <b>ON</b>, <kbd>KNOB 4</kbd> <b>LEN 4</b>.</li>
           <li><kbd>ALGORITHM</kbd> to <b>BOX 4</b>, <kbd>KNOB 3</kbd> to <b>B</b>. <kbd>PLAY</kbd>.</li>
         </ul>
-        <p class="tip"><b>Perform it:</b> <kbd>GLO</kbd>, then <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute and unmute the players.</p>
-        <details class="keys"><summary>BROWSER KEYS</summary><p>hold <kbd>O</kbd> (ARP) + <kbd>PgDn</kbd> &nbsp; snare <kbd>S</kbd>, steps <kbd>R</kbd> <kbd>T</kbd> <kbd>Y</kbd> &nbsp; <kbd>P</kbd> SEQ &nbsp; <kbd>&uarr;</kbd><kbd>&darr;</kbd> box &nbsp; <kbd>=</kbd> GLO</p></details>
+        <p class="tip"><b>Perform it:</b> <kbd>GLO</kbd>, then <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute and unmute the tracks.</p>
       </div>
     </section>
 
@@ -262,31 +254,48 @@ svg .fade { opacity: 0; transition: opacity .5s .7s; } .seen svg .fade { opacity
       <div class="art"><svg id="save" viewBox="0 0 600 330"></svg></div>
       <div class="body">
         <div class="kicker">Step 7 · 30 s</div>
-        <h2>REC twice keeps it.</h2>
+        <h2>Save your work.</h2>
         <p>Your work is remembered on its own a couple of seconds after you stop. To keep this song for good:</p>
         <ul class="do">
           <li>Press <kbd>SAVE</kbd>.</li>
           <li><kbd>KNOB 1</kbd> to a slot, 1&ndash;4.</li>
           <li><kbd>REC</kbd>, then <kbd>REC</kbd> again within three seconds.</li>
         </ul>
-        <details class="keys"><summary>BROWSER KEYS</summary><p><kbd>I</kbd> SAVE &nbsp; <kbd>]</kbd> <kbd>]</kbd> save &nbsp; <kbd>[</kbd> <kbd>[</kbd> load. Saves stay in this browser.</p></details>
       </div>
     </section>
 
     <!-- done -->
-    <section class="card" style="--c: var(--lead)" data-name="Done" data-btn="Start again" data-check="You made a song. These five rules work everywhere.">
+    <section class="card" style="--c: var(--lead)" data-name="Done" data-btn="Going deeper" data-check="You made a song. These five rules work everywhere.">
       <div class="art"><svg id="seq" viewBox="0 0 600 310"></svg></div>
       <div class="body">
         <div class="kicker">That's it</div>
         <h2>You made a song.</h2>
+        <p class="tip" style="margin:0 0 2px">Does yours sound like ours?</p>
+        <audio controls preload="none" src="quickstart_song.wav"></audio>
         <ul class="rules">
           <li><b>HOME</b> always goes back home.</li>
-          <li><b>SELECT</b> is the player, <b>PRESETS</b> the pattern.</li>
+          <li><b>SELECT</b> is the track, <b>PRESETS</b> the pattern.</li>
           <li><b>ALGORITHM</b> moves within a page, never off it.</li>
           <li><b>Tap</b> a pedal or <b>ARP</b>: on/off. <b>Hold</b>: open it.</li>
           <li><b>REC twice</b> confirms anything that keeps or replaces work.</li>
         </ul>
-        <div class="links"><a href="guide.html">Full guide</a><a href="quickstart.html">Big-screen version</a></div>
+        
+      </div>
+    </section>
+    <!-- going deeper -->
+    <section class="card tight" style="--c: var(--bass)" data-name="Going deeper" data-btn="Start again" data-check="Nothing here can break it. Saved projects are safe, and HOME always gets you back.">
+      <div class="art"><svg id="deep" viewBox="0 0 500 310"></svg></div>
+      <div class="body">
+        <div class="kicker">Going deeper</div>
+        <h2>Now play with it.</h2>
+        <ul class="rules">
+          <li><b>Other sounds.</b> On the home screen, choose a track with <kbd>SELECT</kbd> and turn <kbd>ALGORITHM</kbd> while the song plays: 72 sounds, 23 drum kits.</li>
+          <li><b>Other pedals.</b> Hold a pedal button. <kbd>PRESETS</kbd> picks the kind, <kbd>ALGORITHM</kbd> the pedal, <kbd>KNOB 2</kbd>&ndash;<kbd>4</kbd> its knobs. Try Tape Echo, Old Media, Glitch, Shimmer.</li>
+          <li><b>Shape a sound.</b> <kbd>EDIT</kbd> opens the sound: filter, waves, envelope, wobble. <kbd>REC</kbd> twice saves it as your own.</li>
+          <li><b>Change a track's job.</b> In <kbd>EDIT</kbd>, <kbd>KNOB 1</kbd> makes a track a lead, pad or bass: two leads, three pads, whatever you like.</li>
+          <li><b>Play live.</b> With the pad chosen, tap <kbd>ARP</kbd> to arpeggiate its chords, hold <kbd>GLO</kbd> for beat repeat. <kbd>GLO</kbd> twice opens the KEY page, where <kbd>KNOB 1</kbd> keeps the keys in key.</li>
+        </ul>
+        <p class="tip">Every control is in the <a href="guide.html">full guide</a>.</p>
       </div>
     </section>
   </div>
