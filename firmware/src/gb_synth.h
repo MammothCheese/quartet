@@ -276,7 +276,8 @@ typedef struct {
 static const trkd_t TYPD[NSYN] = {              /* each instrument type, as it was its slot's (first, count: below) */
     {0, 4, 7000, 12, 1, 112},                   /* LEAD: 4 voices, an octave up (the 1x filter, as the pad: CPU) */
     {0, 1, 16000, -24, 2, 127},                 /* BASS: one voice, two octaves down */
-    {0, 4, 5000, 0, 1, 112}};                   /* PAD: 4 voices */
+    {0, 4, 7500, 0, 1, 112}};                   /* PAD: 4 voices (7500: level with the lead and the bass; 5000 left it
+                                                   buried under them and the drums) */
 static trkd_t TRK[NSYN];                        /* each synth slot now (trk_setup: from its type; its voices out of 9) */
 static volatile uint32_t trk_req, trk_done = ~0u;   /* main loop: +1 = a slot's type changed (the interrupt re-deals) */
 static void trk_setup(void)                     /* the slots' types -> their settings and voices: LEAD and PAD 4 each,

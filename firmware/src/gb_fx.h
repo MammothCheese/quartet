@@ -1018,11 +1018,12 @@ static void fx_process(int32_t *out, uint32_t n)
     n &= ~1u;                                   /* (the reverb takes pairs; the block is 256) */
     for (t = 0; t < NTRK; t++) {                /* 1. each track through its own pedals, slot by slot, in place */
         uint32_t on = set.fx[t].on;
-        if (TTYPE(t) == T_LEAD || TTYPE(t) == T_PAD) {   /* a lead, a pad: their lows cut (one pole, ~120 Hz), the room
-                                                   under them left to the bass and the kick: a clearer mix */
+        if (TTYPE(t) == T_LEAD || TTYPE(t) == T_PAD) {   /* a lead, a pad: their lows cut (one pole: the lead ~120 Hz, the
+                                                   pad ~80 Hz, its chords keeping their body), the room under them left
+                                                   to the bass and the kick: a clearer mix */
             static int32_t lc[NTRK];
-            int32_t *x = tb[t], l = lc[t];
-            for (i = 0; i < n; i++) { l += ((x[i] - l) * 562) >> 15; x[i] -= l; }
+            int32_t *x = tb[t], l = lc[t], k = TTYPE(t) == T_PAD ? 373 : 562;
+            for (i = 0; i < n; i++) { l += ((x[i] - l) * k) >> 15; x[i] -= l; }
             lc[t] = l;
         }
         int32_t gv = (int32_t)set.vol[t] * 4096 / 100;   /* the mixer: 100 = as is (Q12), 127 = x1.27, after the pedals */
