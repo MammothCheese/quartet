@@ -4,7 +4,7 @@
 
 **A pedal-driven groovebox for the M-VAVE FM-1.** Drums, bass, pads and a lead, each with its own pedalboard. Make a beat, stomp on fuzz or spring reverb while it plays, jam over the top, turn it into a song.
 
-### 👉 [Read the guide](https://mammothcheese.github.io/quartet/) · [Download](../../releases/latest) · [Play it in your browser](https://mammothcheese.github.io/quartet/emu/)
+### 👉 [Take the tour](https://mammothcheese.github.io/quartet/) · [Full guide](https://mammothcheese.github.io/quartet/guide.html) · [Download](../../releases/latest) · [Play it in your browser](https://mammothcheese.github.io/quartet/emu/)
 
 <p align="center"><img src="docs/screens.png" width="900" alt="QUARTET's screens: home, the sound browser, the pedalboard, a pedal, the step recorder, the drum grid, the mixer, SUPER SEQ"></p>
 
@@ -16,7 +16,7 @@
 4. Drums, empty pattern, **SEQ**: black keys pick a drum, white keys place the hits.
 5. **SEQ**, **REC**, **REC** and play: your part goes in, on the beat.
 
-The rest is in **[the guide](https://mammothcheese.github.io/quartet/)**.
+The rest is in **[the full guide](https://mammothcheese.github.io/quartet/guide.html)**.
 
 ## What's inside
 

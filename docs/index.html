@@ -4,670 +4,480 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QUARTET: a pedal-driven groovebox for the M-VAVE FM-1</title>
-<meta name="description" content="Custom firmware that turns the M-VAVE FM-1 into a pedal-driven groovebox for musicians: drums, bass, pads and a lead, each through its own board of effects pedals. Make a beat in seconds, stomp on pedals, play over it and arrange songs.">
+<meta name="description" content="A guided tour of QUARTET, the pedal-driven groovebox for the M-VAVE FM-1: play, pick a sound, stomp on pedals, make a beat, record a part, make a song.">
+<link rel="icon" href="card.png">
 <style>
 :root {
-  --bg: #F0EEE9; --panel: #E6E4DE; --card: #FAF9F6; --line: #DAD8D2; --txt: #1A1A1E; --sub: #5C5C64; --dim: #96969E;
-  --gold: #C86E00; --pad: #7A46DA; --bass: #0080BE; --drums: #188C32; --mute: #D63026;
+  --bg: #F0EEE9; --card: #FAF9F6; --line: #DAD8D2; --ink: #1A1A1E; --sub: #5C5C64; --dim: #A8A69F; --cap: #E6E4DE;
+  --lead: #C86E00; --pad: #7A46DA; --bass: #0080BE; --drums: #188C32; --mute: #D63026;
   --narrow: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 64px; }
-body { margin: 0; background: var(--bg); color: var(--txt); font: 16px/1.6 var(--sans); }
-a { color: var(--gold); }
-.wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
-header { position: sticky; top: 0; z-index: 5; background: rgba(240, 238, 233, .93); backdrop-filter: blur(4px); border-bottom: 1px solid var(--line); }
-nav { display: flex; align-items: center; justify-content: space-between; height: 54px; }
-.brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--narrow); letter-spacing: 3px; color: var(--txt); text-decoration: none; }
-.bars { display: inline-flex; gap: 3px; }
-.bars i { display: block; width: 5px; height: 18px; border-radius: 2px; }
-nav ul { display: flex; gap: 12px; list-style: none; margin: 0; padding: 0; }
-nav ul a { color: var(--sub); text-decoration: none; font-size: 14px; }
-nav ul a:hover { color: var(--gold); }
-.hero { display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: center; padding: 54px 0 44px; }
-.kicker { color: var(--gold); font: 600 12px var(--mono); letter-spacing: 2px; text-transform: uppercase; }
-h1 { font: 700 clamp(34px, 5vw, 54px)/1.05 var(--narrow); margin: 10px 0 16px; letter-spacing: .5px; }
-h1 em { font-style: normal; color: var(--gold); }
-h2 { font: 700 32px var(--narrow); margin: 0 0 6px; letter-spacing: .5px; }
-h3 { font: 700 21px var(--narrow); margin: 26px 0 8px; letter-spacing: .3px; }
-.lede { color: var(--sub); font-size: 17.5px; margin: 0 0 22px; }
-.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 15px; margin: 0 10px 10px 0; }
-.btn.primary { background: var(--gold); color: #fff; font-weight: 700; }
-.btn.ghost { border: 1px solid var(--gold); color: var(--gold); }
-.note { color: var(--sub); font-size: 13.5px; }
-.screen img, .shot img { width: 100%; max-width: 340px; image-rendering: pixelated; border: 10px solid #1A1A1E; border-radius: 14px; box-shadow: 0 0 0 1px var(--line), 0 10px 28px rgba(60, 50, 30, .18); background: #1A1A1E; }
-.screen p, .shot p { color: var(--sub); font-size: 13px; margin: 8px 0 0; text-align: center; }
-section { padding: 46px 0; border-top: 1px solid var(--line); }
-.sub { color: var(--sub); margin: 0 0 22px; max-width: 780px; font-size: 17px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
-.card h4 { margin: 0 0 4px; font: 700 14px var(--mono); color: var(--gold); letter-spacing: 1px; }
-.card p { margin: 0; font-size: 14.5px; }
-.split { display: grid; grid-template-columns: 1fr 340px; gap: 34px; align-items: start; }
-.split.rev { grid-template-columns: 340px 1fr; }
-.shot { text-align: center; }
-.shot img { border-width: 8px; }
-.shots > .shot + .shot { margin-top: 18px; }
-table.t { border-collapse: collapse; width: 100%; font-size: 14.5px; margin: 6px 0 4px; }
-table.t td, table.t th { padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
-table.t th { font: 600 12px var(--mono); letter-spacing: 1px; color: var(--sub); text-transform: uppercase; }
-table.t td:first-child { white-space: nowrap; width: 1%; font-weight: 600; }
-table.t.grid4 td:first-child { width: auto; }
-kbd { font: 700 12.5px var(--mono); background: var(--panel); color: var(--txt); border: 1px solid var(--line); border-bottom: 2px solid #B8B6B0; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
-.tip { background: var(--card); border-left: 4px solid var(--gold); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 15px; }
-.tk { display: inline-block; border-radius: 4px; font: 700 12px var(--mono); padding: 1px 8px; color: #fff; margin-right: 2px; }
-.lead { background: var(--gold); } .padc { background: var(--pad); } .bassc { background: var(--bass); } .drumc { background: var(--drums); } .mutec { background: var(--mute); }
-td.c-lead { color: var(--gold); } td.c-pad { color: var(--pad); } td.c-bass { color: var(--bass); } td.c-drums { color: var(--drums); }
-/* the quick start: five numbered stages, each a thing to do now */
-.stages { display: grid; gap: 14px; }
-.stage { display: grid; grid-template-columns: 58px 1fr 230px; gap: 18px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
-.stage .n { font: 700 40px/1 var(--narrow); color: var(--c, var(--gold)); text-align: center; }
-.stage h3 { margin: 0 0 6px; color: var(--c, var(--gold)); }
-.stage ol { margin: 0; padding-left: 20px; }
-.stage li { margin: 3px 0; }
-.stage img { width: 100%; image-rendering: pixelated; border: 6px solid #1A1A1E; border-radius: 10px; box-shadow: 0 0 0 1px var(--line); }
-.stage.big { border-color: #C9B8EA; box-shadow: 0 0 0 1px #C9B8EA inset; }
-/* "try this": small creative suggestions */
-.tries { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin: 18px 0; }
-.try { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--c, var(--gold)); border-radius: 10px; padding: 12px 15px; font-size: 14.5px; }
-.try b.h { display: block; font: 700 11.5px var(--mono); letter-spacing: 1.5px; color: var(--c, var(--gold)); text-transform: uppercase; margin-bottom: 3px; }
-.try p { margin: 0; }
-.rules { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 18px; }
-.rules .card p { font-size: 14px; }
-.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-.gallery figure { margin: 0; text-align: center; }
-.gallery img { width: 100%; image-rendering: pixelated; border: 5px solid #1A1A1E; border-radius: 8px; box-shadow: 0 0 0 1px var(--line); }
-.gallery figcaption { font-size: 12.5px; color: var(--sub); margin-top: 4px; }
-.kind { margin: 26px 0 10px; border-left: 4px solid var(--c); padding-left: 12px; }
-.kind h4 { margin: 0; font: 700 15px var(--mono); letter-spacing: 2px; color: var(--c); }
-.kind p { margin: 2px 0 0; color: var(--sub); font-size: 15px; }
-.pk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.pk { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; }
-.pk img { width: 100%; image-rendering: pixelated; border-radius: 8px; display: block; background: #1A1A1E; }
-.pk h5 { margin: 9px 0 2px; font: 700 18px var(--narrow); letter-spacing: .3px; }
-.pk p { margin: 0 0 4px; font-size: 14px; }
-.pk p.kn { font: 600 11.5px var(--mono); color: var(--sub); letter-spacing: .5px; }
-.pk p.on { color: var(--c, var(--gold)); font-size: 13.5px; margin: 0; }
-details.more { margin: 14px 0; }
-details.more summary { cursor: pointer; color: var(--gold); font-size: 15px; }
-footer { color: var(--sub); font-size: 13px; padding: 30px 0 50px; border-top: 1px solid var(--line); }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--sans); }
+a { color: var(--lead); }
+kbd { font: 700 13px var(--mono); background: var(--cap); border: 1px solid var(--line); border-bottom: 2px solid #B8B6B0; border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+
+/* the top bar: the name, and the four colours filling as you go down the page */
+header { position: sticky; top: 0; z-index: 10; background: rgba(240, 238, 233, .92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+.bar { max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 54px; display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--narrow); letter-spacing: 3px; color: var(--ink); text-decoration: none; }
+.bars { display: inline-flex; gap: 3px; } .bars i { display: block; width: 5px; height: 18px; border-radius: 2px; }
+header nav a { margin-left: 18px; color: var(--sub); text-decoration: none; font-size: 14.5px; }
+header nav a:hover { color: var(--lead); }
+header nav a.cta { color: #fff; background: var(--lead); padding: 6px 13px; border-radius: 8px; font-weight: 600; }
+#progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; display: flex; }
+#progress i { flex: 1; transform-origin: 0 50%; transform: scaleX(0); }
+
+/* scenes: words on one side, a line drawing on the other, a thin line running down through them all */
+main { max-width: 1120px; margin: 0 auto; padding: 0 24px; position: relative; }
+.rail { position: absolute; left: 24px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+.rail i { position: absolute; left: 0; top: 0; width: 2px; height: 0; background: var(--ink); }
+.scene { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 56px; align-items: center; min-height: 86vh; padding: 70px 0 70px 52px; }
+.scene.flip .words { order: 2; } .scene.flip .art { order: 1; }
+.node { position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line);
+  transition: border-color .4s, background .4s; }
+.scene.seen .node { border-color: var(--c, var(--ink)); background: var(--c, var(--ink)); }
+.kicker { font: 700 12.5px var(--mono); letter-spacing: 2.5px; text-transform: uppercase; color: var(--c, var(--lead)); }
+h1 { font: 700 clamp(44px, 6.4vw, 78px)/1 var(--narrow); margin: 12px 0 18px; letter-spacing: .3px; }
+h1 em { font-style: normal; color: var(--lead); }
+h2 { font: 700 clamp(32px, 4vw, 46px)/1.05 var(--narrow); margin: 10px 0 14px; }
+.words p { margin: 0 0 14px; color: #2C2C32; max-width: 470px; }
+.words p.lede { font-size: 19px; color: var(--sub); }
+.do { list-style: none; padding: 0; margin: 18px 0 0; max-width: 470px; }
+.do li { position: relative; padding: 9px 0 9px 34px; border-top: 1px solid var(--line); }
+.do li::before { content: counter(s); counter-increment: s; position: absolute; left: 0; top: 10px; width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--c, var(--ink)); color: var(--c, var(--ink)); font: 700 12px/19px var(--mono); text-align: center; }
+.do { counter-reset: s; }
+.try { margin-top: 16px; font-size: 14.5px; color: var(--sub); }
+.try b { color: var(--ink); }
+.btn { display: inline-block; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15.5px; margin: 6px 10px 6px 0; }
+.btn.primary { background: var(--lead); color: #fff; }
+.btn.ghost { border: 1.5px solid var(--ink); color: var(--ink); }
+
+/* the drawings: ink lines on paper, a caption under each that says what is happening */
+.art { position: relative; }
+.art svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cap { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; font: 600 12px var(--mono); letter-spacing: 1.5px; text-transform: uppercase; color: var(--sub); }
+.cap b { color: var(--c, var(--lead)); font-weight: 700; }
+svg .ln { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+svg .thin { stroke-width: 1.1; }
+svg .ln:not([fill]) { fill: none; }
+svg .soft { stroke: var(--dim); }
+svg .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); transition: stroke-dashoffset 1.6s cubic-bezier(.6, .05, .3, 1); }
+.seen svg .draw { stroke-dashoffset: 0; }
+svg text { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; fill: var(--sub); }
+svg text.big { font-size: 13px; font-weight: 700; fill: var(--ink); }
+svg .fade { opacity: 0; transition: opacity .6s .9s; } .seen svg .fade { opacity: 1; }
+
+/* install */
+.steps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 22px; }
+.steps3 div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; font-size: 15px; }
+.steps3 h3 { margin: 0 0 4px; font: 700 20px var(--narrow); }
+.steps3 .n { font: 700 12px var(--mono); letter-spacing: 2px; color: var(--lead); }
+.small { font-size: 13.5px; color: var(--sub); }
+footer { max-width: 1120px; margin: 0 auto; padding: 30px 24px 60px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13.5px; }
 footer a { color: var(--sub); }
-@media (max-width: 860px) {
-  .hero, .split, .split.rev { grid-template-columns: 1fr; } nav ul { display: none; } .hero { padding-top: 30px; }
-  .stage { grid-template-columns: 40px 1fr; } .stage img { grid-column: 1 / -1; max-width: 300px; margin: 0 auto; }
+@media (max-width: 880px) {
+  .scene, .scene.flip { grid-template-columns: 1fr; gap: 24px; min-height: 0; padding: 56px 0 56px 34px; }
+  .scene.flip .words, .scene.flip .art { order: 0; }
+  header nav a:not(.cta) { display: none; }
+  .steps3 { grid-template-columns: 1fr; }
+  .node { top: 66px; }
 }
-@media print {
-  body { background: #fff; color: #111; } header, .btn, .gallery { display: none; } section { break-inside: avoid; border-color: #ccc; }
-  .card, .stage, .try { background: #fff; border-color: #ccc; } .sub, .lede, .note, .screen p, .shot p, table.t th { color: #444; }
-  kbd { background: #fff; color: #111; border-color: #999; } table.t td, table.t th { border-color: #ddd; }
-}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } svg .draw { transition: none; stroke-dashoffset: 0; } svg .fade { transition: none; opacity: 1; } }
 </style>
 </head>
-<body id="top">
-<header><div class="wrap"><nav>
-  <a class="brand" href="#top"><span class="bars"><i style="background:#C86E00"></i><i style="background:#7A46DA"></i><i style="background:#0080BE"></i><i style="background:#188C32"></i></span>QUARTET</a>
-  <ul>
-    <li><a href="#start">Quick start</a></li>
-    <li><a href="#sounds">Sounds</a></li>
-    <li><a href="#pedals">Pedalboard</a></li>
-    <li><a href="#meet">Meet the pedals</a></li>
-    <li><a href="#write">Beats</a></li>
-    <li><a href="#perform">Live</a></li>
-    <li><a href="#songs">Songs</a></li>
-    <li><a href="#editor">Sound editing</a></li>
-    <li><a href="#reference">Reference</a></li>
-    <li><a href="emu/">Try it</a></li>
-    <li><a href="https://github.com/MammothCheese/quartet">GitHub</a></li>
-  </ul>
-</nav></div></header>
+<body>
+<header><div class="bar">
+  <a class="brand" href="#top"><span class="bars"><i style="background:var(--lead)"></i><i style="background:var(--pad)"></i><i style="background:var(--bass)"></i><i style="background:var(--drums)"></i></span>QUARTET</a>
+  <nav><a href="#play">Play</a><a href="#pedals">Pedals</a><a href="#beat">Beats</a><a href="#song">Songs</a><a href="#install">Install</a><a href="guide.html">Full guide</a><a class="cta" href="emu/">Try it now</a></nav>
+</div><div id="progress"><i style="background:var(--lead)"></i><i style="background:var(--pad)"></i><i style="background:var(--bass)"></i><i style="background:var(--drums)"></i></div></header>
 
-<main class="wrap">
+<main id="top">
+  <div class="rail"><i id="railfill"></i></div>
 
-<div class="hero">
-  <div>
-    <div class="kicker">A pedal-driven groovebox for the M-VAVE FM-1 &middot; free and open source</div>
-    <h1>A little band,<br>a lot of pedals.</h1>
-    <p class="lede">QUARTET turns the FM-1 into a groovebox built around effects pedals, made for musicians. Drums, bass, pads and a lead each have their own pedalboard. Make a beat, stomp on fuzz or spring reverb while it plays, jam over the top and turn it into a song.</p>
-    <a class="btn primary" href="https://github.com/MammothCheese/quartet/releases/latest">Download</a>
-    <a class="btn ghost" href="https://github.com/MammothCheese/quartet#install">How to install</a>
-    <a class="btn ghost" href="emu/">Play it in your browser</a>
-    <a class="btn ghost" href="#start">Quick start</a>
-    <p class="note">37 pedals &middot; 72 sounds &middot; 23 drum kits &middot; ten patterns per instrument &middot; ten songs. Press <kbd>PLAY</kbd> to hear the demo.</p>
-  </div>
-  <div class="screen">
-    <img src="guide/home.png" alt="QUARTET's home screen: a colour pill per instrument, the chosen one open with its steps, its pedals along the bottom">
-    <p>Home: your four players, the chosen one open, its pedalboard along the bottom.</p>
-  </div>
-</div>
+  <!-- 0: hello -->
+  <section class="scene" style="--c: var(--lead)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">A pedal-driven groovebox for the M-VAVE FM-1</div>
+      <h1>A little band,<br>a lot of <em>pedals</em>.</h1>
+      <p class="lede">QUARTET turns the FM-1 into four players (drums, bass, pads and a lead), each with its own board of effects pedals. Make a beat, stomp on fuzz while it plays, turn it into a song.</p>
+      <a class="btn primary" href="emu/">Play it in your browser</a><a class="btn ghost" href="#install">Put it on your FM-1</a>
+      <p class="try">Free and open source. Scroll down: six steps, five minutes, and you've made a song.</p>
+    </div>
+    <div class="art"><svg id="hero" viewBox="0 0 600 360"></svg>
+      <div class="cap"><span>QUARTET on the FM-1</span><span id="heroCap"><b>LEAD</b> · PIANO</span></div></div>
+  </section>
 
-<!-- ============================================================ QUICK START -->
-<section id="start">
-  <h2>Quick start</h2>
-  <p class="sub">Five steps, a minute or two.</p>
-  <div class="stages">
-    <div class="stage">
-      <div class="n">1</div>
-      <div>
-        <h3>Hear the band</h3>
-        <ol>
-          <li>Press <kbd>PLAY</kbd>. The demo starts: piano, strings, a Reese bass and an 808.</li>
-          <li><kbd>MASTER</kbd> is the volume. <kbd>PLAY</kbd> again stops.</li>
-        </ol>
+  <!-- 1: play -->
+  <section class="scene flip" id="play" style="--c: var(--lead)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">Step 1 · Hear the band</div>
+      <h2>Press PLAY.<br>The band starts.</h2>
+      <p>Switch on and press <kbd>PLAY</kbd>: four players come in on the beat, each on its own line. That's a pattern, sixteen steps long, going round and round.</p>
+      <ul class="do"><li><kbd>PLAY</kbd> starts and stops everything.</li><li><kbd>MASTER</kbd> is the volume. <kbd>KNOB 1</kbd> on home sets the tempo.</li></ul>
+    </div>
+    <div class="art"><svg id="seq" viewBox="0 0 600 330"></svg>
+      <div class="cap"><span>Four players, sixteen steps</span><span id="seqCap"><b>STEP 01</b> / 16 · 120 BPM</span></div></div>
+  </section>
+
+  <!-- 2: choose -->
+  <section class="scene" id="choose" style="--c: var(--pad)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">Step 2 · Pick a player</div>
+      <h2>Choose who you play,<br>then what they sound like.</h2>
+      <p>Turn <kbd>SELECT</kbd> to move between the four players. Whoever's chosen is the one the keys play. Turn <kbd>ALGORITHM</kbd> to give them another sound: 72 to choose from, plus 23 drum kits.</p>
+      <ul class="do"><li><kbd>SELECT</kbd> picks lead, pad, bass or drums.</li><li><kbd>ALGORITHM</kbd> picks the sound. Play the keys to hear it.</li></ul>
+    </div>
+    <div class="art"><svg id="pick" viewBox="0 0 600 330"></svg>
+      <div class="cap"><span>SELECT and ALGORITHM</span><span id="pickCap"><b>LEAD</b> · PIANO</span></div></div>
+  </section>
+
+  <!-- 3: pedals -->
+  <section class="scene flip" id="pedals" style="--c: var(--bass)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">Step 3 · Stomp on a pedal</div>
+      <h2>Every player has<br>four pedals.</h2>
+      <p>The sound runs through a pedalboard on its way out: fuzz, chorus, delay, spring reverb and 33 more. <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are the four footswitches. Tap one while it plays and hear it kick in.</p>
+      <ul class="do"><li><b>Tap</b> a pedal button: on, off.</li><li><b>Hold</b> it to open the pedal; the knobs turn its knobs.</li><li><kbd>ALGORITHM</kbd> on a pedal swaps it for another.</li></ul>
+    </div>
+    <div class="art"><svg id="chain" viewBox="0 0 600 330"></svg>
+      <div class="cap"><span>The signal, through the pedals</span><span id="chainCap"><b>ALL OFF</b> · CLEAN</span></div></div>
+  </section>
+
+  <!-- 4: beat -->
+  <section class="scene" id="beat" style="--c: var(--drums)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">Step 4 · Make a beat</div>
+      <h2>Tap the hits in<br>where you want them.</h2>
+      <p>Pick the drums, pick an empty pattern with <kbd>PRESETS</kbd>, then press <kbd>SEQ</kbd>. The black keys choose a drum; the white keys are the steps. Tap one and the hit is there, in time.</p>
+      <ul class="do"><li><kbd>SEQ</kbd> opens the step grid.</li><li>Black key: the drum. White key: a hit on that step.</li><li><kbd>PLAY</kbd> and keep tapping while it loops.</li></ul>
+    </div>
+    <div class="art"><svg id="grid" viewBox="0 0 600 330"></svg>
+      <div class="cap"><span>Six drums, sixteen steps</span><span id="gridCap"><b>KICK</b> · STEP 01</span></div></div>
+  </section>
+
+  <!-- 5: record -->
+  <section class="scene flip" id="record" style="--c: var(--lead)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">Step 5 · Play a part in</div>
+      <h2>Press REC.<br>Play. It sticks.</h2>
+      <p>Choose the lead or the bass, press <kbd>SEQ</kbd>, then <kbd>REC</kbd> <kbd>REC</kbd>. Play along with the loop and every note lands on the nearest step, as long as you held it. A MIDI keyboard works too.</p>
+      <ul class="do"><li><kbd>SEQ</kbd> <kbd>REC</kbd> <kbd>REC</kbd>: recording, on the beat.</li><li>Not quite right? Play it again, or fix notes in the step recorder.</li></ul>
+    </div>
+    <div class="art"><svg id="roll" viewBox="0 0 600 330"></svg>
+      <div class="cap"><span>Live recording</span><span id="rollCap"><b>REC</b> · LISTENING</span></div></div>
+  </section>
+
+  <!-- 6: song -->
+  <section class="scene" id="song" style="--c: var(--pad)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">Step 6 · Make it a song</div>
+      <h2>Chain the patterns.<br>That's a song.</h2>
+      <p>Every player has ten patterns, A to J: a verse, a chorus, a break. <kbd>SEQ</kbd> twice opens SUPER SEQ, where you line them up box by box and the song plays itself. Ten songs fit, and four projects save to the FM-1.</p>
+      <ul class="do"><li><kbd>PRESETS</kbd> picks a pattern; hold <kbd>ARP</kbd> to copy one to the next letter.</li><li><kbd>SEQ</kbd> <kbd>SEQ</kbd>: SUPER SEQ. <kbd>SAVE</kbd>: keep it.</li></ul>
+    </div>
+    <div class="art"><svg id="sseq" viewBox="0 0 600 330"></svg>
+      <div class="cap"><span>SUPER SEQ</span><span id="sseqCap"><b>BOX 1</b> · A</span></div></div>
+  </section>
+
+  <!-- 7: yours -->
+  <section class="scene flip" id="yours" style="--c: var(--drums)">
+    <span class="node"></span>
+    <div class="words">
+      <div class="kicker">And then</div>
+      <h2>Make it look and<br>sound like yours.</h2>
+      <p>Shape any sound in depth with <kbd>EDIT</kbd> and save it as your own. Mix the four players with <kbd>GLO</kbd>. Lock the keys to a scale with <kbd>GLO</kbd> <kbd>GLO</kbd>. And hold <kbd>HOME</kbd> and turn <kbd>PRESETS</kbd> to pick a look: Paper, Dark, Neon or LCD.</p>
+      <p class="try"><b>Everything else</b> is in the <a href="guide.html">full guide</a>: every pedal, every control.</p>
+    </div>
+    <div class="art"><svg id="themes" viewBox="0 0 600 330"></svg>
+      <div class="cap"><span>HOME + PRESETS</span><span id="themeCap"><b>PAPER</b></span></div></div>
+  </section>
+
+  <!-- 8: install -->
+  <section class="scene" id="install" style="--c: var(--lead)">
+    <span class="node"></span>
+    <div class="words" style="grid-column: 1 / -1">
+      <div class="kicker">Put it on your FM-1</div>
+      <h2>Two minutes, one file.</h2>
+      <p>Try it in your browser first if you like: it's the real firmware. When you're ready:</p>
+      <div class="steps3">
+        <div><span class="n">01</span><h3>Download</h3>Get <b>quartet-X.Y.fwsc</b> from the latest release.<br><a href="https://github.com/MammothCheese/quartet/releases/latest">Latest release</a></div>
+        <div><span class="n">02</span><h3>Install</h3>Plug in the FM-1 and use the <a href="https://thefirmwarehub.com/">Firmware Hub</a> or <a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a>. Back up first.<br><span class="small">Details and going back: <a href="https://github.com/MammothCheese/quartet#install">README</a></span></div>
+        <div><span class="n">03</span><h3>Play</h3>Switch on, press <kbd>PLAY</kbd>, and come back up this page.<br><span class="small">Stuck? Hold <kbd>OCT-</kbd> while switching on for rescue mode.</span></div>
       </div>
-      <img src="guide/home.png" alt="The home screen while the demo plays">
+      <p style="margin-top:22px"><a class="btn primary" href="emu/">Play it in your browser</a><a class="btn ghost" href="https://github.com/MammothCheese/quartet/releases/latest">Download</a></p>
     </div>
-    <div class="stage" style="--c: var(--pad)">
-      <div class="n">2</div>
-      <div>
-        <h3>Pick a player and a sound</h3>
-        <ol>
-          <li><kbd>SELECT</kbd> chooses who you play: <span class="tk lead">LEAD</span> <span class="tk padc">PAD</span> <span class="tk bassc">BASS</span> <span class="tk drumc">DRUMS</span>.</li>
-          <li>Play the keys. Turn <kbd>ALGORITHM</kbd> to change the sound.</li>
-        </ol>
-      </div>
-      <img src="guide/sound.png" alt="A new sound chosen: its name shows big">
-    </div>
-    <div class="stage big" style="--c: #B23FCF">
-      <div class="n">3</div>
-      <div>
-        <h3>Stomp on a pedal</h3>
-        <ol>
-          <li>With the lead chosen, <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are its four pedals. <b>Tap</b> <kbd>ENV</kbd> to switch on Distortion.</li>
-          <li><b>Hold</b> <kbd>ENV</kbd> to open it. Turn <kbd>KNOB 4</kbd> for more dirt.</li>
-          <li>Turn <kbd>ALGORITHM</kbd> for a different pedal (<a href="#meet">37 in all</a>).</li>
-        </ol>
-      </div>
-      <img src="guide/pedal.png" alt="A distortion pedal page">
-    </div>
-    <div class="stage" style="--c: var(--drums)">
-      <div class="n">4</div>
-      <div>
-        <h3>Make a beat</h3>
-        <ol>
-          <li>Stop the music. Choose <span class="tk drumc">DRUMS</span> and turn <kbd>PRESETS</kbd> to <b>B</b> (empty).</li>
-          <li>Press <kbd>SEQ</kbd>. A black key picks a drum; white keys place its hits.</li>
-          <li>Press <kbd>PLAY</kbd>. It loops.</li>
-        </ol>
-      </div>
-      <img src="guide/drums.png" alt="The drum grid">
-    </div>
-    <div class="stage" style="--c: var(--bass)">
-      <div class="n">5</div>
-      <div>
-        <h3>Add a bassline</h3>
-        <ol>
-          <li>Press <kbd>HOME</kbd>. Choose <span class="tk bassc">BASS</span> and pattern <b>B</b>.</li>
-          <li>Press <kbd>SEQ</kbd>, then <kbd>REC</kbd>. Tap <kbd>REC</kbd> again and play. Tap <kbd>REC</kbd> to stop.</li>
-          <li>Your work saves itself.</li>
-        </ol>
-      </div>
-      <img src="guide/live.png" alt="Live recording">
-    </div>
-  </div>
-
-  <h3>Find your way around</h3>
-  <p>These work the same on every page.</p>
-  <div class="rules">
-    <div class="card"><h4>SELECT</h4><p>Always the instrument.</p></div>
-    <div class="card"><h4>ALGORITHM</h4><p>Chooses on the page: a sound, a pedal, a step.</p></div>
-    <div class="card"><h4>PRESETS</h4><p>The pattern (on some pages: the kind of pedal, the song).</p></div>
-    <div class="card"><h4>KNOB 1&ndash;4</h4><p>The settings on screen, left to right.</p></div>
-    <div class="card"><h4>TAP OR HOLD</h4><p>Tap to switch, hold to open.</p></div>
-    <div class="card"><h4>HOME</h4><p>Back home, from anywhere.</p></div>
-  </div>
-  <div class="tip">To start from scratch, hold <kbd>REC</kbd> on the home screen, then press it again when <b>CLEAR ALL?</b> shows. Saves and your own sounds are kept.</div>
-</section>
-
-<!-- ============================================================ INSTRUMENTS AND SOUNDS -->
-<section id="sounds">
-  <h2>Instruments and sounds</h2>
-  <p class="sub">Four instruments, each in its own colour. <kbd>SELECT</kbd> picks one, <kbd>ALGORITHM</kbd> changes its sound.</p>
-  <h3 style="margin-top:0">The home screen</h3>
-  <p>A row per instrument shows its sound and pattern; the chosen one opens to show its steps. <b>A&gt;C</b> means C plays next. A muted instrument turns red. The top line shows tempo, swing (<b>SW</b>) and octave; the bottom shows the chosen instrument's pedals, lit when on.</p>
-  <div class="split">
-    <div>
-      <table class="t">
-        <tr><th>Instrument</th><th>Plays</th></tr>
-        <tr><td><span class="tk lead">LEAD</span></td><td>melodies and riffs, up to four notes</td></tr>
-        <tr><td><span class="tk padc">PAD</span></td><td>chords, up to four notes</td></tr>
-        <tr><td><span class="tk bassc">BASS</span></td><td>basslines, one note at a time</td></tr>
-        <tr><td><span class="tk drumc">DRUMS</span></td><td>kick, snare, hi-hat, open hat, clap and percussion</td></tr>
-      </table>
-
-      <h3>Changing sounds</h3>
-      <p>Turn <kbd>ALGORITHM</kbd> on the home screen to step through the sounds (on drums, the kits). It works while the music plays. For a list by group, press <kbd>EDIT</kbd>: <kbd>KNOB 2</kbd> picks the group, <kbd>KNOB 3</kbd> the sound.</p>
-      <div class="tip">Choosing a sound replaces any changes you made to it. To keep them, <a href="#ownsound">save it</a> first.</div>
-
-      <h3>Two leads, three pads</h3>
-      <p>The first three instruments can each be a lead, pad or bass: press <kbd>EDIT</kbd> and turn <kbd>KNOB 1</kbd>. Two of a kind show as LEAD 1 and LEAD 2. Drums are always the fourth.</p>
-    </div>
-    <div class="shots">
-      <div class="shot"><img src="guide/instr.png" alt="The INSTR sound browser"><p>The sound browser.</p></div>
-      <div class="shot"><img src="guide/slots.png" alt="The home screen with two leads, L1 and L2"><p>Two leads.</p></div>
-    </div>
-  </div>
-
-  <div class="tries">
-    <div class="try"><b class="h">Try this</b><p>Put the bass on Upright or Tuba.</p></div>
-    <div class="try" style="--c: var(--pad)"><b class="h">Try this</b><p>Put the pads on Choir or Organ.</p></div>
-    <div class="try" style="--c: var(--drums)"><b class="h">Try this</b><p>Play one beat on Jazz, CR-78 and Kitchen kits.</p></div>
-  </div>
-
-  <h3>All the sounds</h3>
-  <p>Four groups each, plus your own (USER).</p>
-  <table class="t grid4">
-    <tr><th>Lead</th><th>Sounds</th></tr>
-    <tr><td>KEYS</td><td class="c-lead">Piano, Xylophone, Music Box, FM Bell, Tine Keys, Clavinet</td></tr>
-    <tr><td>BAND</td><td class="c-lead">Hammond, Brass, Electric Guitar, Synth Brass, Flute, Harmonica</td></tr>
-    <tr><td>SYNTH</td><td class="c-lead">Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead</td></tr>
-    <tr><td>ODD</td><td class="c-lead">Theremin, Glass Harp, Laser, Bowed Metal, Sine Swarm, Stepper</td></tr>
-    <tr><th>Pads</th><th></th></tr>
-    <tr><td>STRINGS</td><td class="c-pad">Strings, Solina, Choir, Acoustic Guitar, Harp, Digital Choir</td></tr>
-    <tr><td>KEYS</td><td class="c-pad">Electric Piano, DX Piano, Organ, Handpan, Vibes, Marimba</td></tr>
-    <tr><td>SYNTH</td><td class="c-pad">Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth</td></tr>
-    <tr><td>ATMOS</td><td class="c-pad">Drone, Frozen, Cathedral, Sweep, Glass Pad, Tidal</td></tr>
-    <tr><th>Bass</th><th></th></tr>
-    <tr><td>ACOUSTIC</td><td class="c-bass">Upright, Slap, Plucked, Tuba, Fretless, Picked</td></tr>
-    <tr><td>ANALOG</td><td class="c-bass">Moog Bass, 303 Line, Sub Bass, Synth Bass, Rubber Bass, Slide Sub</td></tr>
-    <tr><td>DIGITAL</td><td class="c-bass">DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck</td></tr>
-    <tr><td>WILD</td><td class="c-bass">Fuzz, Wobble, Growl, Bubble, Womp, Dirt Bass</td></tr>
-    <tr><td>USER</td><td>Your own: up to 8 per type.</td></tr>
-  </table>
-  <table class="t grid4">
-    <tr><th>Drums</th><th>Kits</th></tr>
-    <tr><td>GROOVE</td><td class="c-drums">Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk</td></tr>
-    <tr><td>MACHINES</td><td class="c-drums">CR-78, Mini Pops, LM-1, 606, 808, 909</td></tr>
-    <tr><td>ELECTRO</td><td class="c-drums">Electro, Techno, Trap, House, Dub, Industrial</td></tr>
-    <tr><td>ODD</td><td class="c-drums">Toy, Glitch, Metal, Noise, Kitchen</td></tr>
-    <tr><td>USER</td><td>Your own: up to 4.</td></tr>
-  </table>
-  <p>The LM-1 kit uses samples of a real Linn LM-1 (its clap and perc keys are toms). The perc drum changes with the kit.</p>
-  <p class="note">Sounds from older saves that are no longer listed still load and play.</p>
-
-</section>
-
-<!-- ============================================================ PEDALBOARD -->
-<section id="pedals">
-  <h2>The pedalboard</h2>
-  <p class="sub">Pedals are the heart of QUARTET. Each instrument has four, chosen from 37, and you can change them while the music plays.</p>
-  <div class="split">
-    <div>
-      <h3>How to use them</h3>
-      <table class="t">
-        <tr><td><b>On / off</b></td><td>Tap <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> or <kbd>LFO</kbd>. The button lights when it's on.</td></tr>
-        <tr><td><b>Open</b></td><td>Hold the button.</td></tr>
-        <tr><td><b>Adjust</b></td><td><kbd>KNOB 2</kbd> <kbd>3</kbd> <kbd>4</kbd> are its three knobs. <kbd>KNOB 1</kbd> switches it on or off.</td></tr>
-        <tr><td><b>Change</b></td><td><kbd>ALGORITHM</kbd> picks a pedal; <kbd>PRESETS</kbd> jumps to another kind (drive, filter, modulation, space, pitch, other).</td></tr>
-      </table>
-      <p>Pedals follow the instrument chosen with <kbd>SELECT</kbd>. Each starts with Reverb, Delay, Distortion and Chorus.</p>
-    </div>
-    <div class="shots">
-      <div class="shot"><img src="guide/pedal.png" alt="A distortion pedal"><p>The Distortion pedal.</p></div>
-      <div class="shot"><img src="guide/pedalon.png" alt="CHORUS ON shown at the top of the home screen"><p>Tap a pedal: its name shows.</p></div>
-    </div>
-  </div>
-
-  <h3>Try these</h3>
-  <div class="tries">
-    <div class="try" style="--c: var(--mute)"><b class="h">Distort a piano or organ</b><p>On the lead, pick Piano or Hammond and tap <kbd>ENV</kbd>.</p></div>
-    <div class="try" style="--c: var(--pad)"><b class="h">Add chorus to a pad</b><p>On the pads, tap <kbd>LFO</kbd>.</p></div>
-    <div class="try" style="--c: var(--drums)"><b class="h">Spring reverb on drums</b><p>On the drums, hold <kbd>FX</kbd>, turn <kbd>ALGORITHM</kbd> to Spring Reverb and raise <kbd>KNOB 2</kbd>.</p></div>
-    <div class="try" style="--c: var(--bass)"><b class="h">Make it strange</b><p>Hold a pedal button, turn <kbd>PRESETS</kbd> to OTHER and try Old Media, Underwater or Glitch.</p></div>
-  </div>
-
-  <h3>All four at once</h3>
-  <div class="split rev">
-    <div class="shot"><img src="guide/chainon.png" alt="The pedalboard: four pedals"><p><kbd>EDIT</kbd> twice.</p></div>
-    <div>
-      <p>Press <kbd>EDIT</kbd> twice to see all four pedals. <kbd>ALGORITHM</kbd> picks one, <kbd>KNOB 1</kbd> switches it on or off, <kbd>KNOB 2&ndash;4</kbd> adjust it and <kbd>PRESETS</kbd> swaps it. The sound goes through them in order: <kbd>FX</kbd>, <kbd>SEL</kbd>, <kbd>ENV</kbd>, <kbd>LFO</kbd>.</p>
-    </div>
-  </div>
-
-  <h3 id="meet">Meet the pedals</h3>
-  <p>All 37, by kind. Knobs are listed as <kbd>KNOB 2</kbd>, <kbd>3</kbd>, <kbd>4</kbd>.</p>
-  <div class="kind" style="--c: var(--mute)"><h4>DRIVE</h4><p>Grit and growl, from warm crunch to all-out fuzz.</p></div>
-  <div class="pk-grid" style="--c: var(--mute)">
-    <div class="pk"><img src="guide/pedals/distortion.png" alt="The Distortion pedal" loading="lazy"><h5>Distortion</h5><p>Classic rock crunch: a hot, saturated edge that gets heavier as you turn it up.</p><p class="kn">LEVEL · TONE · DIST</p><p class="on">Try it on a piano or Hammond for a gritty keyboard.</p></div>
-    <div class="pk"><img src="guide/pedals/overdrive.png" alt="The Overdrive pedal" loading="lazy"><h5>Overdrive</h5><p>Softer, tube-amp warmth that starts clean and breaks up as you push it.</p><p class="kn">LEVEL · TONE · DRIVE</p><p class="on">Try it on electric piano or bass.</p></div>
-    <div class="pk"><img src="guide/pedals/fuzz.png" alt="The Fuzz pedal" loading="lazy"><h5>Fuzz</h5><p>A thick, buzzy sixties fuzz box.</p><p class="kn">LEVEL · TONE · FUZZ</p><p class="on">Try it on a synth lead or a bassline.</p></div>
-    <div class="pk"><img src="guide/pedals/octave-fuzz.png" alt="The Octave Fuzz pedal" loading="lazy"><h5>Octave Fuzz</h5><p>Fuzz with an extra note an octave up: ringing and nasal.</p><p class="kn">LEVEL · TONE · FUZZ</p><p class="on">Try it on lead solos.</p></div>
-    <div class="pk"><img src="guide/pedals/wavefolder.png" alt="The Wavefolder pedal" loading="lazy"><h5>Wavefolder</h5><p>Folds the sound back on itself for a bright, metallic, buzzing edge.</p><p class="kn">LEVEL · TONE · FOLD</p><p class="on">Try it on bass or pads.</p></div>
-    <div class="pk"><img src="guide/pedals/bitcrusher.png" alt="The Bitcrusher pedal" loading="lazy"><h5>Bitcrusher</h5><p>Crunchy low-resolution digital, from old game console to broken radio.</p><p class="kn">BITS · RATE · MIX</p><p class="on">Try it on drums.</p></div>
-  </div>
-  <div class="kind" style="--c: var(--gold)"><h4>FILTER</h4><p>Make a sound talk.</p></div>
-  <div class="pk-grid" style="--c: var(--gold)">
-    <div class="pk"><img src="guide/pedals/filter-seq.png" alt="The Filter Seq pedal" loading="lazy"><h5>Filter Seq</h5><p>A filter that steps open and shut in time with the beat, turning held chords into a rhythm.</p><p class="kn">RATE · DEPTH · RES</p><p class="on">Try it on long pad chords.</p></div>
-    <div class="pk"><img src="guide/pedals/wah.png" alt="The Wah pedal" loading="lazy"><h5>Wah</h5><p>Opens up the harder you play, like a wah pedal following your touch.</p><p class="kn">SENS · RANGE · RES</p><p class="on">Try it on a funky Clavinet or guitar.</p></div>
-    <div class="pk"><img src="guide/pedals/dj-filter.png" alt="The DJ Filter pedal" loading="lazy"><h5>DJ Filter</h5><p>One knob from muffled to thin, like a DJ mixer: sweep the drums down for a breakdown and back up for the drop.</p><p class="kn">FILTER · RES · LEVEL</p><p class="on">Try it on drums, for a breakdown.</p></div>
-    <div class="pk"><img src="guide/pedals/acid.png" alt="The Acid pedal" loading="lazy"><h5>Acid</h5><p>A squelchy filter that snaps open on every note: the sound of an acid bass line, on any instrument.</p><p class="kn">CUTOFF · RES · DECAY</p><p class="on">Try it on bass, pads, even piano.</p></div>
-  </div>
-  <div class="kind" style="--c: var(--pad)"><h4>MODULATION</h4><p>Movement, width and wobble.</p></div>
-  <div class="pk-grid" style="--c: var(--pad)">
-    <div class="pk"><img src="guide/pedals/chorus.png" alt="The Chorus pedal" loading="lazy"><h5>Chorus</h5><p>A gently drifting copy that makes the sound wide and lush.</p><p class="kn">RATE · DEPTH · LEVEL</p><p class="on">Try it on pads and electric piano.</p></div>
-    <div class="pk"><img src="guide/pedals/phaser.png" alt="The Phaser pedal" loading="lazy"><h5>Phaser</h5><p>A swirling, whooshing sweep.</p><p class="kn">RATE · DEPTH · FEEDBACK</p><p class="on">Try it on organ or strings.</p></div>
-    <div class="pk"><img src="guide/pedals/flanger.png" alt="The Flanger pedal" loading="lazy"><h5>Flanger</h5><p>A jet-plane swoosh from a tiny, sweeping echo.</p><p class="kn">RATE · DEPTH · FEEDBACK</p><p class="on">Try it on drums or guitar.</p></div>
-    <div class="pk"><img src="guide/pedals/tremolo.png" alt="The Tremolo pedal" loading="lazy"><h5>Tremolo</h5><p>Pulses the volume, from a gentle throb to a hard on-off chop.</p><p class="kn">RATE · DEPTH · SHAPE</p><p class="on">Try it on electric piano or guitar.</p></div>
-    <div class="pk"><img src="guide/pedals/slicer.png" alt="The Slicer pedal" loading="lazy"><h5>Slicer</h5><p>Chops the sound into rhythms locked to the tempo, with eight patterns to choose from.</p><p class="kn">RATE · DEPTH · PATTERN</p><p class="on">Try it on pads, for a pulsing gate.</p></div>
-    <div class="pk"><img src="guide/pedals/vibrato.png" alt="The Vibrato pedal" loading="lazy"><h5>Vibrato</h5><p>Wobbles the pitch, like a singer's vibrato or a warped tape.</p><p class="kn">RATE · DEPTH · MIX</p><p class="on">Try it on flute or strings.</p></div>
-    <div class="pk"><img src="guide/pedals/pump.png" alt="The Pump pedal" loading="lazy"><h5>Pump</h5><p>Ducks the sound on every kick drum (or every beat), so the part breathes with the groove.</p><p class="kn">DEPTH · RELEASE · SOURCE</p><p class="on">Try it on pads and bass.</p></div>
-  </div>
-  <div class="kind" style="--c: var(--bass)"><h4>SPACE</h4><p>Rooms and echoes. Shared by the whole band: the first knob is how much this instrument sends.</p></div>
-  <div class="pk-grid" style="--c: var(--bass)">
-    <div class="pk"><img src="guide/pedals/reverb.png" alt="The Reverb pedal" loading="lazy"><h5>Reverb</h5><p>Puts the band in a room or a hall.</p><p class="kn">LEVEL · TONE · TIME</p><p class="on">Try it on everything, a little.</p></div>
-    <div class="pk"><img src="guide/pedals/delay.png" alt="The Delay pedal" loading="lazy"><h5>Delay</h5><p>Echoes in time with the tempo.</p><p class="kn">REPEAT · ECHO · INTENSITY</p><p class="on">Try it on a lead melody.</p></div>
-    <div class="pk"><img src="guide/pedals/tape-echo.png" alt="The Tape Echo pedal" loading="lazy"><h5>Tape Echo</h5><p>Warmer, darker echoes, like an old tape machine.</p><p class="kn">ECHO · TIME · REPEATS</p><p class="on">Try it on vocal-like leads, dub drums.</p></div>
-    <div class="pk"><img src="guide/pedals/shimmer.png" alt="The Shimmer pedal" loading="lazy"><h5>Shimmer</h5><p>A reverb whose tail rises an octave with each repeat: glowing and angelic.</p><p class="kn">LEVEL · TIME · SHIMMER</p><p class="on">Try it on pads and slow chords.</p></div>
-    <div class="pk"><img src="guide/pedals/reverse-delay.png" alt="The Reverse Delay pedal" loading="lazy"><h5>Reverse Delay</h5><p>Echoes played backwards, swelling into each note.</p><p class="kn">ECHO · TIME · REPEATS</p><p class="on">Try it on a lead or guitar.</p></div>
-    <div class="pk"><img src="guide/pedals/spring-reverb.png" alt="The Spring Reverb pedal" loading="lazy"><h5>Spring Reverb</h5><p>The splashy, boingy reverb from a guitar amp.</p><p class="kn">LEVEL · TONE · TIME</p><p class="on">Try it on drums and guitar.</p></div>
-  </div>
-  <div class="kind" style="--c: var(--drums)"><h4>PITCH</h4><p>Change the notes themselves.</p></div>
-  <div class="pk-grid" style="--c: var(--drums)">
-    <div class="pk"><img src="guide/pedals/shifter.png" alt="The Shifter pedal" loading="lazy"><h5>Shifter</h5><p>Moves the sound up or down by semitones or octaves, blended with the original.</p><p class="kn">SEMI · OCTAVE · MIX</p><p class="on">Try it on drums an octave down.</p></div>
-    <div class="pk"><img src="guide/pedals/harmonizer.png" alt="The Harmonizer pedal" loading="lazy"><h5>Harmonizer</h5><p>Adds a second voice at an interval, like a third or a fifth.</p><p class="kn">INTERVAL · LEVEL · TONE</p><p class="on">Try it on lead melodies.</p></div>
-    <div class="pk"><img src="guide/pedals/ring-mod.png" alt="The Ring Mod pedal" loading="lazy"><h5>Ring Mod</h5><p>Metallic, bell-like and robotic: the sound multiplied by a tone.</p><p class="kn">FREQ · MIX · WOBBLE</p><p class="on">Try it on drums or a lead.</p></div>
-  </div>
-  <div class="kind" style="--c: #B23FCF"><h4>OTHER</h4><p>Strange and wonderful.</p></div>
-  <div class="pk-grid" style="--c: #B23FCF">
-    <div class="pk"><img src="guide/pedals/old-media.png" alt="The Old Media pedal" loading="lazy"><h5>Old Media</h5><p>A worn tape or record: wobble, hiss and crackle.</p><p class="kn">WEAR · NOISE · TONE</p><p class="on">Try it on strings or piano.</p></div>
-    <div class="pk"><img src="guide/pedals/glitch.png" alt="The Glitch pedal" loading="lazy"><h5>Glitch</h5><p>Now and then a step stutters and repeats, locked to the beat.</p><p class="kn">CHANCE · LENGTH · MIX</p><p class="on">Try it on drums or a lead.</p></div>
-    <div class="pk"><img src="guide/pedals/underwater.png" alt="The Underwater pedal" loading="lazy"><h5>Underwater</h5><p>Muffled and drifting, like hearing the band from the bottom of a pool.</p><p class="kn">DEPTH · WOBBLE · LEVEL</p><p class="on">Try it on a guitar or pad.</p></div>
-    <div class="pk"><img src="guide/pedals/synth.png" alt="The Synth pedal" loading="lazy"><h5>Synth</h5><p>Adds a square-wave synth an octave or two under the lowest note.</p><p class="kn">OCTAVE · TONE · MIX</p><p class="on">Try it on pads, for a built-in bass.</p></div>
-    <div class="pk"><img src="guide/pedals/lo-fi.png" alt="The Lo-Fi pedal" loading="lazy"><h5>Lo-Fi</h5><p>Grainy and dull, like a cheap sampler or an old radio.</p><p class="kn">RATE · NOISE · DIRT</p><p class="on">Try it on drums or keys.</p></div>
-    <div class="pk"><img src="guide/pedals/loose.png" alt="The Loose pedal" loading="lazy"><h5>Loose</h5><p>Plays a part late and human, with a second player a step behind.</p><p class="kn">LATE · DOUBLE · DRIFT</p><p class="on">Try it on drums, to loosen a stiff beat.</p></div>
-    <div class="pk"><img src="guide/pedals/music-box.png" alt="The Music Box pedal" loading="lazy"><h5>Music Box</h5><p>A little plucked bell an octave up on every note.</p><p class="kn">DECAY · TONE · MIX</p><p class="on">Try it on pads or piano.</p></div>
-    <div class="pk"><img src="guide/pedals/wrong-station.png" alt="The Wrong Station pedal" loading="lazy"><h5>Wrong Station</h5><p>Now and then tunes the instrument to a neighbouring sound, with a burst of static, then back, as if turning a radio dial.</p><p class="kn">CHANCE · DRIFT · HOLD</p><p class="on">Try it on the lead, or the drums (it changes kit).</p></div>
-    <div class="pk"><img src="guide/pedals/mech-failure.png" alt="The Mech Failure pedal" loading="lazy"><h5>Mech Failure</h5><p>The instrument wears out as it plays: missed notes, stuck notes, notes out of tune, until it suddenly works again.</p><p class="kn">WEAR · STICK · RECOVERY</p><p class="on">Try it on a piano or a drum machine.</p></div>
-    <div class="pk"><img src="guide/pedals/memory-loss.png" alt="The Memory Loss pedal" loading="lazy"><h5>Memory Loss</h5><p>Each time the pattern comes round, a few more notes are forgotten until only fragments remain. RECALL brings them back in waves.</p><p class="kn">SPEED · FLOOR · RECALL</p><p class="on">Try it on a busy part, to strip it back.</p></div>
-    <div class="pk"><img src="guide/pedals/tape-worm.png" alt="The Tape Worm pedal" loading="lazy"><h5>Tape Worm</h5><p>Keeps the last few steps played and now and then loops a fragment of them.</p><p class="kn">CHANCE · LENGTH · REPEATS</p><p class="on">Try it on drums or a bassline.</p></div>
-  </div>
-
-  <details class="more">
-    <summary>Good to know</summary>
-    <p>An instrument can't have the same pedal twice (or Glitch with Loose). <kbd>PLAY</kbd> to stop also cuts every echo.</p>
-    <p>Wrong Station always tunes back to your own sound when the music stops, and while the sound editor is open, so a borrowed sound is never saved.</p>
-    <p>If a pedal won't switch on and <b>CPU FULL</b> shows, switch another off first. Phaser, Filter Seq and Wah use the most. If the sound crackles, switch a pedal off.</p>
-  </details>
-</section>
-
-<!-- ============================================================ BEATS AND PATTERNS -->
-<section id="write">
-  <h2>Beats and patterns</h2>
-  <p class="sub">Each instrument has ten patterns, <b>A&ndash;J</b>, one to four bars long: think verse, chorus, fill. <kbd>PRESETS</kbd> picks one; while playing, it switches at the end of the current pattern.</p>
-  <div class="tries">
-    <div class="try" style="--c: var(--drums)"><b class="h">A beat in 30 seconds</b><p>Drums, empty pattern, <kbd>SEQ</kbd>. Kick on white keys 1, 5, 9, 13; snare on 5 and 13; hats on every other key. <kbd>PLAY</kbd>.</p></div>
-    <div class="try" style="--c: var(--pad)"><b class="h">Try this</b><p>Write a bassline in B while A plays, then turn <kbd>PRESETS</kbd> to B.</p></div>
-  </div>
-
-  <h3 style="margin-top:0">Tempo and swing</h3>
-  <p>On the home screen, <kbd>KNOB 1</kbd> is the tempo and <kbd>KNOB 2</kbd> the swing, from straight (50 %) to a heavy shuffle (66 %).</p>
-
-  <div class="split rev" style="margin-top:24px">
-    <div class="shot"><img src="guide/drums.png" alt="The drum grid"><p>The drum grid.</p></div>
-    <div>
-      <h3>Drum beats</h3>
-      <p>Choose the drums and press <kbd>SEQ</kbd> for the drum grid. The first six black keys pick a drum; the 16 white keys switch its hits on and off. <kbd>KNOB 4</kbd> (or <kbd>OCT-</kbd> <kbd>OCT+</kbd>) changes bar, <kbd>KNOB 1</kbd> sets the length.</p>
-      <p><kbd>KNOB 3</kbd> sets how hits play: SOFT, LOUD, SHORT, and so on. To change one hit, hold its key and turn <kbd>KNOB 3</kbd>.</p>
-    </div>
-  </div>
-
-  <div class="split" style="margin-top:28px">
-    <div>
-      <h3>Live recording</h3>
-      <p>Press <kbd>SEQ</kbd>, then <kbd>REC</kbd> (<b>LIVE</b> shows). Tap <kbd>REC</kbd> and play: the music starts and your notes are snapped to the beat, added to what's there. Tap <kbd>REC</kbd> to stop.</p>
-
-      <h3>Step by step</h3>
-      <p>For lead, pads and bass, <kbd>SEQ</kbd> shows a piano roll. <kbd>ALGORITHM</kbd> moves the cursor; play a key to write a note (hold several for a chord). The knobs set the note at the cursor and the next ones:</p>
-      <table class="t">
-        <tr><td><kbd>KNOB 1</kbd> BARS</td><td>Pattern length: 1&ndash;4 bars.</td></tr>
-        <tr><td><kbd>KNOB 2</kbd> LEN</td><td>Note length: 1/16 up to a whole bar.</td></tr>
-        <tr><td><kbd>KNOB 3</kbd> EXP</td><td>How it's played: NORMAL, SOFT, LOUD, SHORT (staccato), PUNCH (accent), SMOOTH (legato), PLUCKED.</td></tr>
-        <tr><td><kbd>KNOB 4</kbd> NOTE</td><td>Move the note up or down.</td></tr>
-        <tr><td><kbd>ARP</kbd></td><td>Tap: tie. Hold: rest.</td></tr>
-      </table>
-    </div>
-    <div class="shots">
-      <div class="shot"><img src="guide/roll.png" alt="The step recorder"><p>The step recorder.</p></div>
-      <div class="shot"><img src="guide/live.png" alt="Live recording"><p>Live recording.</p></div>
-    </div>
-  </div>
-
-  <div class="split rev" style="margin-top:28px">
-    <div class="shot"><img src="guide/copy.png" alt="The copy page"><p>The copy page.</p></div>
-    <div>
-      <h3>Copying</h3>
-      <p>Hold <kbd>SEQ</kbd> for the copy page. <kbd>SELECT</kbd> and <kbd>PRESETS</kbd> pick what to copy; <kbd>REC</kbd> twice copies it into the pattern you're editing. Lead, pads and bass can copy from each other. Quicker: on the home screen, hold <kbd>ARP</kbd> and turn <kbd>PRESETS</kbd> to copy into the next letter.</p>
-
-      <h3>Moving and clearing</h3>
-      <p>Hold <kbd>OCT-</kbd> or <kbd>OCT+</kbd> to move a pattern down or up an octave. Hold <kbd>REC</kbd> in the step recorder to clear it.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ PLAYING LIVE -->
-<section id="perform">
-  <h2>Playing live</h2>
-  <p class="sub">For jamming over your patterns.</p>
-  <div class="split">
-    <div>
-      <h3>Arpeggiator (<kbd>ARP</kbd>)</h3>
-      <p>Hold a chord and it plays the notes in turn, in time. Tap <kbd>ARP</kbd> for on/off, hold for its settings.</p>
-      <table class="t">
-        <tr><td><kbd>KNOB 1</kbd></td><td>On / off.</td></tr>
-        <tr><td><kbd>KNOB 2</kbd></td><td>Rate: 1/4 to 1/32.</td></tr>
-        <tr><td><kbd>KNOB 3</kbd></td><td>Octaves: 1 to 4.</td></tr>
-        <tr><td><kbd>KNOB 4</kbd></td><td>Direction: up, down, random.</td></tr>
-      </table>
-      <p class="note">Not on drums.</p>
-
-      <h3>Beat repeat (hold <kbd>GLO</kbd>)</h3>
-      <p>Hold <kbd>GLO</kbd> while playing: the current slice loops until you let go. The first five white keys pick its length, from 1/2 bar to 1/32.</p>
-
-      <h3>Mixer (<kbd>GLO</kbd>)</h3>
-      <p>Tap <kbd>GLO</kbd>. <kbd>KNOB 1&ndash;4</kbd> set the four volumes; <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute and unmute each instrument.</p>
-
-      <h3>Key lock and lights</h3>
-      <p>Tap <kbd>GLO</kbd> again for the <b>KEY</b> page. <kbd>ALGORITHM</kbd> picks the key; <kbd>KNOB 1</kbd> <b>LOCK</b> makes the keys play only notes in it; <kbd>KNOB 2</kbd> <b>LIGHTS</b> lights those keys.</p>
-
-      <h3>Octaves, MIDI and themes</h3>
-      <p><kbd>OCT-</kbd> <kbd>OCT+</kbd> change octave. For MIDI, hold <kbd>HOME</kbd> and turn <kbd>ALGORITHM</kbd> to pick a channel (or OMNI). A MIDI keyboard on USB or the TRS jack plays the chosen instrument and records just like the FM-1's own keys, in the step recorder and in live recording; on drums, the General MIDI notes (36 kick, 38 snare, 42 hat ...).</p>
-      <p>Hold <kbd>HOME</kbd> and turn <kbd>PRESETS</kbd> for the theme menu: <b>Paper</b> (light, the default), <b>Dark</b>, <b>Neon</b> or <b>LCD</b> (an old green pocket screen). The screen changes as you turn; let go of <kbd>HOME</kbd> to close the menu. The theme stays, even after clear all or loading a project.</p>
-    </div>
-    <div class="shots">
-      <div class="shot"><img src="guide/arp.png" alt="The arpeggiator"><p>The arpeggiator.</p></div>
-      <div class="shot"><img src="guide/mixer.png" alt="The mixer"><p>The mixer.</p></div>
-      <div class="shot"><img src="guide/key.png" alt="The KEY page"><p>The KEY page.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ SONG ARRANGEMENT -->
-<section id="songs">
-  <h2>Song arrangement</h2>
-  <p class="sub">SUPER SEQ strings patterns into a song. Each instrument has its own row.</p>
-  <div class="split">
-    <div>
-      <h3>SUPER SEQ</h3>
-      <p>Press <kbd>SEQ</kbd> twice. There are ten songs, <b>A&ndash;J</b>, each up to eight boxes long. Each box plays a pattern once, then moves on.</p>
-      <ul>
-        <li><b>A&ndash;J</b>: that pattern. <b>Blank</b>: keep going. <b>X</b>: silence.</li>
-        <li>So <code>A...B.A.</code> plays <b>A A A A B B A A</b>.</li>
-      </ul>
-      <table class="t">
-        <tr><td><kbd>SELECT</kbd></td><td>The player's row.</td></tr>
-        <tr><td><kbd>KNOB 1</kbd></td><td>SUPER SEQ on / off. While on, it picks the patterns instead of <kbd>PRESETS</kbd>.</td></tr>
-        <tr><td><kbd>ALGORITHM</kbd> or <kbd>KNOB 2</kbd></td><td>The box.</td></tr>
-        <tr><td><kbd>KNOB 3</kbd> / <kbd>4</kbd></td><td>The box's pattern (blank, A&ndash;J or X) / the song's length (1&ndash;8 boxes).</td></tr>
-        <tr><td><kbd>PRESETS</kbd></td><td>The song. Hold <kbd>ARP</kbd> and turn: copy it into the next letter.</td></tr>
-      </table>
-      
-      <h3>Keeping your work (<kbd>SAVE</kbd>)</h3>
-      <p>Your work saves itself when the music stops. To keep versions, press <kbd>SAVE</kbd>: <kbd>ALGORITHM</kbd> picks one of four slots, <kbd>REC</kbd> twice saves, <kbd>PLAY</kbd> twice loads. Older saves still load.</p>
-    </div>
-    <div class="shots">
-      <div class="shot"><img src="guide/superseq.png" alt="SUPER SEQ"><p>SUPER SEQ: a row per player.</p></div>
-      <div class="shot"><img src="guide/save.png" alt="The save page"><p>The save page.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ ADVANCED SOUND EDITING -->
-<section id="editor">
-  <h2>Advanced sound editing</h2>
-  <p class="sub">Every sound is a synth you can reshape and save as your own.</p>
-  <div class="split">
-    <div>
-      <h3>The sound editor (<kbd>EDIT</kbd>)</h3>
-      <p>Press <kbd>EDIT</kbd>. <kbd>ALGORITHM</kbd> picks the page, <kbd>KNOB 1&ndash;4</kbd> change it. The first page, INSTR, is the sound browser.</p>
-      <table class="t grid4">
-        <tr><th>Page</th><th>KNOB 1</th><th>KNOB 2</th><th>KNOB 3</th><th>KNOB 4</th></tr>
-        <tr><td>INSTR</td><td>Type: lead, pad, bass</td><td>Group</td><td>Sound in the group</td><td>USER slot to save to</td></tr>
-        <tr><td>MAIN</td><td>Glide</td><td>Brightness (cutoff)</td><td>Resonance</td><td>Filter envelope</td></tr>
-        <tr><td>OSC</td><td>Wave 1</td><td>Wave 2</td><td>Wave 2 tuning</td><td>Mix / FM amount</td></tr>
-        <tr><td>ENV</td><td>Attack</td><td>Decay</td><td>Sustain</td><td>Release</td></tr>
-        <tr><td>LFO</td><td>Rate</td><td>Depth</td><td>Target: pitch, filter, volume, PWM</td><td>Wave: tri, square, saw, random</td></tr>
-      </table>
-      <p><b>MAIN</b>: brighter or darker, and glide. <b>ENV</b>: how a note starts and fades. <b>LFO</b>: movement, like vibrato or tremolo. Waves include pulse and sync (wave 2).</p>
-      <p>On drums: a KIT page, then pitch, decay and level for each drum.</p>
-
-      <h3 id="ownsound">Your own sounds</h3>
-      <p>Press <kbd>REC</kbd> twice on any page of the sound editor to save your sound, so a tweak is never lost when you move on. It saves to the USER slot shown on the bottom line (<b>SAVE U1</b>); pick another with <kbd>KNOB 4</kbd> on INSTR (or KIT). There are 8 slots per type and 4 for kits. They are kept in your saves and survive clear all.</p>
-
-      <h3>Voices</h3>
-      <p>Lead, pads and bass share nine voices (four each for lead and pads, one for bass). A bass plays one note per step.</p>
-    </div>
-    <div class="shots">
-      <div class="shot"><img src="guide/instr.png" alt="The INSTR page"><p>INSTR.</p></div>
-      <div class="shot"><img src="guide/editor.png" alt="The OSC page"><p>OSC.</p></div>
-      <div class="shot"><img src="guide/kit.png" alt="The KIT page"><p>KIT.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ REFERENCE -->
-<section id="reference">
-  <h2>Complete controls</h2>
-  <p class="sub">Every control in one place.</p>
-
-  <h3>The rules</h3>
-  <div class="grid">
-    <div class="card"><h4>SELECT</h4><p>The instrument.</p></div>
-    <div class="card"><h4>PRESETS</h4><p>The pattern; on pedal pages the kind of pedal; in SUPER SEQ the song.</p></div>
-    <div class="card"><h4>ALGORITHM</h4><p>Chooses on the page; never changes page.</p></div>
-    <div class="card"><h4>KNOB 1&ndash;4</h4><p>The settings on screen. <kbd>KNOB 1</kbd> is on/off where there is one.</p></div>
-    <div class="card"><h4>TAP OR HOLD</h4><p>Pedals and <kbd>ARP</kbd>: tap on/off, hold to open. <kbd>GLO</kbd>: tap mixer, hold beat repeat.</p></div>
-    <div class="card"><h4>REC TWICE</h4><p>Confirms saving, copying and clearing.</p></div>
-    <div class="card"><h4>PRESS AGAIN</h4><p><kbd>EDIT</kbd>: sound, pedals, home. <kbd>SEQ</kbd>: recorder, SUPER SEQ. <kbd>GLO</kbd>: mixer, KEY, home.</p></div>
-    <div class="card"><h4>HOME</h4><p>Home, from anywhere.</p></div>
-  </div>
-
-  <h3>Anywhere</h3>
-  <table class="t">
-    <tr><td><kbd>PLAY</kbd></td><td>Start (from step one) and stop.</td></tr>
-    <tr><td><kbd>SELECT</kbd></td><td>The player.</td></tr>
-    <tr><td><kbd>PRESETS</kbd></td><td>Its pattern, A&ndash;J. Hold <kbd>ARP</kbd>: copy into the next letter. Hold <kbd>HOME</kbd>: the theme menu.</td></tr>
-    <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd></td><td>Tap: the pedal on / off. Hold 0.5 s: the pedal's page.</td></tr>
-    <tr><td><kbd>EDIT</kbd></td><td>The sound editor (from INSTR); again: the pedalboard; again: home.</td></tr>
-    <tr><td><kbd>SEQ</kbd></td><td>The step recorder; again: SUPER SEQ; again: back to the step recorder. Held in the step recorder: the copy page.</td></tr>
-    <tr><td><kbd>ARP</kbd></td><td>Tap: on / off. Hold 0.5 s: the arpeggiator's page.</td></tr>
-    <tr><td><kbd>GLO</kbd></td><td>Tap: the mixer, then the KEY page, then home. Hold: beat repeat.</td></tr>
-    <tr><td><kbd>SAVE</kbd></td><td>The save page (again: close).</td></tr>
-    <tr><td><kbd>HOME</kbd></td><td>Home. Held, with <kbd>PRESETS</kbd>: the theme menu (Paper, Dark, Neon, LCD); with <kbd>ALGORITHM</kbd>: the MIDI channel.</td></tr>
-    <tr><td><kbd>OCT-</kbd> <kbd>OCT+</kbd></td><td>Tap: the keys' octave (drum step recorder: the bar). Hold 0.5 s: the pattern being edited moves down / up an octave.</td></tr>
-    <tr><td><kbd>MASTER</kbd></td><td>The volume.</td></tr>
-  </table>
-
-  <h3>Home screen</h3>
-  <table class="t">
-    <tr><td><kbd>ALGORITHM</kbd></td><td>The sound or kit, through every group.</td></tr>
-    <tr><td><kbd>KNOB 1</kbd> / <kbd>2</kbd></td><td>Tempo / swing (50&ndash;66 %).</td></tr>
-    <tr><td><kbd>REC</kbd></td><td>Hold 1 s, then REC again: clear everything.</td></tr>
-  </table>
-
-  <h3>Pedal and arpeggiator pages</h3>
-  <table class="t">
-    <tr><td><kbd>PRESETS</kbd> / <kbd>ALGORITHM</kbd></td><td>Pedal: the kind / the pedal within it.</td></tr>
-    <tr><td><kbd>KNOB 1</kbd></td><td>On / off.</td></tr>
-    <tr><td><kbd>KNOB 2</kbd> / <kbd>3</kbd> / <kbd>4</kbd></td><td>The pedal's three knobs; arpeggiator: rate / octaves / direction.</td></tr>
-  </table>
-
-  <h3>Pedalboard (<kbd>EDIT</kbd> twice)</h3>
-  <table class="t">
-    <tr><td><kbd>ALGORITHM</kbd></td><td>The pedal slot.</td></tr>
-    <tr><td><kbd>PRESETS</kbd></td><td>Another pedal in that slot.</td></tr>
-    <tr><td><kbd>KNOB 1</kbd> / <kbd>2&ndash;4</kbd></td><td>On / off / its three knobs.</td></tr>
-  </table>
-
-  <h3>Step recorder</h3>
-  <table class="t">
-    <tr><td><kbd>KNOB 1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> / <kbd>4</kbd></td><td>Lead, pads, bass: bars / note length / expression / note up-down. Drums: bars / &ndash; / expression / bar shown.</td></tr>
-    <tr><td><kbd>ALGORITHM</kbd></td><td>The cursor.</td></tr>
-    <tr><td>Keys</td><td>Lead, pads, bass: write notes (held together: a chord). Drums: black keys choose the drum, white keys switch steps.</td></tr>
-    <tr><td><kbd>ARP</kbd></td><td>Tap: tie. Hold: rest.</td></tr>
-    <tr><td><kbd>REC</kbd></td><td>Tap: live recording. Hold 1 s: clear the pattern.</td></tr>
-    <tr><td><kbd>SEQ</kbd></td><td>Tap: SUPER SEQ. Hold: the copy page.</td></tr>
-  </table>
-
-  <h3>Live recording</h3>
-  <table class="t">
-    <tr><td><kbd>REC</kbd></td><td>Recording on / off (starts the music if stopped). Hold 1 s: clear the pattern playing.</td></tr>
-    <tr><td><kbd>KNOB 1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></td><td>Bars / cursor / bar shown.</td></tr>
-  </table>
-
-  <h3>Copy page</h3>
-  <table class="t">
-    <tr><td><kbd>SELECT</kbd> / <kbd>PRESETS</kbd></td><td>The player / the pattern to copy from.</td></tr>
-    <tr><td><kbd>REC</kbd> twice</td><td>Copy it into the pattern being edited.</td></tr>
-    <tr><td><kbd>SEQ</kbd></td><td>Back, without copying.</td></tr>
-  </table>
-
-  <h3>Sound editor</h3>
-  <table class="t">
-    <tr><td><kbd>ALGORITHM</kbd></td><td>The page: INSTR, MAIN, OSC, ENV, LFO (drums: KIT, then each drum).</td></tr>
-    <tr><td><kbd>KNOB 1&ndash;4</kbd></td><td>The page's four settings.</td></tr>
-    <tr><td><kbd>REC</kbd> twice</td><td>Any page: save the sound to the USER slot (chosen with <kbd>KNOB 4</kbd> on INSTR / KIT).</td></tr>
-  </table>
-
-  <h3>SUPER SEQ, mixer, KEY and save page</h3>
-  <table class="t">
-    <tr><td>SUPER SEQ</td><td><kbd>KNOB 1&ndash;4</kbd>: on-off / box / its pattern / length. <kbd>ALGORITHM</kbd>: the box. <kbd>PRESETS</kbd>: the song.</td></tr>
-    <tr><td>Mixer</td><td><kbd>KNOB 1&ndash;4</kbd>: the volumes. <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd>: mute.</td></tr>
-    <tr><td>KEY</td><td><kbd>ALGORITHM</kbd>: the key. <kbd>KNOB 1</kbd>: lock. <kbd>KNOB 2</kbd>: lights.</td></tr>
-    <tr><td>Save page</td><td><kbd>ALGORITHM</kbd> or <kbd>KNOB 1</kbd>: the slot. <kbd>REC</kbd> twice: save. <kbd>PLAY</kbd> twice: load.</td></tr>
-  </table>
-
-  <div class="tip"><b>If something goes wrong:</b> hold <kbd>OCT-</kbd> while switching on for the USB rescue mode, then install again.</div>
-
-  <h3>Gallery</h3>
-  <div class="gallery">
-    <figure><img src="guide/home.png" alt=""><figcaption>Home</figcaption></figure>
-    <figure><img src="guide/slots.png" alt=""><figcaption>Two leads</figcaption></figure>
-    <figure><img src="guide/sound.png" alt=""><figcaption>A sound picked</figcaption></figure>
-    <figure><img src="guide/instr.png" alt=""><figcaption>Sound browser</figcaption></figure>
-    <figure><img src="guide/pedal.png" alt=""><figcaption>A pedal</figcaption></figure>
-    <figure><img src="guide/chainon.png" alt=""><figcaption>Pedalboard</figcaption></figure>
-    <figure><img src="guide/roll.png" alt=""><figcaption>Step recorder</figcaption></figure>
-    <figure><img src="guide/drums.png" alt=""><figcaption>Drums</figcaption></figure>
-    <figure><img src="guide/live.png" alt=""><figcaption>Live recording</figcaption></figure>
-    <figure><img src="guide/copy.png" alt=""><figcaption>Copy page</figcaption></figure>
-    <figure><img src="guide/arp.png" alt=""><figcaption>Arpeggiator</figcaption></figure>
-    <figure><img src="guide/mixer.png" alt=""><figcaption>Mixer</figcaption></figure>
-    <figure><img src="guide/key.png" alt=""><figcaption>KEY</figcaption></figure>
-    <figure><img src="guide/superseq.png" alt=""><figcaption>SUPER SEQ</figcaption></figure>
-    <figure><img src="guide/save.png" alt=""><figcaption>Save page</figcaption></figure>
-    <figure><img src="guide/editor.png" alt=""><figcaption>Sound editor</figcaption></figure>
-    <figure><img src="guide/kit.png" alt=""><figcaption>KIT</figcaption></figure>
-  </div>
-</section>
-
+  </section>
 </main>
+<footer>QUARTET is free and open source (<a href="https://github.com/MammothCheese/quartet">GitHub</a>). &ldquo;M-VAVE&rdquo; and &ldquo;FM-1&rdquo; belong to their owners; not made or endorsed by M-VAVE. Installing firmware is at your own risk.</footer>
 
-<footer><div class="wrap">
-  QUARTET is free software (GPL-3.0), built on <a href="https://github.com/zvenson/dinghy">Dinghy</a> and the
-  <a href="https://github.com/hugelton/Felucca">Felucca</a> platform. <a href="https://github.com/MammothCheese/quartet">Source</a> &middot;
-  <a href="https://github.com/MammothCheese/quartet/blob/main/docs/USER_GUIDE.md">User guide</a>.<br>
-  &ldquo;M-VAVE&rdquo; and &ldquo;FM-1&rdquo; belong to their owners. Not made or endorsed by M-VAVE. Installing firmware is at your own risk.
-</div></footer>
+<script>
+(() => {
+  'use strict';
+  const NS = 'http://www.w3.org/2000/svg';
+  const COL = { lead: '#C86E00', pad: '#7A46DA', bass: '#0080BE', drums: '#188C32', ink: '#1A1A1E', sub: '#5C5C64', dim: '#A8A69F', paper: '#F0EEE9', card: '#FAF9F6' };
+  const TRK = ['lead', 'pad', 'bass', 'drums'];
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (id) => document.getElementById(id);
+  function el(parent, tag, a, text) {                        // an SVG element; "draw" lines get their length set
+    const e = document.createElementNS(NS, tag);
+    for (const k in a) e.setAttribute(k, a[k]);
+    if (text != null) e.textContent = text;
+    parent.appendChild(e);
+    return e;
+  }
+  function lengths(svg) { svg.querySelectorAll('.draw').forEach((p) => { const L = p.getTotalLength ? Math.ceil(p.getTotalLength()) + 2 : 2000; p.style.setProperty('--len', L); }); }
+  const rr = (x, y, w, h, r) => `M${x + r},${y}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 -${r},${r}h${2 * r - w}a${r},${r} 0 0 1 -${r},-${r}v${2 * r - h}a${r},${r} 0 0 1 ${r},-${r}z`;
+  const cap = (id, b, rest) => { $(id).innerHTML = '<b>' + b + '</b>' + (rest ? ' · ' + rest : ''); };
+
+  // each scene: build() once, then tick(t) a few times a second while it's on screen
+  const scenes = [];
+  function scene(svgId, build, tick, every) { scenes.push({ svg: $(svgId), build, tick, every: every || 250, on: false, t: 0, timer: 0 }); }
+
+  // ---- 0: the FM-1, drawn line by line; on its screen the four players and their pedals
+  scene('hero', (g) => {
+    el(g, 'path', { class: 'ln draw', d: rr(20, 20, 560, 320, 30) });
+    [[70, 70], [130, 70], [70, 130], [130, 130]].forEach(([x, y]) => el(g, 'circle', { class: 'ln draw', cx: x, cy: y, r: 13 }));
+    el(g, 'path', { class: 'ln draw thin', d: rr(52, 168, 96, 26, 7) });
+    el(g, 'path', { class: 'ln draw', d: rr(178, 38, 150, 150, 10) });
+    for (let i = 0; i < 4; i++) el(g, 'circle', { class: 'ln draw', cx: 372 + i * 54, cy: 62, r: 12 });
+    el(g, 'path', { class: 'ln draw thin', d: rr(352, 104, 206, 84, 10) });
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 6; c++) el(g, 'path', { class: 'ln draw thin', d: rr(362 + c * 32.5, 113 + r * 37, 25, 28, 6) });
+    el(g, 'path', { class: 'ln draw thin', d: rr(40, 214, 520, 110, 16) });
+    const BL = [1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1];
+    for (let i = 0; i < 16; i++) el(g, 'path', { class: 'ln draw thin', d: rr(52 + i * 31.5, 272, 24, 44, 12) });
+    let bx = 0; [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14].forEach((w) => el(g, 'path', { class: 'ln draw thin', d: rr(52 + w * 31.5 + 19, 222, 22, 42, 11) }));
+    // the screen: four rows (the players), a pedal row; drawn in their colours after the case
+    const sc = el(g, 'g', { class: 'fade' });
+    TRK.forEach((t, i) => {
+      el(sc, 'path', { d: rr(188, 52 + i * 26, 130, 21, 5), fill: COL.card, stroke: COL[t], 'stroke-width': 1.4, id: 'hrow' + i });
+      el(sc, 'text', { x: 196, y: 66 + i * 26, fill: COL[t], style: 'font-size:9px;font-weight:700' }, t.toUpperCase());
+      for (let s = 0; s < 8; s++) el(sc, 'rect', { x: 246 + s * 8.5, y: 58 + i * 26, width: 6, height: 9, rx: 1.5, fill: COL[t], opacity: .22, id: 'hs' + i + s });
+    });
+    for (let p = 0; p < 4; p++) el(sc, 'path', { d: rr(188 + p * 33, 160, 30, 16, 8), fill: COL.card, stroke: COL.dim, 'stroke-width': 1, id: 'hp' + p });
+  }, (t) => {
+    const s = t % 8, who = Math.floor(t / 16) % 4;
+    for (let i = 0; i < 4; i++) for (let k = 0; k < 8; k++) $('hs' + i + k).setAttribute('opacity', k === s ? 1 : ((i + k) % 3 === 0 ? .5 : .18));
+    for (let i = 0; i < 4; i++) $('hrow' + i).setAttribute('stroke-width', i === who ? 3 : 1.2);
+    for (let p = 0; p < 4; p++) $('hp' + p).setAttribute('stroke', p === Math.floor(t / 8) % 4 ? COL[TRK[who]] : COL.dim);
+    cap('heroCap', TRK[who].toUpperCase(), ['PIANO', 'STRINGS', 'REESE', '808'][who]);
+  }, 180);
+
+  // ---- 1: four lanes, notes on them, a playhead going round
+  const PAT = [[0, 3, 6, 8, 10, 12, 14], [0, 8], [0, 3, 6, 10, 11, 14], [0, 2, 4, 6, 8, 10, 12, 14]];
+  scene('seq', (g) => {
+    TRK.forEach((t, i) => {
+      const y = 40 + i * 66;
+      el(g, 'text', { x: 0, y: y + 22, fill: COL[t], style: 'font-weight:700' }, t.toUpperCase());
+      el(g, 'path', { class: 'ln draw thin soft', d: `M70,${y + 18}H590` });
+      for (let s = 0; s < 16; s++) {
+        const x = 78 + s * 32.4;
+        el(g, 'path', { class: 'ln draw thin soft', d: `M${x - 4},${y + 14}v8` });
+        if (PAT[i].includes(s)) el(g, 'circle', { cx: x + 10, cy: y + 18, r: i === 1 ? 0 : 7, fill: 'none', stroke: COL[t], 'stroke-width': 1.8, class: 'fade', id: `n${i}_${s}` });
+      }
+      if (i === 1) el(g, 'path', { d: `M80,${y + 18}H330M342,${y + 18}H588`, stroke: COL.pad, 'stroke-width': 7, 'stroke-linecap': 'round', class: 'fade', opacity: .35, id: 'padlong' });
+    });
+    el(g, 'path', { id: 'ph', d: 'M0,24V300', stroke: COL.ink, 'stroke-width': 1.6 });
+    el(g, 'path', { class: 'ln draw thin', d: rr(250, 300, 100, 26, 13) });
+    el(g, 'path', { d: 'M292,307l14,6l-14,6z', fill: COL.drums, class: 'fade' });
+  }, (t) => {
+    const s = t % 16, x = 78 + s * 32.4 + 10;
+    $('ph').setAttribute('transform', `translate(${x},0)`);
+    PAT.forEach((p, i) => p.forEach((k) => { const n = $(`n${i}_${k}`); if (n) { n.setAttribute('fill', k === s ? COL[TRK[i]] : 'none'); n.setAttribute('r', k === s ? 9 : 7); } }));
+    cap('seqCap', 'STEP ' + String(s + 1).padStart(2, '0'), '16 · 120 BPM');
+  }, 125);
+
+  // ---- 2: SELECT moves between the players, ALGORITHM through their sounds
+  const SOUNDS = [['PIANO', 'HARMONICA', 'ACID LEAD', 'THEREMIN'], ['STRINGS', 'CHOIR', 'JUNO STRINGS', 'GLASS PAD'], ['REESE', 'MOOG BASS', '303 LINE', 'WOBBLE'], ['808', 'HOUSE', 'TRAP', 'DUB']];
+  scene('pick', (g) => {
+    TRK.forEach((t, i) => {
+      el(g, 'path', { d: rr(150, 30 + i * 70, 300, 54, 12), fill: COL.card, stroke: COL[t], 'stroke-width': 1.4, id: 'prow' + i, class: 'ln draw' });
+      el(g, 'text', { x: 170, y: 63 + i * 70, fill: COL[t], style: 'font-weight:700;font-size:13px' }, t.toUpperCase());
+      el(g, 'text', { x: 250, y: 63 + i * 70, class: 'big', id: 'psnd' + i }, SOUNDS[i][0]);
+    });
+    [['SELECT', 70], ['ALGORITHM', 530]].forEach(([l, x], j) => {
+      el(g, 'circle', { class: 'ln draw', cx: x, cy: 150, r: 30 });
+      el(g, 'path', { d: `M${x},150V126`, stroke: COL.ink, 'stroke-width': 3, 'stroke-linecap': 'round', id: 'kp' + j });
+      el(g, 'text', { x, y: 202, 'text-anchor': 'middle' }, l);
+    });
+    el(g, 'path', { id: 'plink', d: 'M100,150H150', class: 'ln thin', 'stroke-dasharray': '3 4' });
+  }, (t) => {
+    const who = Math.floor(t / 4) % 4, snd = t % 4;
+    for (let i = 0; i < 4; i++) { $('prow' + i).setAttribute('stroke-width', i === who ? 3.2 : 1.2); $('prow' + i).setAttribute('fill', i === who ? COL.card : COL.paper); }
+    $('psnd' + who).textContent = SOUNDS[who][snd];
+    $('kp0').setAttribute('transform', `rotate(${(who - 1.5) * 45} 70 150)`);
+    $('kp1').setAttribute('transform', `rotate(${t * 30} 530 150)`);
+    $('plink').setAttribute('d', `M100,150 C125,150 125,${57 + who * 70} 150,${57 + who * 70}`);
+    cap('pickCap', TRK[who].toUpperCase(), SOUNDS[who][snd]);
+  }, 700);
+
+  // ---- 3: the signal through four pedals; each one switched on changes the wave after it
+  const PEDALS = ['FUZZ', 'CHORUS', 'DELAY', 'SPRING'];
+  scene('chain', (g) => {
+    el(g, 'path', { class: 'ln draw', d: rr(0, 130, 64, 70, 10) }); el(g, 'text', { x: 32, y: 170, 'text-anchor': 'middle', fill: COL.bass, style: 'font-weight:700' }, 'BASS');
+    PEDALS.forEach((p, i) => {
+      const x = 100 + i * 112;
+      el(g, 'path', { class: 'ln draw', d: rr(x, 110, 76, 110, 10), id: 'pb' + i });
+      el(g, 'text', { x: x + 38, y: 134, 'text-anchor': 'middle', style: 'font-weight:700' }, p);
+      for (let k = 0; k < 3; k++) el(g, 'circle', { class: 'ln draw thin', cx: x + 16 + k * 22, cy: 158, r: 7 });
+      el(g, 'circle', { cx: x + 38, cy: 198, r: 9, class: 'ln draw thin' });
+      el(g, 'circle', { cx: x + 64, cy: 122, r: 3.5, fill: COL.dim, id: 'pl' + i });
+      el(g, 'text', { x: x + 38, y: 246, 'text-anchor': 'middle' }, ['FX', 'SEL', 'ENV', 'LFO'][i]);
+    });
+    el(g, 'path', { class: 'ln draw', d: 'M560,140l18,-14v78l-18,-14h-10v-50z' });
+    for (let i = 0; i < 5; i++) el(g, 'path', { id: 'w' + i, fill: 'none', stroke: COL.bass, 'stroke-width': 1.8, 'stroke-linecap': 'round' });
+  }, (t) => {
+    const on = [0, 1, 2, 3].map((i) => (t % 100) >= 12 + i * 12 && (t % 100) < 80);
+    PEDALS.forEach((p, i) => {
+      $('pb' + i).setAttribute('fill', on[i] ? '#E4F1F8' : 'none');
+      $('pl' + i).setAttribute('fill', on[i] ? '#FF4632' : COL.dim);
+    });
+    // the wave between the stages, shaped by what's on before it
+    const ph = t * 0.35;
+    for (let i = 0; i < 5; i++) {
+      const x0 = i === 0 ? 64 : 100 + (i - 1) * 112 + 76, x1 = i === 4 ? 550 : 100 + i * 112;
+      const fuzz = i >= 1 && on[0], cho = i >= 2 && on[1], del = i >= 3 && on[2], spr = i >= 4 && on[3];
+      let d = '';
+      for (let x = x0; x <= x1; x += 1.5) {
+        const u = (x - x0) / 9 - ph;                 // (minus: the signal travels left to right, into the pedals)
+        let v = Math.sin(u);
+        if (fuzz) v = Math.max(-0.55, Math.min(0.55, v * 2.4)) / 0.55;
+        if (cho) v = v * 0.7 + 0.35 * Math.sin(u * 1.03 + 1.6 + Math.sin(ph * 0.3));
+        if (del) v = v + 0.35 * Math.sin(u - 2.2) * (fuzz ? 0.8 : 1);
+        if (spr) v = v + 0.18 * Math.sin(u * 3.1 + ph * 2);
+        d += (d ? 'L' : 'M') + x.toFixed(1) + ',' + (165 - v * 14).toFixed(1);
+      }
+      $('w' + i).setAttribute('d', d);
+    }
+    const last = [3, 2, 1, 0].find((i) => on[i]);
+    cap('chainCap', last === undefined ? 'ALL OFF' : PEDALS.filter((p, i) => on[i]).join(' + '), last === undefined ? 'CLEAN' : 'ON');
+  }, 60);
+
+  // ---- 4: the drum grid fills, hit by hit, then plays
+  const DR = ['KICK', 'SNARE', 'HAT', 'OPEN', 'CLAP', 'PERC'];
+  const HITS = [[0, 0], [0, 8], [1, 4], [1, 12], [2, 0], [2, 2], [2, 4], [2, 6], [2, 8], [2, 10], [2, 12], [2, 14], [0, 10], [3, 14], [4, 12], [5, 7]];
+  scene('grid', (g) => {
+    DR.forEach((d, r) => {
+      el(g, 'text', { x: 0, y: 42 + r * 44, fill: r === 0 ? COL.drums : COL.sub, style: 'font-weight:700' }, d);
+      for (let s = 0; s < 16; s++) el(g, 'path', { class: 'ln draw thin' + (s % 4 ? ' soft' : ''), d: rr(70 + s * 32.5, 22 + r * 44, 26, 28, 5), id: `g${r}_${s}` });
+    });
+    el(g, 'path', { id: 'gph', d: 'M0,14V286', stroke: COL.ink, 'stroke-width': 1.6, opacity: 0 });
+  }, (t) => {
+    const T = t % 64, placed = Math.min(HITS.length, T);
+    for (let r = 0; r < 6; r++) for (let s = 0; s < 16; s++) $(`g${r}_${s}`).setAttribute('fill', 'none');
+    HITS.slice(0, placed).forEach(([r, s]) => $(`g${r}_${s}`).setAttribute('fill', COL.drums));
+    if (T < HITS.length) {
+      $('gph').setAttribute('opacity', 0);
+      const [r, s] = HITS[T]; cap('gridCap', DR[r], 'STEP ' + String(s + 1).padStart(2, '0'));
+    } else {
+      const s = (T - HITS.length) % 16;
+      $('gph').setAttribute('opacity', 1); $('gph').setAttribute('transform', `translate(${70 + s * 32.5 + 13},0)`);
+      HITS.forEach(([r, k]) => { if (k === s) $(`g${r}_${k}`).setAttribute('fill', COL.ink); });
+      cap('gridCap', 'PLAYING', 'STEP ' + String(s + 1).padStart(2, '0'));
+    }
+  }, 160);
+
+  // ---- 5: live recording: the playhead goes round, notes land as they're played
+  const PART = [[0, 7, 2], [2, 9, 1], [4, 11, 2], [7, 9, 1], [8, 7, 3], [12, 4, 2], [14, 5, 2]];   // step, row (pitch), length
+  scene('roll', (g) => {
+    for (let r = 0; r < 13; r++) {
+      const black = [1, 3, 6, 8, 10].includes(r % 12);
+      el(g, 'path', { class: 'ln draw thin', d: rr(0, 272 - r * 20, 40, 18, 3), fill: black ? COL.ink : 'none' });
+      el(g, 'path', { class: 'ln draw thin soft', d: `M48,${281 - r * 20}H590` });
+    }
+    for (let s = 0; s <= 16; s += 4) el(g, 'path', { class: 'ln draw thin soft', d: `M${50 + s * 33.7},24V292` });
+    PART.forEach(([s, r, l], i) => el(g, 'rect', { id: 'rn' + i, x: 52 + s * 33.7, y: 274 - r * 20, width: l * 33.7 - 4, height: 14, rx: 4, fill: COL.lead, opacity: 0 }));
+    el(g, 'path', { id: 'rph', d: 'M0,20V296', stroke: COL.ink, 'stroke-width': 1.6 });
+    el(g, 'circle', { cx: 580, cy: 12, r: 7, fill: COL.mute, id: 'rled' });
+    el(g, 'text', { x: 566, y: 16, 'text-anchor': 'end', style: 'font-weight:700', fill: COL.mute }, 'REC');
+  }, (t) => {
+    const s = (t % 32) / 2, loop = Math.floor((t % 64) / 32);   // (16 steps, half a step a tick; the second time round, all in)
+    $('rph').setAttribute('transform', `translate(${50 + s * 33.7},0)`);
+    $('rled').setAttribute('opacity', Math.floor(t / 2) % 2 ? 1 : .35);
+    let last = null;
+    PART.forEach(([k, r, l], i) => {
+      const done = loop === 1 || s >= k;
+      $('rn' + i).setAttribute('opacity', done ? (s >= k && s < k + l ? 1 : .75) : 0);
+      if (s >= k && s < k + l) last = r;
+    });
+    cap('rollCap', 'REC', last === null ? 'LISTENING' : 'NOTE IN · STEP ' + String(Math.floor(s) + 1).padStart(2, '0'));
+  }, 62);
+
+  // ---- 6: SUPER SEQ: four lanes of pattern letters, a box at a time
+  const SONG = [['A', 'A', 'B', 'B', 'A', 'C', 'C', 'A'], ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'A'], ['A', 'A', 'B', 'B', 'A', 'B', 'B', 'A'], ['A', 'B', 'A', 'B', 'C', 'C', 'B', 'D']];
+  scene('sseq', (g) => {
+    TRK.forEach((t, i) => {
+      el(g, 'text', { x: 0, y: 64 + i * 64, fill: COL[t], style: 'font-weight:700' }, ['LD', 'PD', 'BS', 'DR'][i]);
+      SONG[i].forEach((p, b) => {
+        el(g, 'path', { class: 'ln draw thin', d: rr(40 + b * 68, 38 + i * 64, 58, 44, 8), id: `sb${i}_${b}`, stroke: COL[t] });
+        el(g, 'text', { x: 69 + b * 68, y: 66 + i * 64, 'text-anchor': 'middle', class: 'big', id: `st${i}_${b}`, fill: COL[t] }, p);
+      });
+    });
+    el(g, 'path', { id: 'scur', d: rr(34, 30, 70, 266, 10), fill: 'none', stroke: COL.ink, 'stroke-width': 2 });
+  }, (t) => {
+    const b = t % 8;
+    $('scur').setAttribute('transform', `translate(${b * 68},0)`);
+    for (let i = 0; i < 4; i++) for (let k = 0; k < 8; k++) $(`sb${i}_${k}`).setAttribute('fill', k === b ? COL[TRK[i]] : COL.card);
+    for (let i = 0; i < 4; i++) for (let k = 0; k < 8; k++) $(`st${i}_${k}`).setAttribute('fill', k === b ? '#fff' : COL[TRK[i]]);
+    cap('sseqCap', 'BOX ' + (b + 1), SONG.map((l) => l[b]).join(' '));
+  }, 900);
+
+  // ---- 7: the screen, in each of the four looks
+  const LOOKS = [['PAPER', '#F0EEE9', '#FAF9F6', '#1A1A1E', ['#D67800', '#804CE2', '#0088C8', '#1A9636']],
+                 ['DARK', '#0C0C10', '#16161C', '#ECECF4', ['#FFB824', '#B27CFF', '#24C6F0', '#5CE268']],
+                 ['NEON', '#160828', '#24103E', '#FAF0FF', ['#FF46B4', '#B0FF28', '#00E6FF', '#FF961E']],
+                 ['LCD', '#9CAA5C', '#909E54', '#18200C', ['#121A06', '#384614', '#24300E', '#485622']]];
+  scene('themes', (g) => {
+    el(g, 'path', { class: 'ln draw', d: rr(150, 10, 300, 300, 22) });
+    el(g, 'rect', { x: 164, y: 24, width: 272, height: 272, rx: 6, id: 'tbg', class: 'fade' });
+    el(g, 'text', { x: 180, y: 58, id: 'thead', style: 'font:700 26px var(--narrow)' }, 'LEAD');
+    TRK.forEach((t, i) => {
+      el(g, 'rect', { x: 178, y: 80 + i * 46, width: 244, height: 38, rx: 9, id: 'tr' + i, 'stroke-width': 2 });
+      el(g, 'text', { x: 192, y: 104 + i * 46, id: 'tt' + i, style: 'font-weight:700;font-size:12px' }, t.toUpperCase());
+      for (let s = 0; s < 8; s++) el(g, 'rect', { x: 290 + s * 15, y: 92 + i * 46, width: 10, height: 14, rx: 2, id: `tq${i}_${s}` });
+    });
+    el(g, 'text', { x: 300, y: 330, 'text-anchor': 'middle' }, 'HOLD HOME · TURN PRESETS');
+  }, (t) => {
+    const L = LOOKS[Math.floor(t / 4) % 4], s = t % 8;
+    $('tbg').setAttribute('fill', L[1]); $('thead').setAttribute('fill', L[4][0]);
+    TRK.forEach((tr, i) => {
+      $('tr' + i).setAttribute('fill', L[2]); $('tr' + i).setAttribute('stroke', L[4][i]); $('tt' + i).setAttribute('fill', L[4][i]);
+      for (let k = 0; k < 8; k++) { const q = $(`tq${i}_${k}`); q.setAttribute('fill', L[4][i]); q.setAttribute('opacity', k === s ? 1 : (i + k) % 3 ? .25 : .55); }
+    });
+    cap('themeCap', L[0], '');
+  }, 500);
+
+  // ---- start each scene when it comes into view; stop it when it leaves
+  scenes.forEach((S) => { S.build(S.svg); lengths(S.svg); });
+  const io = new IntersectionObserver((ents) => ents.forEach((e) => {
+    const S = scenes.find((x) => x.svg === e.target.querySelector('svg')), sec = e.target;
+    if (e.isIntersecting) {
+      sec.classList.add('seen');
+      if (S && !S.on) { S.on = true; S.tick(S.t); if (!RM) S.timer = setInterval(() => S.tick(++S.t), S.every); }
+    } else if (S && S.on) { S.on = false; clearInterval(S.timer); }
+  }), { threshold: 0.15 });
+  document.querySelectorAll('.scene').forEach((s) => io.observe(s));
+
+  // ---- the line down the page and the colours along the top follow the scroll
+  function onScroll() {
+    const m = document.querySelector('main'), r = m.getBoundingClientRect(), vh = innerHeight;
+    const p = Math.min(1, Math.max(0, (vh * 0.55 - r.top) / r.height));
+    $('railfill').style.height = (p * 100) + '%';
+    document.querySelectorAll('#progress i').forEach((b, i) => { b.style.transform = `scaleX(${Math.min(1, Math.max(0, p * 4 - i))})`; });
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+})();
+</script>
 </body>
 </html>
