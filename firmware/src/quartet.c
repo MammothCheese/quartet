@@ -21,7 +21,7 @@
  *   offered in four groups a type (SND_GRP: LEAD keys, band, synth, odd; PAD strings, keys, synth, atmos; BASS
  *   acoustic, analog, digital, wild), the others loadable still. DRUMS: kits 0-17 (KIT_GRP: groove, machines,
  *   electro, odd), USER 96-99
- * (its name shows big). Home: KNOB1 tempo, KNOB2 the chosen track's mix level, KNOB3 its brightness (a synth's cutoff), KNOB4 the pedals' fade in / out (0-4 bars); the octave, when shifted, a badge in the top bar. EDIT: the SOUND page, the sound in
+ * (its name shows big). Home: KNOB1 tempo, KNOB2 the chosen track's mix level, KNOB3 its brightness (a synth's cutoff; drums: the kit's decay), KNOB4 the pedals' fade in / out (0-4 bars); the octave, when shifted, a badge in the top bar. EDIT: the SOUND page, the sound in
  * depth (EDIT again: the signal chain, again: home; HOME: home; SELECT another track):
  *   ALGORITHM the page: INSTR a menu: type (LEAD/PAD/BASS), bank, sound (the bank's listed), USER slot (REC twice: save)
  *                    MAIN glide, cutoff, resonance, filter envelope   OSC wave 1, wave 2, osc 2 tuning, mix
@@ -1212,19 +1212,26 @@ static void draw_info(uint32_t trk, uint32_t mode, uint32_t cur, uint32_t page, 
         *put_num(v, set.bpm, 1) = 0;
         bx = 48 - (text_w(&FONT_S, v) + 3 + text_w(&FONT_S, "BPM")) / 2;
         cv_text_bg(cv_text_bg(bx, 3, &FONT_S, v, C_TXT, C_PANEL) + 3, 3, &FONT_S, "BPM", C_SUB, C_PANEL);
-        {                                       /* KNOB2 the mix (a speaker), KNOB3 the brightness (a sun): a sign and a bar */
+        uint32_t kdec = 0;                      /* (drums: the kit's decay, its average) */
+        for (i = 0; i < NDR; i++) kdec += set.dsnd[i].decay;
+        kdec /= NDR;
+        {                                       /* KNOB2 the mix (a speaker), KNOB3 the brightness (a sun; drums: the
+                                                   decay, a hit dying away): a sign and a bar */
             for (i = 0; i < 2u; i++) {
                 int32_t x = 76 + (int32_t)i * 62, bx0 = x + 25, bw = 29, f, j;   /* (both bars the same: x + 25 .. + 54) */
-                uint32_t has = i == 0u || trk < NSYN, vv = i ? (trk < NSYN ? set.snd[trk].cut : 0u) : set.vol[trk];
-                uint16_t ic = has ? C_SUB : C_DIMC;
+                uint32_t vv = i ? (trk < NSYN ? set.snd[trk].cut : kdec) : set.vol[trk];
+                uint16_t ic = C_SUB;
                 cv_rrect(x, 1, 60, 20, 10, C_PANEL);
                 if (!i) { cv_rect(x + 9, 9, 3, 5, ic); for (j = 0; j < 5; j++) cv_rect(x + 12 + j, 11 - j, 1, 2 * j + 1, ic); }
-                else {
+                else if (trk >= NSYN) {         /* (a hit: straight up, then dying away) */
+                    cv_line(x + 9, 17, x + 10, 4, ic); cv_line(x + 10, 17, x + 11, 4, ic);
+                    cv_line(x + 11, 4, x + 14, 10, ic); cv_line(x + 14, 10, x + 18, 14, ic); cv_line(x + 18, 14, x + 23, 16, ic);
+                    cv_line(x + 11, 5, x + 14, 11, ic); cv_line(x + 14, 11, x + 18, 15, ic); cv_line(x + 18, 15, x + 23, 17, ic);
+                } else {
                     disc(x + 15, 11, 3, ic);   /* (the sun: in from the cell's round end, its rays whole) */
                     cv_rect(x + 15, 4, 1, 2, ic); cv_rect(x + 15, 17, 1, 2, ic); cv_rect(x + 8, 11, 2, 1, ic); cv_rect(x + 21, 11, 2, 1, ic);
                     cv_rect(x + 10, 6, 1, 1, ic); cv_rect(x + 20, 6, 1, 1, ic); cv_rect(x + 10, 16, 1, 1, ic); cv_rect(x + 20, 16, 1, 1, ic);
                 }
-                if (!has) { cv_text_bg(bx0 + 8, 3, &FONT_S, "--", C_DIMC, C_PANEL); continue; }   /* (drums: no filter) */
                 cv_rrect(bx0, 7, bw, 8, 4, C_KEYCAP);
                 f = (int32_t)vv * bw / 127;
                 if (f > 2) cv_rrect(bx0, 7, f, 8, 4, col);
@@ -4129,9 +4136,19 @@ static void app_main(void)
                 int32_t v = (int32_t)set.vol[trk] + e * 4;
                 set.vol[trk] = (uint8_t)(v < 0 ? 0 : v > 127 ? 127 : v); ch = 1;
             }
-            if ((e = fm1_enc_take(ENC_KNOB3)) != 0 && trk < NSYN) {
-                int32_t v = (int32_t)set.snd[trk].cut + e * 4;
-                set.snd[trk].cut = (uint8_t)(v < 0 ? 0 : v > 127 ? 127 : v); ch = 1;
+            if ((e = fm1_enc_take(ENC_KNOB3)) != 0) {
+                if (trk < NSYN) {
+                    int32_t v = (int32_t)set.snd[trk].cut + e * 4;
+                    set.snd[trk].cut = (uint8_t)(v < 0 ? 0 : v > 127 ? 127 : v);
+                } else {                        /* drums: the kit's decay, all six together (each kept apart from the
+                                                   others as far as the ends allow), tight to long */
+                    uint32_t d;
+                    for (d = 0; d < NDR; d++) {
+                        int32_t v = (int32_t)set.dsnd[d].decay + e * 4;
+                        set.dsnd[d].decay = (uint8_t)(v < 0 ? 0 : v > 127 ? 127 : v);
+                    }
+                }
+                ch = 1;
             }
             if (set.mu.ub.pfade > 4u) set.mu.ub.pfade = 0;
             ch |= knob(ENC_KNOB4, &set.mu.ub.pfade, 0, 4);
@@ -4279,8 +4296,12 @@ static void app_main(void)
             fm1_led_key(KEY_LED(k), on);
             fm1_led_key_glow(KEY_LED(k), dim);
         }
-        fm1_led_key(BTN_OCT_DOWN, drum_edit ? dpage > 0u : oct < 0);
-        fm1_led_key(BTN_OCT_UP, drum_edit ? dpage + 1u < len / PAGE : oct > 0);
+        {                                       /* OCT- / OCT+: lit one octave down / up, blinking two (the drum grid:
+                                                   lit while there is a page that way) */
+            uint32_t blink = (fm1_ms / 300u) % 2u;
+            fm1_led_key(BTN_OCT_DOWN, drum_edit ? dpage > 0u : oct == -1 || (oct <= -2 && blink));
+            fm1_led_key(BTN_OCT_UP, drum_edit ? dpage + 1u < len / PAGE : oct == 1 || (oct >= 2 && blink));
+        }
         fm1_led_key(BTN_SEQ, edit || spage == PG_SSEQ || spage == PG_COPY || (live_mode && (fm1_ms / 400u) % 2u));   /* step recorder, SUPER SEQ:
                                                    lit; live: blinking */
         fm1_led_key(BTN_HOME, 0);
@@ -4486,7 +4507,11 @@ static void app_main(void)
         if (!pedal_mode) {
             uint32_t mode = syn_edit ? 1u : drum_edit ? 2u : live_mode ? 3u : 0u, c = trk < NSYN ? cur[trk] : 0u;
             st = mix(mix(mix(mix(mix(mix(mix(mode, trk), set.bpm), run), (uint32_t)(oct + 2)), len), set.swing), trk_mute >> trk & 1u);
-            if (mode == 0u) st = mix(mix(mix(st, set.vol[trk]), trk < NSYN ? set.snd[trk].cut : 0u), set.mu.ub.pfade);
+            if (mode == 0u) {
+                uint32_t d, kd = 0;
+                for (d = 0; d < NDR; d++) kd += set.dsnd[d].decay;
+                st = mix(mix(mix(st, set.vol[trk]), trk < NSYN ? set.snd[trk].cut : kd), set.mu.ub.pfade);
+            }
             if (mode == 3u) st = mix(mix(mix(st, live_rec), c), dpage);   /* (live: REC, the cursor, the page) */
             if (mode == 1u) {
                 const uint8_t *nt = step_note(trk, pt, c);
