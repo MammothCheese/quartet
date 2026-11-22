@@ -44,7 +44,7 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 | **KNOB3** | **EXP**: the expression, how the note is played, **NORMAL / SOFT / LOUD / SHORT / PUNCH / SMOOTH / PLUCKED** (see below) | Same, for new hits (or a held hit) |
 | **KNOB4** | **NOTE**: the cursor's note or chord up / down a semitone (heard when stopped) | The bar shown |
 | **OCT− / OCT+** | Tap: the keys' octave. Hold: the pattern down / up an octave | Tap: the bar shown |
-| **REC tap / hold** | Switch to **LIVE** recording / the **RECORD** page (count-in, click, clear) |
+| **REC tap / hold** | Switch to **LIVE** recording / the **RECORD** page (clear the pattern or everything) |
 | **ARP tap / hold 0.5 s** | Tie the previous note into this step / a **rest** (the step cleared) |
 | **SEQ tap / hold 0.5 s** | SUPER SEQ / the **copy page** (below) |
 | **HOME** | Home |
@@ -77,15 +77,15 @@ While the music plays, a pattern longer than 16 steps is followed page by page o
 
 ## Live recording
 
-**From home, tap REC** to record straight into the chosen track: the LIVE page opens and, if the music is stopped, a one-bar **count-in** plays (**4 · 3 · 2 · 1** on the top bar, a click on each beat, REC blinking), then the music starts at step one and records. If the music is already playing, recording starts at the next bar (the beats to it count down). **Tap REC** again to stop recording while playback continues. You can also tap **REC** in the step recorder for the **LIVE** page (SEQ blinks) and **tap REC** there to start a take the same way. **PLAY** stops playback and recording; **SEQ** goes on to SUPER SEQ; **HOME** returns home.
+**From home, tap REC** to record straight into the chosen track: the LIVE page opens and, if the music is stopped, a silent one-bar **count-in** runs (**4 · 3 · 2 · 1** on the top bar, REC blinking), then the music starts at step one and records. If the music is already playing, recording starts at the next bar (the beats to it count down). **Tap REC** again to stop recording while playback continues. You can also tap **REC** in the step recorder for the **LIVE** page (SEQ blinks) and **tap REC** there to start a take the same way. **PLAY** stops playback and recording; **SEQ** goes on to SUPER SEQ; **HOME** returns home.
 
 **Undo:** each take keeps a copy of the pattern as it was. **Tap ARP** on the LIVE page to put it back (**TAKE UNDONE**): a bad pass costs nothing.
 
-**The first take sets the length:** recording into an **empty** pattern, it starts one bar long and grows a bar each time the take reaches its end, up to four. Tap **REC** to stop: the pattern is as many bars as you played (stopping just after a bar line keeps the bar before).
+**The first take sets the length:** recording into an **empty** pattern, it starts one bar long and grows a bar each time the take reaches its end, up to four. (Chose an empty pattern while another plays? The take waits for it to come round, counting the last beats. With SUPER SEQ on, takes go into the pattern playing and keep its length.) Tap **REC** to stop: the pattern is as many bars as you played (stopping just after a bar line keeps the bar before).
 
 **A MIDI keyboard's velocity** sets each note's expression: played softly it records as **SOFT**, normally as **NORMAL**, harder as **LOUD** and hardest as **PUNCH** (the FM-1's own keys record as NORMAL).
 
-**The RECORD page** (hold **REC** on home, the step recorder or the LIVE page): **KNOB1** the **count-in** (one bar or off), **KNOB2** a **click while recording** (a quiet click on every beat, or off). Below, **CLEAR** the chosen track's pattern or **CLEAR EVERYTHING**: **ALGORITHM** chooses, **REC** asks, **REC** again does it. **HOME** leaves.
+**The RECORD page** (hold **REC** on home, the step recorder or the LIVE page) has two choices: **CLEAR** the chosen track's pattern, or **CLEAR EVERYTHING** (every pattern, sound and pedal; saved projects stay). **ALGORITHM** chooses, **REC** asks, **REC** again does it (clearing everything takes you home). **HOME** leaves.
 
 Notes are **added** to the pattern playing and quantised to 16th-note steps; lengths are rounded to steps. Lead and pads allow up to four notes per step, bass one. Drums use the first six white keys. On this screen **KNOB1** changes the number of bars, **KNOB2** moves the melodic cursor and **KNOB3** changes the bar shown; **KNOB4** is unused.
 
@@ -105,8 +105,8 @@ Each player's sounds come in **four groups**, by what they are, then **USER** (u
 |---|---|---|---|---|---|---|---|
 | **KEYS** | Piano, Xylophone, Music Box, FM Bell, Tine Keys, Clavinet | **STRINGS** | Strings, Solina, Choir, Acoustic Guitar, Harp, Digital Choir | **ACOUSTIC** | Upright, Slap, Plucked, Tuba, Fretless, Picked | **GROOVE** | Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk |
 | **BAND** | Hammond, Brass, Electric Guitar, Synth Brass, Flute, Harmonica | **KEYS** | Electric Piano, DX Piano, Organ, Handpan, Vibes, Marimba | **ANALOG** | Moog Bass, 303 Line, Sub Bass, Synth Bass, Rubber Bass, Slide Sub | **MACHINES** | CR-78, Mini Pops, LM-1, 606, 808, 909 |
-| **SYNTH** | Mini Lead, Sync Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead | **SYNTH** | Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth | **DIGITAL** | DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck | **ELECTRO** | Electro, Techno, Trap, House, Dub, Industrial |
-| **ODD** | Theremin, Glass Harp, Laser, Bowed Metal, Sine Swarm, Stepper | **ATMOS** | Drone, Frozen, Cathedral, Sweep, Glass Pad, Tidal | **WILD** | Fuzz, Wobble, Growl, Bubble, Womp, Dirt Bass | **ODD** | Toy, Glitch, Metal, Noise, Kitchen |
+| **SYNTH** | Mini Lead, Juno Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead | **SYNTH** | Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth | **DIGITAL** | DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck | **ELECTRO** | Electro, Techno, Trap, House, Dub, Industrial |
+| **ODD** | Theremin, Glass Harp, Laser, Bowed Metal, Sine Swarm, Stepper | **ATMOS** | Drone, Frozen, Cathedral, Sweep, Glass Pad, Tidal | **WILD** | Fuzz, Wobble, Growl, Juno Bass, Womp, Dirt Bass | **ODD** | Toy, Glitch, Metal, Noise, Kitchen |
 
 Each type has its own sounds: a slot switched to BASS chooses from the bass sounds. On the home screen, turn **ALGORITHM** to step through every sound of the slot's type, group after group (in the step recorder it moves the cursor instead). Selecting another sound loads its settings, replacing your tweaks. A sound or kit from an older save that is no longer on the list still loads and plays as it did, and shows at the top of the list while it is chosen.
 

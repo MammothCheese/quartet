@@ -104,11 +104,11 @@ static const char *const BANK_NAME[NSYN][NBANK] = {   /* by type: T_LEAD, T_BASS
 static const uint8_t SND_GRP[NSYN][4][6] = {
     {{0, 1, 3, 38, 40, 41}, {5, 2, 4, 36, 42, 43}, {32, 33, 34, 35, 9, 39}, {6, 64, 67, 68, 66, 69}},
     /* LEAD: KEYS piano, xylophone, music box, FM bell, tine keys, clavinet; BAND Hammond, brass, electric guitar, synth
-       brass, flute, harmonica; SYNTH mini, sync, PWM, acid lead, chiptune, porta lead; ODD theremin, glass harp,
+       brass, flute, harmonica; SYNTH mini, Juno lead, PWM, acid lead, chiptune, porta lead; ODD theremin, glass harp,
        laser, bowed metal, sine swarm, stepper */
     {{0, 2, 3, 1, 40, 41}, {32, 33, 36, 5, 38, 68}, {34, 8, 39, 6, 35, 37}, {4, 9, 64, 66, 69, 67}},
     /* BASS: ACOUSTIC upright, slap, plucked, tuba, fretless, picked; ANALOG Moog, 303 line, sub, synth bass, rubber,
-       slide sub; DIGITAL DX bass, Reese, electro bass, FM, deep Reese, synth pluck; WILD fuzz, wobble, growl, bubble,
+       slide sub; DIGITAL DX bass, Reese, electro bass, FM, deep Reese, synth pluck; WILD fuzz, wobble, growl, Juno bass,
        womp, dirt bass */
     {{0, 34, 1, 2, 40, 39}, {4, 37, 3, 5, 41, 42}, {32, 35, 36, 33, 38, 6}, {8, 64, 67, 9, 7, 65}}};
     /* PAD: STRINGS strings, Solina, choir, acoustic guitar, harp, digital choir; KEYS electric piano, DX piano, organ,
@@ -129,10 +129,12 @@ static const sdef_t SND_LEAD[] = {
     SD("CHIPTUNE", 9, 0, 112, 0, 0, W_SQR, W_SQR, 36, 15, 0, 60, 127, 20, 95, 0, L_PITCH, LW_TRI),     /* a raw square, on and off at once */
     /* CLASSIC */
     SD("MINI LEAD", 32, 8, 72, 60, 55, W_SAW, W_SQR, 12, 40, 0, 74, 100, 52, 96, 5, L_PITCH, LW_TRI),  /* saw + a square an octave down, a fat resonant filter */
-    SD("SYNC LEAD", 33, 0, 100, 25, 90, W_SAW, W_SYNC, 36, 100, 0, 88, 90, 50, 95, 0, L_PITCH, LW_TRI),/* hard sync, the envelope sweeping it: the scream */
+    SD("JUNO LEAD", 33, 10, 82, 38, 42, W_SAW, W_PULSE, 12, 48, 2, 84, 108, 58, 70, 46, L_PWM, LW_TRI),   /* (once SYNC LEAD) a Juno: a saw over a
+                                                   sub square an octave down, its width swaying; warm, a little resonance, a touch of glide (add CHORUS) */
     SD("PWM LEAD", 34, 0, 88, 20, 30, W_PULSE, W_PULSE, 24, 35, 2, 80, 110, 55, 74, 70, L_PWM, LW_TRI),/* two pulses, their width swaying: alive */
     SD("ACID LEAD", 35, 45, 34, 108, 100, W_SAW, W_SAW, 24, 0, 0, 66, 25, 40, 60, 0, L_FILT, LW_TRI),  /* one saw, a screaming snappy filter, slides */
-    SD("SYNTH BRASS", 36, 0, 38, 25, 100, W_SAW, W_PULSE, 24, 55, 62, 88, 95, 62, 95, 5, L_PITCH, LW_TRI),   /* a slow filter swell on saw + pulse */
+    SD("SYNTH BRASS", 36, 0, 40, 16, 110, W_SAW, W_SAW, 24, 64, 48, 90, 100, 62, 96, 4, L_PITCH, LW_TRI),   /* 80s polysynth brass: two detuned
+                                                   saws, the filter blaring open fast on every chord, then holding bright */
     SD("MONO SQUARE", 37, 30, 76, 60, 40, W_SQR, W_SQR, 36, 25, 0, 82, 110, 50, 96, 8, L_PITCH, LW_TRI),     /* a square and its octave, sliding */
     SD("FM BELL", 38, 0, 127, 0, 60, W_FM, W_SIN, 48, 70, 0, 102, 0, 100, 70, 10, L_AMP, LW_TRI),      /* FM 4:1: a struck bell that rings long */
     SD("PORTA LEAD", 39, 72, 82, 40, 35, W_SAW, W_SAW, 24, 55, 5, 80, 115, 60, 95, 12, L_PITCH, LW_TRI),/* two saws gliding from note to note */
@@ -167,16 +169,19 @@ static const sdef_t SND_BASS[] = {
     SD("303 LINE", 33, 45, 30, 112, 100, W_SAW, W_SAW, 24, 0, 0, 64, 20, 40, 60, 0, L_FILT, LW_TRI),   /* one saw, a squelching filter, sliding notes */
     SD("DX BASS", 34, 0, 127, 0, 100, W_FM, W_SIN, 36, 80, 0, 78, 40, 45, 60, 0, L_FILT, LW_TRI),      /* FM 2:1, a hard metallic pluck */
     SD("DEEP REESE", 35, 0, 52, 40, 10, W_SAW, W_PULSE, 24, 64, 0, 80, 127, 50, 40, 50, L_PWM, LW_TRI),/* saw against a slowly widening pulse */
-    SD("SUB BASS", 36, 0, 127, 0, 0, W_SIN, W_TRI, 24, 20, 0, 80, 127, 40, 60, 0, L_FILT, LW_TRI),     /* a pure low sine: felt more than heard */
+    SD("SUB BASS", 36, 0, 86, 0, 0, W_SIN, W_SAW, 24, 50, 0, 80, 127, 40, 60, 0, L_FILT, LW_TRI),      /* a deep sine, a little saw under it,
+                                                   rounded off: felt, and heard on a small speaker too */
     SD("SYNTH PLUCK", 37, 0, 45, 50, 112, W_SQR, W_SAW, 36, 30, 0, 62, 0, 40, 60, 0, L_FILT, LW_TRI),  /* a short bright pluck that closes at once */
     SD("RUBBER BASS", 38, 20, 34, 72, 90, W_SQR, W_SIN, 24, 50, 0, 78, 60, 45, 60, 0, L_FILT, LW_TRI), /* a bouncy rounded square, slides a little */
     SD("ELECTRO BASS", 39, 0, 62, 40, 60, W_PULSE, W_SAW, 12, 50, 0, 70, 90, 40, 60, 0, L_FILT, LW_TRI),/* pulse + saw an octave down, tight */
     /* EXPERIMENTAL */
     SD("GROWL", 64, 0, 70, 92, 30, W_FM, W_SIN, 31, 60, 0, 80, 120, 45, 85, 70, L_FILT, LW_SAW),       /* FM through a filter the LFO saws at */
     SD("SYNC BASS", 65, 0, 72, 40, 92, W_SAW, W_SYNC, 31, 80, 0, 70, 80, 40, 60, 0, L_FILT, LW_TRI),   /* a synced snarl, swept by the envelope */
-    SD("BUBBLE", 66, 0, 100, 30, 40, W_SIN, W_TRI, 24, 30, 0, 80, 100, 45, 110, 30, L_PITCH, LW_SQR),  /* a sine trilling fast: bubbles */
+    SD("JUNO BASS", 66, 0, 58, 48, 72, W_SAW, W_PULSE, 12, 50, 0, 78, 92, 45, 62, 26, L_PWM, LW_TRI),   /* (once BUBBLE) a Juno bass: a saw
+                                                   over a sub square an octave down, a snappy filter, a little resonance */
     SD("DIRT BASS", 67, 0, 55, 120, 50, W_SAW, W_NOISE, 24, 25, 0, 75, 90, 40, 60, 0, L_FILT, LW_TRI), /* a saw with grit, the resonance on edge */
-    SD("SLIDE SUB", 68, 92, 127, 0, 0, W_SIN, W_SIN, 36, 20, 0, 80, 127, 50, 60, 0, L_FILT, LW_TRI),   /* a sub that slides long between notes */
+    SD("SLIDE SUB", 68, 92, 86, 0, 0, W_SIN, W_SAW, 24, 50, 0, 80, 127, 50, 60, 0, L_FILT, LW_TRI),    /* a sub that slides long between notes
+                                                   (a little saw under it, rounded: heard on a small speaker) */
     SD("WOMP", 69, 0, 40, 92, 0, W_SAW, W_PULSE, 24, 50, 0, 80, 127, 45, 75, 100, L_FILT, LW_SQR),     /* the filter gated open and shut on the beat */
     /* (later: more for the groups) */
     SD("FRETLESS", 40, 30, 48, 30, 30, W_SAW, W_TRI, 24, 55, 10, 85, 90, 50, 80, 6, L_PITCH, LW_TRI),   /* warm and sliding, a singing tone */
@@ -252,6 +257,25 @@ static const char *sound_name(uint32_t ty, uint32_t id)
     if (d) return d->name;
     un[5] = (char)('1' + (id - UID(0)) % 10u);
     return un;
+}
+/* the sounds that stood out, loud or quiet, against the rest of their type (measured on the same chords at their own
+ * pitch): each one's level a few dB up or down, its character as it was. By the sound's id, so a sound tweaked in EDIT
+ * keeps it. Q15 (32768: as is) */
+static const struct { uint8_t ty, id; uint16_t g; } SND_TRIM[] = {
+    {T_LEAD, 67, 65383},                        /* LASER +6 dB */
+    {T_LEAD, 1, 51935},                         /* XYLOPHONE +4 */
+    {T_LEAD, 9, 18427},                         /* CHIPTUNE -5 */
+    {T_LEAD, 6, 23197},                         /* THEREMIN -3 */
+    {T_BASS, 3, 58270},                         /* PLUCKED +5 */
+    {T_BASS, 64, 16423},                        /* GROWL -6 */
+    {T_BASS, 34, 18427},                        /* DX BASS -5 */
+    {T_PAD, 39, 18427},                         /* DIGITAL CHOIR -5 */
+};
+static uint32_t snd_trim(uint32_t ty, uint32_t id)
+{
+    uint32_t i;
+    for (i = 0; i < sizeof SND_TRIM / sizeof SND_TRIM[0]; i++) if (SND_TRIM[i].ty == ty && SND_TRIM[i].id == id) return SND_TRIM[i].g;
+    return 32768u;
 }
 static void sound_load(uint32_t t, uint32_t id) /* slot t takes sound id of its type: its settings, its glide */
 {
@@ -551,7 +575,7 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
     }
     for (t = 0; t < NSYN; t++) {
         const snd_t *sp = &set.snd[t];
-        int32_t lv, lmod, full = TRK[t].level << 8;
+        int32_t lv, lmod, full = TRK[t].level << 8, trim = (int32_t)snd_trim(set.styp[t] % NSYN, sp->preset);
         uint32_t old = lfo_ph[t], w1 = sp->w1 % NWAVE, w2 = sp->w2 % NWAVE, mix = sp->mix & 127u, over = TRK[t].over;
         int32_t sus = (full >> 7) * (int32_t)(sp->s + (sp->s >> 6));   /* ~ full * s / 127 */
         lfo_ph[t] += LFO_INC[sp->lrate & 127u] * n;   /* the track's LFO, one value for this piece */
@@ -604,6 +628,7 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                     if (sp->ltgt == L_AMP)      /* tremolo: down to ~1 % at full depth */
                         eff = (int32_t)(((int64_t)eff * (32768 - ((((lv + 32768) >> 1) * (int32_t)(sp->ldepth & 127u)) >> 7))) >> 15);
                     eff = (int32_t)(((int64_t)eff * vx[v].vel) >> 15);   /* the note's dynamic */
+                    if (trim != 32768) eff = (int32_t)(((int64_t)eff * trim) >> 15);   /* (a sound that stood out: evened) */
                     if (!env && vx[v].stage == 2u) { amp = 0; dstep = 0; }   /* the release has ended: silence */
                     else dstep = (eff - amp) >> 4;   /* a ramp over the block: no steps you could hear */
                     en = ((env >> 8) * 32767) / TRK[t].level;   /* the envelope 0..32767 for the filter */

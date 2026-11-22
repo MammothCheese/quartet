@@ -1134,7 +1134,7 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
             *p++ = ' '; p = put(p, DYN_LONG[ui_dyn % NDYN]);
         } else p = put(p, LEG[(proj >> 6) % 6u]);
     } else if (page == PG_REC) {                /* the RECORD page */
-        p = put(p, "K1:COUNT K2:CLICK ALG:CLEAR");
+        p = put(p, "ALG:CHOOSE  REC REC:CLEAR");
     } else if (page == PG_KEY) {                /* the key page */
         p = put(p, "ALG:KEY K1:LOCK K2:LIGHT K3:SW");
     } else if (page == PG_PROJ) {               /* the save page: how to work it */
@@ -2660,12 +2660,11 @@ static void draw_sseq(uint32_t sel, uint32_t cur, uint32_t run)
 
 /* ---- the save page (SAVE): four slots, SAVE 1-4, each with its tempo (or EMPTY), the chosen one framed white; when
  * a save or load waits for "sure?", a box asks for the button again. 164 px under the top bar, in two halves */
-/* the RECORD page (REC held): the count-in (KNOB1) and the click while recording (KNOB2) as two cards; then the two
- * clears, the chosen one framed (ALGORITHM), REC asks, REC again does it */
+/* the RECORD page (REC held): the two clears, the chosen one framed (ALGORITHM); REC asks, REC again does it */
 static void draw_rec(uint32_t trk, uint32_t cur, uint32_t ask, const char *msg, uint32_t msg_ok)
 {
     static const uint16_t YEL = RGB(255, 200, 60);
-    uint32_t half, i, cin = !(set.mu.ub.recopt & 1u), clk = set.mu.ub.recopt >> 1 & 1u;
+    uint32_t half, i;
     uint16_t red = RGB(214, 48, 38);
     char s[24], *p;
     if (msg) head_text(msg, msg_ok ? C_WHITE : C_MUTE, msg_ok ? C_PLAYG : C_MUTE);
@@ -2678,27 +2677,17 @@ static void draw_rec(uint32_t trk, uint32_t cur, uint32_t ask, const char *msg, 
     for (half = 0; half < 2u; half++) {
         cv_begin(240, H_PEDAL / 2, C_BG);
         cv_oy = -(int32_t)half * (H_PEDAL / 2);
-        for (i = 0; i < 2u; i++) {              /* the settings: a card each, its knob, its name, its value lit */
-            int32_t y = (int32_t)i * 41;
-            uint32_t on = i ? clk : cin;
-            const char *v = i ? (on ? "ON" : "OFF") : (on ? "1 BAR" : "OFF");
-            cv_rrect(0, y + 1, 240, 38, 6, C_PANEL);
-            cv_text_bg(10, y + 4, &FONT_S, i ? "K2" : "K1", C_DIMC, C_PANEL);
-            cv_text_bg(36, y + 4, &FONT_S, i ? "CLICK WHILE REC" : "COUNT-IN", C_TXT, C_PANEL);
-            cv_text_bg(36, y + 20, &FONT_S, i ? "on every beat" : "a bar of clicks first", C_SUB, C_PANEL);
-            cv_rrect(232 - text_w(&FONT_S, v) - 14, y + 11, text_w(&FONT_S, v) + 14, 18, 9, on ? red : C_KEYCAP);
-            cv_text_bg(232 - text_w(&FONT_S, v) - 7, y + 12, &FONT_S, v, on ? C_ON : C_SUB, on ? red : C_KEYCAP);
-        }
-        for (i = 0; i < 2u; i++) {              /* the clears: the chosen one framed */
-            int32_t y = 84 + (int32_t)i * 39;
+        for (i = 0; i < 2u; i++) {              /* the clears: a card each, the chosen one framed */
+            int32_t y = 14 + (int32_t)i * 66;
             uint32_t me = i == cur;
             uint16_t card = me ? C_PANEL2 : C_PANEL;
-            if (me) { cv_rrect(0, y, 240, 36, 6, C_WHITE); cv_rrect(2, y + 2, 236, 32, 5, card); }
-            else cv_rrect(0, y, 240, 36, 6, card);
-            if (i == 0u) { p = put(s, "CLEAR "); p = put(p, slot_name(trk)); p = put(p, " "); *p++ = (char)('A' + set.sel[trk] % NPAT); *p = 0; }
-            else *put(s, "CLEAR EVERYTHING") = 0;
-            cv_text_bg(12, y + 9, &FONT_S, s, me ? C_TXT : C_SUB, card);
-            cv_text_bg(228 - text_w(&FONT_S, "REC REC"), y + 9, &FONT_S, "REC REC", me ? C_SUB : C_DIMC, card);
+            if (me) { cv_rrect(0, y, 240, 56, 8, C_WHITE); cv_rrect(2, y + 2, 236, 52, 7, card); }
+            else cv_rrect(0, y, 240, 56, 8, card);
+            if (i == 0u) { p = put(s, slot_name(trk)); p = put(p, " "); *p++ = (char)('A' + set.sel[trk] % NPAT); *p = 0; }
+            else *put(s, "EVERYTHING") = 0;
+            cv_text_bg(14, y + 5, &FONT_S, i ? "CLEAR ALL" : "CLEAR THE PATTERN", me ? C_SUB : C_DIMC, card);
+            cv_text_bg(14, y + 20, &FONT_L, s, me ? C_TXT : C_SUB, card);
+            if (me) cv_text_bg(228 - text_w(&FONT_S, "REC REC"), y + 5, &FONT_S, "REC REC", red, card);
         }
         if (ask) {                              /* "sure?" */
             const char *q = cur ? "CLEAR EVERYTHING?" : "CLEAR THE PATTERN?";
@@ -3619,17 +3608,19 @@ static int undo_back(void)                      /* the pattern as it was before 
 }
 static void rec_start(uint32_t t)               /* REC: a take on track t, in the pattern it plays (stopped: the chosen) */
 {
-    uint32_t p = (clk_run ? play_pat[t] : set.sel[t]) % NPAT, cin = !(set.mu.ub.recopt & 1u);
+    uint32_t p = (set.sseq_on && clk_run ? play_pat[t] : set.sel[t]) % NPAT;   /* (the pattern chosen: if it is only
+                                                   queued, the take waits for it to come round; SUPER SEQ: the one playing) */
     undo_take(t, p);
     rec_t = t; rec_p = p;
     rec_grow = !set.sseq_on && !pat_used(t, p);   /* (empty: the first take sets its length) */
     if (rec_grow) set.plen[t][p] = PAGE;
     live_rec = 1;
-    if (!clk_run) {
-        rec_wait = cin ? 1u : 0u;
-        clk_pre = cin ? PAGE : 0u;              /* (a bar: 16 steps) */
+    if (!clk_run) {                             /* stopped: a bar's count-in (silent, on the screen), then step 1 */
+        rec_wait = 1;
+        clk_pre = PAGE;
         clk_go++; clk_run = 1;
-    } else { rec_wait = cin ? 2u : 0u; rec_wpos = trk_pos[t]; }
+    } else if (play_pat[t] % NPAT != p) rec_wait = 3;   /* playing another: from when the chosen one starts */
+    else { rec_wait = 2; rec_wpos = trk_pos[t]; }   /* playing it: from the next bar */
 }
 static void rec_stop(void)                      /* REC again (or STOP): the take ends; the first take's length set */
 {
@@ -3647,6 +3638,10 @@ static uint32_t rec_beats(void)                 /* the count-in's beats still to
 {
     if (rec_wait == 1u) return clk_ack == clk_go && clk_count ? clk_count : clk_ack == clk_go ? 0u : 4u;
     if (rec_wait == 2u) return (PAGE - trk_pos[rec_t] % PAGE + 3u) / 4u;
+    if (rec_wait == 3u) {                       /* (to the end of the pattern playing: the last four beats counted) */
+        uint32_t L = pat_len(rec_t, play_pat[rec_t]), b = (L - trk_pos[rec_t] % L + 3u) / 4u;
+        return b > 4u ? 4u : b;
+    }
     return 0;
 }
 
@@ -3962,6 +3957,8 @@ static void app_main(void)
         }
         if (!clk_run && live_rec) rec_stop();   /* stopped: the recording ends */
         if (live_rec && rec_wait == 1u && clk_ack == clk_go && !clk_count) rec_wait = 0;   /* (the count-in over: step 1) */
+        if (live_rec && rec_wait == 3u && play_pat[rec_t] % NPAT == rec_p) rec_wait = 0;   /* (the chosen pattern has
+                                                   come round: from its step 1) */
         if (live_rec && rec_wait == 2u && trk_pos[rec_t] != rec_wpos) {   /* (playing: from the next bar) */
             if (trk_pos[rec_t] % PAGE == 0u) rec_wait = 0;
             rec_wpos = trk_pos[rec_t];
@@ -3972,7 +3969,7 @@ static void app_main(void)
             if (L >= NSTEP) rec_grow = 0;
             else if (trk_pos[rec_t] == L - 1u) set.plen[rec_t][rec_p] = (uint8_t)(L + PAGE);
         }
-        clk_click = (live_rec && rec_wait == 2u) || (live_rec && !rec_wait && set.mu.ub.recopt >> 1 & 1u);
+        clk_click = 0;                          /* (no click: the count-in is counted on the screen) */
         /* SEQ: the sequencer (the step recorder; REC there: live recording); SEQ again: SUPER SEQ; again: the step recorder */
         if (b & (1u << BTN_SEQ)) {
             if (spage == PG_COPY) { spage = PG_MAIN; if (cp_live) live_mode = 1; else edit = 1; cp_ask = 0; }   /* back */
@@ -4266,10 +4263,8 @@ static void app_main(void)
                 }
             }
             if (ch) { CHANGED(); usr_ask = 0; }
-        } else if (spage == PG_REC) {           /* the RECORD page: KNOB1 the count-in, KNOB2 the click while recording */
-            uint8_t ci = !(set.mu.ub.recopt & 1u), cl = set.mu.ub.recopt >> 1 & 1u;
-            if (knob(ENC_KNOB1, &ci, 0, 1) | knob(ENC_KNOB2, &cl, 0, 1)) { set.mu.ub.recopt = (uint8_t)((ci ? 0u : 1u) | (uint32_t)cl << 1); CHANGED(); }
-            fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
+        } else if (spage == PG_REC) {           /* the RECORD page: no knobs (ALGORITHM chooses the clear) */
+            fm1_enc_take(ENC_KNOB1); fm1_enc_take(ENC_KNOB2); fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
         } else if (spage == PG_KEY) {           /* the song page: KNOB1 the lock, KNOB2 the lights, KNOB3 the swing */
             uint8_t lk = set.keyopt & 1u, li = set.keyopt >> 1 & 1u;
             if (knob(ENC_KNOB1, &lk, 0, 1) | knob(ENC_KNOB2, &li, 0, 1)) { set.keyopt = (uint8_t)(lk | li << 1); CHANGED(); }
@@ -4535,7 +4530,7 @@ static void app_main(void)
         if (pedal_mode == 11u) {                /* the RECORD page */
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
             if (rq_ask && fm1_ms - rq_t > 3000u) rq_ask = 0;
-            st = mix(mix(mix(mix(mix(mix(mix(trk, rq_cur), rq_ask), set.mu.ub.recopt), set.sel[trk]), show_msg ? msg_t : 0u), wipe_ask), 111u);
+            st = mix(mix(mix(mix(mix(mix(trk, rq_cur), rq_ask), set.sel[trk]), show_msg ? msg_t : 0u), wipe_ask), 111u);
             if (st != pedal_drawn) { pedal_drawn = st; draw_rec(trk, rq_cur, rq_ask, show_msg ? msg : 0, msg_ok); }
         } else if (pedal_mode == 9u || pedal_mode == 10u) {   /* the signal chain (CHAIN), the copy page (COPY) */
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
