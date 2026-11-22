@@ -5,7 +5,7 @@
 
 Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 23 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 40 pedals, live recording and a song arranger.
 
-> **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, go to the **home screen**, **hold REC for one second** until **CLEAR ALL?** appears, then **press REC again within three seconds** (any other button cancels). This erases the demo groove for good, but not your four saved projects.
+> **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, **hold REC** on the home screen for the **RECORD** page, turn **ALGORITHM** to **CLEAR EVERYTHING**, then press **REC** twice (within three seconds). This erases the demo groove for good, but not your four saved projects.
 
 ## Instruments and home screen
 
@@ -27,7 +27,7 @@ The same rules hold on every page:
 - **ALGORITHM** moves within the page (cursor, tab, slot, box) and never takes you to another page.
 - **KNOB1–4** are the four settings shown, left to right. Where a page has an on/off switch (pedals, the arpeggiator, SUPER SEQ), it is **KNOB1**.
 - **Tap or hold:** a tap switches something or opens it, a half-second hold does the other. Pedal buttons and **ARP**: tap on/off, hold for the page. **GLO**: tap the mixer, hold beat repeat. **SEQ** in the step recorder: tap SUPER SEQ, hold the copy page.
-- **REC twice** confirms anything that keeps or replaces work: saving a sound or a project, copying a pattern, clearing everything. Holding **REC** clears a pattern only on the step recorder and live pages, where you can see it.
+- **REC twice** confirms anything that keeps or replaces work: saving a sound or a project, copying a pattern, clearing everything. Holding **REC** (on home, the step recorder or the LIVE page) opens the **RECORD** page, where clearing a pattern or everything is chosen and confirmed.
 - A page's own button again moves on or closes it (**EDIT**: sound → chain → home; **SEQ**: recorder ↔ SUPER SEQ; **GLO**: mixer → KEY → home; **SAVE**: closes). **HOME** always goes home.
 
 ## Patterns and step recording
@@ -44,7 +44,7 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 | **KNOB3** | **EXP**: the expression, how the note is played, **NORMAL / SOFT / LOUD / SHORT / PUNCH / SMOOTH / PLUCKED** (see below) | Same, for new hits (or a held hit) |
 | **KNOB4** | **NOTE**: the cursor's note or chord up / down a semitone (heard when stopped) | The bar shown |
 | **OCT− / OCT+** | Tap: the keys' octave. Hold: the pattern down / up an octave | Tap: the bar shown |
-| **REC tap / hold 1 s** | Switch to **LIVE** recording / clear selected pattern |
+| **REC tap / hold** | Switch to **LIVE** recording / the **RECORD** page (count-in, click, clear) |
 | **ARP tap / hold 0.5 s** | Tie the previous note into this step / a **rest** (the step cleared) |
 | **SEQ tap / hold 0.5 s** | SUPER SEQ / the **copy page** (below) |
 | **HOME** | Home |
@@ -77,9 +77,17 @@ While the music plays, a pattern longer than 16 steps is followed page by page o
 
 ## Live recording
 
-Tap **REC** in the step recorder to switch to **LIVE** (SEQ blinks). **Tap REC** to record while playing the keys; tap it again to stop recording while playback continues. If stopped, recording starts playback at step one. **PLAY** stops playback and recording; **SEQ** goes on to SUPER SEQ; **HOME** returns home. Hold **REC** for one second to clear the pattern that is playing.
+**From home, tap REC** to record straight into the chosen track: the LIVE page opens and, if the music is stopped, a one-bar **count-in** plays (**4 · 3 · 2 · 1** on the top bar, a click on each beat, REC blinking), then the music starts at step one and records. If the music is already playing, recording starts at the next bar (the beats to it count down). **Tap REC** again to stop recording while playback continues. You can also tap **REC** in the step recorder for the **LIVE** page (SEQ blinks) and **tap REC** there to start a take the same way. **PLAY** stops playback and recording; **SEQ** goes on to SUPER SEQ; **HOME** returns home.
 
-Notes are **added** to the current pattern and quantised to 16th-note steps; lengths are rounded to steps. Lead and pads allow up to four notes per step, bass one. Drums use the first six white keys. On this screen **KNOB1** changes the number of bars, **KNOB2** moves the melodic cursor and **KNOB3** changes the bar shown; **KNOB4** is unused.
+**Undo:** each take keeps a copy of the pattern as it was. **Tap ARP** on the LIVE page to put it back (**TAKE UNDONE**): a bad pass costs nothing.
+
+**The first take sets the length:** recording into an **empty** pattern, it starts one bar long and grows a bar each time the take reaches its end, up to four. Tap **REC** to stop: the pattern is as many bars as you played (stopping just after a bar line keeps the bar before).
+
+**A MIDI keyboard's velocity** sets each note's expression: played softly it records as **SOFT**, normally as **NORMAL**, harder as **LOUD** and hardest as **PUNCH** (the FM-1's own keys record as NORMAL).
+
+**The RECORD page** (hold **REC** on home, the step recorder or the LIVE page): **KNOB1** the **count-in** (one bar or off), **KNOB2** a **click while recording** (a quiet click on every beat, or off). Below, **CLEAR** the chosen track's pattern or **CLEAR EVERYTHING**: **ALGORITHM** chooses, **REC** asks, **REC** again does it. **HOME** leaves.
+
+Notes are **added** to the pattern playing and quantised to 16th-note steps; lengths are rounded to steps. Lead and pads allow up to four notes per step, bass one. Drums use the first six white keys. On this screen **KNOB1** changes the number of bars, **KNOB2** moves the melodic cursor and **KNOB3** changes the bar shown; **KNOB4** is unused.
 
 ## Sounds and sound editing
 
@@ -219,7 +227,7 @@ Quartet **automatically remembers current work** after playback stops and the so
 
 Press **SAVE**; **KNOB1** chooses slot 1–4. Press **REC twice** (second press within three seconds) to **save**, or **PLAY twice** to **load**. Loading replaces current work; an empty slot says **EMPTY**. Saving or loading stops playback. Press **SAVE** to leave the page.
 
-To clear the current project, **hold REC on the home screen**, then confirm with REC. This resets patterns, sounds, effects, mixer, swing, arpeggiators and SUPER SEQ, **not** the four saved slots or your USER sounds. MIDI channel and octave are retained.
+To clear the current project, **hold REC** for the RECORD page, choose **CLEAR EVERYTHING** with ALGORITHM, then press **REC** twice. This resets patterns, sounds, effects, mixer, swing, arpeggiators and SUPER SEQ, **not** the four saved slots or your USER sounds. MIDI channel and octave are retained.
 
 ## Complete control reference
 
@@ -234,8 +242,8 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 | **PLAY** | Start/stop from step one | Start/stop | LIVE: start/stop (stopping ends recording); save: load |
 | **SEQ** | Open the sequencer (step recorder) | Tap: SUPER SEQ; hold: copy page | LIVE: the same; SUPER SEQ: the step recorder; copy page: back; other pages: the sequencer |
 | **HOME** | Home | Return home | Return home |
-| **REC** | Hold: CLEAR ALL?, press again to confirm | Tap: LIVE; hold: clear pattern | LIVE: record on/off or hold clear; save: twice saves; INSTR / KIT: twice saves to the USER slot; copy page: twice copies; elsewhere holding it does nothing |
-| **ARP** | Tap: on/off; hold: arpeggiator page | Tap: tie; hold: rest | Arpeggiator page: tap on/off |
+| **REC** | Tap: record into the chosen track (count-in first); hold: the RECORD page | Tap: LIVE; hold: the RECORD page | LIVE: a take on/off, hold: the RECORD page; RECORD page: twice clears; save: twice saves; INSTR / KIT: twice saves to the USER slot; copy page: twice copies; elsewhere holding it does nothing |
+| **ARP** | Tap: on/off; hold: arpeggiator page | Tap: tie; hold: rest (LIVE: tap undoes the last take) | Arpeggiator page: tap on/off |
 | **FX / SEL / ENV / LFO** | Tap: pedal on/off (its name shows); hold: the pedal page | Same | Mixer: mute lead / pads / bass / drums; pedal page: PRESETS type, ALGORITHM pedal, KNOB1 on/off, KNOB2–4 adjust it |
 | **EDIT** | The SOUND page (the sound editor, from INSTR) | Same | SOUND page: the signal chain; chain: home |
 | **GLO** | Tap: mixer, then KEY, then home. Hold: beat repeat (white keys 1–5 choose 1/2–1/32) | Same | Same |

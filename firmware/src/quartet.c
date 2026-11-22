@@ -210,6 +210,7 @@ typedef struct {                                /* the USER bank: sounds you sav
     uint8_t theme;                              /* (later) the screen's theme (HOME held, ALGORITHM): with the instrument,
                                                    in the room the older saves' BASS patterns left, so no save changes size */
     uint8_t pfade;                              /* (later still) the pedals' fade in / out: 0 at once, 1-4 bars (home, KNOB4) */
+    uint8_t recopt;                             /* recording (REC held): bit 0 no count-in, bit 1 a click while recording */
 } ubank_t;
 typedef char ubank_fits[sizeof(ubank_t) <= sizeof(mono_t) * 10u * 64u ? 1 : -1];
 static struct {
@@ -634,7 +635,8 @@ enum { PG_MAIN, PG_OSC, PG_ENV, PG_LFO, NPAGE,  /* the sound pages (the SOUND pa
        PG_ARP, PG_MIX, PG_SSEQ,                 /* the arpeggiator (ARP), the mixer (GLO), SUPER SEQ (HOME) */
        PG_KEY,                                  /* the key (GLO from the mixer) */
        PG_SOUND,                                /* (then) the signal chain (EDIT twice), the copy page (SEQ held) */
-       PG_CHAIN, PG_COPY };                              /* the sound editor (EDIT) */
+       PG_CHAIN, PG_COPY,                       /* the sound editor (EDIT) */
+       PG_REC };                                /* the RECORD page (REC held): the count-in, the click; clear */
 #define IS_FX_PAGE(p) ((p) >= PG_FX && (p) < PG_PROJ)
 /* the top buttons: the four pedal slots (FX SEL ENV LFO); EDIT, the fifth, is the sound editor */
 static const uint8_t FX_BTN[NFX] = {BTN_FX, BTN_SEL, BTN_ENV, BTN_LFO, BTN_EDIT};   /* (GLO: the mixer) */
@@ -1131,6 +1133,8 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
             *p++ = ' '; *p++ = ' '; p = put(p, NLEN_NAME[ui_len % NNLEN]);
             *p++ = ' '; p = put(p, DYN_LONG[ui_dyn % NDYN]);
         } else p = put(p, LEG[(proj >> 6) % 6u]);
+    } else if (page == PG_REC) {                /* the RECORD page */
+        p = put(p, "K1:COUNT K2:CLICK ALG:CLEAR");
     } else if (page == PG_KEY) {                /* the key page */
         p = put(p, "ALG:KEY K1:LOCK K2:LIGHT K3:SW");
     } else if (page == PG_PROJ) {               /* the save page: how to work it */
@@ -2656,6 +2660,58 @@ static void draw_sseq(uint32_t sel, uint32_t cur, uint32_t run)
 
 /* ---- the save page (SAVE): four slots, SAVE 1-4, each with its tempo (or EMPTY), the chosen one framed white; when
  * a save or load waits for "sure?", a box asks for the button again. 164 px under the top bar, in two halves */
+/* the RECORD page (REC held): the count-in (KNOB1) and the click while recording (KNOB2) as two cards; then the two
+ * clears, the chosen one framed (ALGORITHM), REC asks, REC again does it */
+static void draw_rec(uint32_t trk, uint32_t cur, uint32_t ask, const char *msg, uint32_t msg_ok)
+{
+    static const uint16_t YEL = RGB(255, 200, 60);
+    uint32_t half, i, cin = !(set.mu.ub.recopt & 1u), clk = set.mu.ub.recopt >> 1 & 1u;
+    uint16_t red = RGB(214, 48, 38);
+    char s[24], *p;
+    if (msg) head_text(msg, msg_ok ? C_WHITE : C_MUTE, msg_ok ? C_PLAYG : C_MUTE);
+    else {
+        head_begin(red);
+        disc(26, 19, 7, red);
+        cv_text_bg(40, 3, &FONT_L, "RECORD", C_TXT, C_PANEL);
+        cv_blit(0, Y_BIG);
+    }
+    for (half = 0; half < 2u; half++) {
+        cv_begin(240, H_PEDAL / 2, C_BG);
+        cv_oy = -(int32_t)half * (H_PEDAL / 2);
+        for (i = 0; i < 2u; i++) {              /* the settings: a card each, its knob, its name, its value lit */
+            int32_t y = (int32_t)i * 41;
+            uint32_t on = i ? clk : cin;
+            const char *v = i ? (on ? "ON" : "OFF") : (on ? "1 BAR" : "OFF");
+            cv_rrect(0, y + 1, 240, 38, 6, C_PANEL);
+            cv_text_bg(10, y + 4, &FONT_S, i ? "K2" : "K1", C_DIMC, C_PANEL);
+            cv_text_bg(36, y + 4, &FONT_S, i ? "CLICK WHILE REC" : "COUNT-IN", C_TXT, C_PANEL);
+            cv_text_bg(36, y + 20, &FONT_S, i ? "on every beat" : "a bar of clicks first", C_SUB, C_PANEL);
+            cv_rrect(232 - text_w(&FONT_S, v) - 14, y + 11, text_w(&FONT_S, v) + 14, 18, 9, on ? red : C_KEYCAP);
+            cv_text_bg(232 - text_w(&FONT_S, v) - 7, y + 12, &FONT_S, v, on ? C_ON : C_SUB, on ? red : C_KEYCAP);
+        }
+        for (i = 0; i < 2u; i++) {              /* the clears: the chosen one framed */
+            int32_t y = 84 + (int32_t)i * 39;
+            uint32_t me = i == cur;
+            uint16_t card = me ? C_PANEL2 : C_PANEL;
+            if (me) { cv_rrect(0, y, 240, 36, 6, C_WHITE); cv_rrect(2, y + 2, 236, 32, 5, card); }
+            else cv_rrect(0, y, 240, 36, 6, card);
+            if (i == 0u) { p = put(s, "CLEAR "); p = put(p, slot_name(trk)); p = put(p, " "); *p++ = (char)('A' + set.sel[trk] % NPAT); *p = 0; }
+            else *put(s, "CLEAR EVERYTHING") = 0;
+            cv_text_bg(12, y + 9, &FONT_S, s, me ? C_TXT : C_SUB, card);
+            cv_text_bg(228 - text_w(&FONT_S, "REC REC"), y + 9, &FONT_S, "REC REC", me ? C_SUB : C_DIMC, card);
+        }
+        if (ask) {                              /* "sure?" */
+            const char *q = cur ? "CLEAR EVERYTHING?" : "CLEAR THE PATTERN?";
+            cv_rrect(14, 34, 212, 96, 10, YEL);
+            cv_rrect(17, 37, 206, 90, 8, C_PANEL);
+            cv_text_bg(120 - text_w(&FONT_S, q) / 2, 52, &FONT_S, q, YEL, C_PANEL);
+            cv_text_bg(120 - text_w(&FONT_S, "REC AGAIN TO DO IT") / 2, 78, &FONT_S, "REC AGAIN TO DO IT", C_TXT, C_PANEL);
+            cv_text_bg(120 - text_w(&FONT_S, cur ? "SAVED PROJECTS STAY" : "THE OTHERS STAY") / 2, 100, &FONT_S, cur ? "SAVED PROJECTS STAY" : "THE OTHERS STAY", C_SUB, C_PANEL);
+        }
+        cv_oy = 0;
+        cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
+    }
+}
 static void draw_save(uint32_t slot, uint32_t confirm, const char *msg, uint32_t msg_ok)
 {
     static const uint16_t YEL = RGB(255, 200, 60);
@@ -3508,14 +3564,90 @@ static uint32_t rec_step(uint32_t t, uint32_t *ahead)   /* the step nearest now 
     *ahead = s == (now + 1u) % len;             /* not played yet: the step will play it */
     return s;
 }
-static void rec_note(uint32_t t, uint32_t p, uint32_t s, uint32_t note, uint32_t ln)   /* add a note to a step (a chord: a free place) */
+static void rec_note(uint32_t t, uint32_t p, uint32_t s, uint32_t note, uint32_t ln, uint32_t dyn)   /* add a note to a step (a chord:
+                                                   a free place); dyn: its expression (a MIDI keyboard's velocity; the keys: NORMAL) */
 {
     uint8_t *nt = step_note(t, p, s), *l = step_len(t, p, s);
     uint32_t i, n = STEP_NN(t), empty = !nt[0];
     for (i = 0; i < n; i++) if (nt[i] == note) break;   /* there already: only the length */
     if (i == n) { for (i = 0; i < n; i++) if (!nt[i]) break; if (i == n) i = n - 1u; }   /* (full: the last place) */
     if (n == 1u || empty || ln > *l) *l = (uint8_t)(ln > NSTEP ? NSTEP : ln);   /* (the length first: the interrupt may read the step) */
+    if (n == 1u || empty) set.sdyn[t % NSYN][p % NPAT][s % NSTEP] = (uint8_t)dyn;
     nt[i] = (uint8_t)note;
+}
+static uint32_t vel_dyn(uint32_t v)             /* a MIDI note's velocity -> the expression it is recorded with */
+{
+    return v < 48u ? 2u : v < 100u ? 0u : v < 118u ? 5u : 4u;   /* SOFT, NORMAL, LOUD, PUNCH */
+}
+
+/* recording (the LIVE page, or REC from home): REC starts a take (a count-in bar first, when stopped; playing: from
+ * the next bar), REC again ends it. Each take keeps a copy of the pattern first (ARP on the LIVE page puts it back).
+ * An empty pattern is the first take's: it starts a bar long and grows a bar each time the take reaches its end (up
+ * to 4); REC ends it at the bar it is in */
+static uint32_t rec_wait;                       /* 1: the count-in (stopped), 2: to the next bar (playing) */
+static uint32_t rec_wpos, rec_grow, rec_t, rec_p;
+static struct {
+    uint8_t ok, t, p, len;
+    chord_t ch[NSTEP];
+    uint8_t dy[NSTEP];
+    uint16_t dp[NDR][NSTEP / PAGE];
+    uint8_t dd[NDR][NSTEP / 2u];
+} undo;
+static void undo_take(uint32_t t, uint32_t p)
+{
+    uint32_t s, d;
+    undo.t = (uint8_t)t; undo.p = (uint8_t)p; undo.len = set.plen[t][p];
+    if (t < NSYN) for (s = 0; s < NSTEP; s++) { undo.ch[s] = *step_at(t, p, s); undo.dy[s] = set.sdyn[t][p][s]; }
+    else for (d = 0; d < NDR; d++) {
+        for (s = 0; s < NSTEP / PAGE; s++) undo.dp[d][s] = set.dpat[p][d][s];
+        for (s = 0; s < NSTEP / 2u; s++) undo.dd[d][s] = set.ddyn[p][d][s];
+    }
+    undo.ok = 1;
+}
+static int undo_back(void)                      /* the pattern as it was before the last take; 0: nothing to undo */
+{
+    uint32_t s, d, t = undo.t, p = undo.p;
+    if (!undo.ok) return 0;
+    if (t < NSYN) for (s = 0; s < NSTEP; s++) { *step_at(t, p, s) = undo.ch[s]; set.sdyn[t][p][s] = undo.dy[s]; }
+    else for (d = 0; d < NDR; d++) {
+        for (s = 0; s < NSTEP / PAGE; s++) set.dpat[p][d][s] = undo.dp[d][s];
+        for (s = 0; s < NSTEP / 2u; s++) set.ddyn[p][d][s] = undo.dd[d][s];
+    }
+    set.plen[t][p] = undo.len;
+    undo.ok = 0;
+    return 1;
+}
+static void rec_start(uint32_t t)               /* REC: a take on track t, in the pattern it plays (stopped: the chosen) */
+{
+    uint32_t p = (clk_run ? play_pat[t] : set.sel[t]) % NPAT, cin = !(set.mu.ub.recopt & 1u);
+    undo_take(t, p);
+    rec_t = t; rec_p = p;
+    rec_grow = !set.sseq_on && !pat_used(t, p);   /* (empty: the first take sets its length) */
+    if (rec_grow) set.plen[t][p] = PAGE;
+    live_rec = 1;
+    if (!clk_run) {
+        rec_wait = cin ? 1u : 0u;
+        clk_pre = cin ? PAGE : 0u;              /* (a bar: 16 steps) */
+        clk_go++; clk_run = 1;
+    } else { rec_wait = cin ? 2u : 0u; rec_wpos = trk_pos[t]; }
+}
+static void rec_stop(void)                      /* REC again (or STOP): the take ends; the first take's length set */
+{
+    if (live_rec && rec_grow) {
+        if (rec_wait) set.plen[rec_t][rec_p] = undo.len;   /* (not begun: as it was) */
+        else {
+            uint32_t pos = trk_pos[rec_t], bars = pos / PAGE + 1u;
+            if (pos % PAGE < 4u && bars > 1u) bars--;   /* (just over a bar line: the bar before was meant) */
+            if (bars * PAGE < set.plen[rec_t][rec_p]) set.plen[rec_t][rec_p] = (uint8_t)(bars * PAGE);
+        }
+    }
+    live_rec = 0; rec_wait = 0; rec_grow = 0;
+}
+static uint32_t rec_beats(void)                 /* the count-in's beats still to come (4 .. 1); 0: none */
+{
+    if (rec_wait == 1u) return clk_ack == clk_go && clk_count ? clk_count : clk_ack == clk_go ? 0u : 4u;
+    if (rec_wait == 2u) return (PAGE - trk_pos[rec_t] % PAGE + 3u) / 4u;
+    return 0;
 }
 
 static void wipe_all(void)                      /* HOME, hold REC, then REC: every pattern empty, every sound, pedal, mixer
@@ -3540,7 +3672,7 @@ static void app_main(void)
     uint32_t fxb_t0[NFX] = {0}, fxb_long = (1u << NFX) - 1u;   /* when each top button went down; bit e: no long press due */
     uint32_t proj_slot = 0, confirm = 0, confirm_t = 0, msg_t = 0, msg_ok = 0;   /* the save page: the slot; "sure?" (1 save, 2 load); a message */
     uint32_t proj_go = 0, proj_go_t = 0;        /* a save (1) / load (2) confirmed: done once the sound has stopped */
-    uint32_t wipe_ask = 0, wipe_t = 0;          /* HOME: "CLEAR ALL?" up (REC again to do it), since when */
+    uint32_t wipe_ask = 0;                      /* the RECORD page's CLEAR EVERYTHING: confirmed, to be done */
     uint32_t page_hold_t = 0, vpage = 0;        /* SEQ screens: when you last moved the page / cursor (it stays put 3 s); the page shown */
     uint8_t dyn_ui = 0;                         /* the step recorder's dynamic (KNOB3), by the knob's place (DYN_UI): NORMAL */
     uint32_t dheld = 0xFFu;                     /* drums editing: the white key held (KNOB2 sets that hit's dynamic) */
@@ -3570,7 +3702,9 @@ static void app_main(void)
     uint32_t cur[NSYN] = {0, 0, 0};             /* each synth's step-recording cursor */
     uint8_t held_note[27] = {0}, held_trk[27] = {0};   /* what each held key plays, on which track (note 0: none) */
     uint8_t slot[27];                           /* a white key: its step on the page 0..15; a black key: 0..10 */
-    uint8_t mx_trk[128], mx_at[128], mx_pp[128];   /* a MIDI note held: its track (0xFF: not held), its step, its pattern */
+    uint8_t mx_trk[128], mx_at[128], mx_pp[128], mx_vel[128];   /* a MIDI note held: its track (0xFF: not held), its step,
+                                                   its pattern, how hard */
+    uint32_t rq_cur = 0, rq_ask = 0, rq_t = 0;  /* the RECORD page (REC held): the clear chosen, "sure?" and since when */
     uint32_t mx_held = 0;
     uint8_t rec_at[27], rec_pp[27];             /* live recording: the step each held key's note goes on (0xFF: none), its pattern */
 #if BOARD_SMK37
@@ -3621,6 +3755,7 @@ static void app_main(void)
     lcd_fill(0, 0, 240, 240, C_BG);
 
 #define CHANGED() (dirty = 1, t_change = fm1_ms, edits++)
+#define REC_NOW (live_rec && clk_run && !rec_wait)   /* recording: notes go in (not in the count-in) */
 #define CPU_FULL() (msg = "CPU FULL", msg_ok = 0, msg_t = fm1_ms ? fm1_ms : 1u)   /* a pedal refused: too much at once */
     for (;;) {
         uint32_t keys, down, up, rel, b, out_ch = set.ch ? set.ch - 1u : 0u, st, run, trk = sel_trk, pt, len, t;
@@ -3643,9 +3778,9 @@ static void app_main(void)
         prev = keys;
         for (k = 0; k < 27u; k++) {
             if (up >> k & 1u && held_note[k]) {  /* a key stops the note it started, on its track */
-                if (rec_at[k] != 0xFFu && live_rec && clk_run) {   /* live recording: in it goes, as long as it was held */
+                if (rec_at[k] != 0xFFu && REC_NOW) {   /* live recording: in it goes, as long as it was held */
                     uint32_t t2 = held_trk[k], a, ll = pat_len(t2, rec_pp[k]), ln = (rec_step(t2, &a) + ll - rec_at[k] % ll) % ll;
-                    rec_note(t2, rec_pp[k], rec_at[k], held_note[k], ln ? ln : 1u);
+                    rec_note(t2, rec_pp[k], rec_at[k], held_note[k], ln ? ln : 1u, 0u);
                     CHANGED();
                 }
                 rec_at[k] = 0xFFu;
@@ -3675,9 +3810,10 @@ static void app_main(void)
                 if (!black(KEY0 + k) && slot[k] < NDR) {   /* (the knobs then set it) */
                     uint32_t ahead = 0;
                     drum = slot[k];
-                    if (live_rec && clk_run) {  /* live recording: on the nearest step (one just ahead: heard from there) */
+                    if (REC_NOW) {              /* live recording: on the nearest step (one just ahead: heard from there) */
                         uint32_t s2 = rec_step(T_DRUMS, &ahead), lp = play_pat[T_DRUMS] % NPAT;
                         set.dpat[lp][drum][(s2 / PAGE) % (NSTEP / PAGE)] |= (uint16_t)(1u << (s2 % PAGE));
+                        ddyn_put(lp, drum, s2, 0u);
                         CHANGED();
                     }
                     if (!ahead) hit_req[drum]++;
@@ -3690,7 +3826,7 @@ static void app_main(void)
                 play_live(trk, (uint32_t)n, 1);
                 midi_send(0x90u | out_ch, (uint32_t)n, 100);
                 rec_at[k] = 0xFFu;
-                if (live_rec && clk_run) {      /* live recording: it starts on the nearest step (written when let go) */
+                if (REC_NOW) {                  /* live recording: it starts on the nearest step (written when let go) */
                     uint32_t a;
                     rec_pp[k] = (uint8_t)(play_pat[trk] % NPAT);
                     rec_at[k] = (uint8_t)rec_step(trk, &a);
@@ -3706,13 +3842,15 @@ static void app_main(void)
                 mx_trk[n] = (uint8_t)trk; mx_at[n] = 0xFFu; mx_held++;
                 if (trk == T_DRUMS) {           /* drums: live recording, on the nearest step (GM drum notes) */
                     uint32_t d = gm_drum(n), ahead;
-                    if (d < NDR && live_rec && clk_run) {
+                    if (d < NDR && REC_NOW) {
                         uint32_t s2 = rec_step(T_DRUMS, &ahead), lp = play_pat[T_DRUMS] % NPAT;
                         set.dpat[lp][d][(s2 / PAGE) % (NSTEP / PAGE)] |= (uint16_t)(1u << (s2 % PAGE));
+                        ddyn_put(lp, d, s2, vel_dyn(mrq_vel[(mrq_r - 1u) % 64u]));   /* (how hard: its expression) */
                         CHANGED();
                     }
                 } else {
-                    if (live_rec && clk_run) {  /* live recording: from the nearest step (written when let go) */
+                    mx_vel[n] = (uint8_t)mrq_vel[(mrq_r - 1u) % 64u];
+                    if (REC_NOW) {              /* live recording: from the nearest step (written when let go) */
                         uint32_t a;
                         mx_pp[n] = (uint8_t)(play_pat[trk] % NPAT);
                         mx_at[n] = (uint8_t)rec_step(trk, &a);
@@ -3720,9 +3858,9 @@ static void app_main(void)
                     if (syn_edit) { page_hold_t = fm1_ms; step_write(trk, pt, len, n, &cur[trk], &chord_n, &chord_trk, DYN_UI[dyn_ui % NDYN_UI]); CHANGED(); }
                 }
             } else if (mx_trk[n] != 0xFFu) {
-                if (mx_at[n] != 0xFFu && live_rec && clk_run) {   /* in it goes, as long as it was held */
+                if (mx_at[n] != 0xFFu && REC_NOW) {   /* in it goes, as long as it was held */
                     uint32_t t2 = mx_trk[n], a, ll = pat_len(t2, mx_pp[n]), ln = (rec_step(t2, &a) + ll - mx_at[n] % ll) % ll;
-                    rec_note(t2, mx_pp[n], mx_at[n], n, ln ? ln : 1u);
+                    rec_note(t2, mx_pp[n], mx_at[n], n, ln ? ln : 1u, vel_dyn(mx_vel[n]));   /* (how hard: its expression) */
                     CHANGED();
                 }
                 mx_trk[n] = 0xFFu; mx_at[n] = 0xFFu;
@@ -3822,7 +3960,19 @@ static void app_main(void)
             if (clk_run) clk_run = 0;
             else { clk_go++; clk_run = 1; }     /* (clk_go first: the interrupt restarts at step 1, then counts on) */
         }
-        if (!clk_run) live_rec = 0;             /* stopped: the recording ends */
+        if (!clk_run && live_rec) rec_stop();   /* stopped: the recording ends */
+        if (live_rec && rec_wait == 1u && clk_ack == clk_go && !clk_count) rec_wait = 0;   /* (the count-in over: step 1) */
+        if (live_rec && rec_wait == 2u && trk_pos[rec_t] != rec_wpos) {   /* (playing: from the next bar) */
+            if (trk_pos[rec_t] % PAGE == 0u) rec_wait = 0;
+            rec_wpos = trk_pos[rec_t];
+        }
+        if (live_rec && !rec_wait && rec_grow && clk_run && play_pat[rec_t] == rec_p) {   /* the first take: a bar longer at
+                                                   its end, while it goes on (4 bars: as long as it gets) */
+            uint32_t L = set.plen[rec_t][rec_p];
+            if (L >= NSTEP) rec_grow = 0;
+            else if (trk_pos[rec_t] == L - 1u) set.plen[rec_t][rec_p] = (uint8_t)(L + PAGE);
+        }
+        clk_click = (live_rec && rec_wait == 2u) || (live_rec && !rec_wait && set.mu.ub.recopt >> 1 & 1u);
         /* SEQ: the sequencer (the step recorder; REC there: live recording); SEQ again: SUPER SEQ; again: the step recorder */
         if (b & (1u << BTN_SEQ)) {
             if (spage == PG_COPY) { spage = PG_MAIN; if (cp_live) live_mode = 1; else edit = 1; cp_ask = 0; }   /* back */
@@ -3899,6 +4049,7 @@ static void app_main(void)
                 CHANGED();
             }
             else if (spage == PG_CHAIN) { int32_t v = (int32_t)chain_sl + e; chain_sl = (uint32_t)(v < 0 ? 0 : v > 3 ? 3 : v); }
+            else if (spage == PG_REC) { rq_cur = e > 0 ? 1u : 0u; rq_ask = 0; }   /* (the clear: the pattern, everything) */
             else if (spage == PG_COPY) { cp_pat = (uint32_t)(((int32_t)cp_pat + e % (int32_t)NPAT + (int32_t)NPAT) % (int32_t)NPAT); cp_ask = 0; }
             else if (spage == PG_PROJ) { int32_t v = (int32_t)proj_slot + e; proj_slot = (uint32_t)(v < 0 ? 0 : v >= (int32_t)NPROJ ? (int32_t)NPROJ - 1 : v); confirm = 0; }
             else if (spage == PG_SSEQ) {        /* SUPER SEQ: the box */
@@ -4115,6 +4266,10 @@ static void app_main(void)
                 }
             }
             if (ch) { CHANGED(); usr_ask = 0; }
+        } else if (spage == PG_REC) {           /* the RECORD page: KNOB1 the count-in, KNOB2 the click while recording */
+            uint8_t ci = !(set.mu.ub.recopt & 1u), cl = set.mu.ub.recopt >> 1 & 1u;
+            if (knob(ENC_KNOB1, &ci, 0, 1) | knob(ENC_KNOB2, &cl, 0, 1)) { set.mu.ub.recopt = (uint8_t)((ci ? 0u : 1u) | (uint32_t)cl << 1); CHANGED(); }
+            fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
         } else if (spage == PG_KEY) {           /* the song page: KNOB1 the lock, KNOB2 the lights, KNOB3 the swing */
             uint8_t lk = set.keyopt & 1u, li = set.keyopt >> 1 & 1u;
             if (knob(ENC_KNOB1, &lk, 0, 1) | knob(ENC_KNOB2, &li, 0, 1)) { set.keyopt = (uint8_t)(lk | li << 1); CHANGED(); }
@@ -4158,11 +4313,10 @@ static void app_main(void)
          * 1 s = clear the pattern (live: the one playing). HOME: held 1 s asks "CLEAR ALL?", REC again clears everything */
         {
             uint32_t home = !edit && !live_mode && spage < PG_FX;
-            if (wipe_ask && (!home || fm1_ms - wipe_t > 3000u || b & ~(1u << BTN_REC))) wipe_ask = 0;   /* (3 s, another button: no) */
-            if (b & (1u << BTN_REC)) {
-                if (wipe_ask) {                 /* sure: a fresh start */
+            if (wipe_ask) {                     /* (the RECORD page's CLEAR EVERYTHING, asked and confirmed) */
                     wipe_ask = 0; rec_long = 1;
-                    clk_run = 0; live_rec = 0;
+                    clk_run = 0; live_rec = 0; rec_wait = 0;
+                    spage = PG_MAIN; edit = 0; live_mode = 0;   /* (home again, all fresh) */
                     wipe_all();
                     trk_mute = set.mute;
                     clock_set_bpm(set.bpm);
@@ -4171,12 +4325,14 @@ static void app_main(void)
                     for (k = 0; k < NSYN; k++) cur[k] = 0;
                     msg = "ALL CLEARED"; msg_ok = 1; msg_t = fm1_ms ? fm1_ms : 1u;
                     CHANGED();
-                } else { rec_t0 = fm1_ms; rec_long = 0; }
             }
-            if (!rec_long && fm1_in.buttons >> BTN_REC & 1u && fm1_ms - rec_t0 >= 1000u) {
+            if (b & (1u << BTN_REC)) { rec_t0 = fm1_ms; rec_long = 0; }
+            if (!rec_long && fm1_in.buttons >> BTN_REC & 1u && fm1_ms - rec_t0 >= 700u) {
                 rec_long = 1;
-                if (home) { wipe_ask = 1; wipe_t = fm1_ms; }   /* HOME: ask first */
-                else if (edit || live_mode) { pat_clear(trk, pt); CHANGED(); }   /* (only where the pattern shows) */
+                if (home || edit || live_mode) {   /* held: the RECORD page (the count-in, the click; clear) */
+                    if (live_rec) rec_stop();
+                    edit = 0; live_mode = 0; spage = PG_REC; rq_cur = 0; rq_ask = 0;
+                }
             }
         }
         if (rel & (1u << BTN_REC)) {
@@ -4217,9 +4373,23 @@ static void app_main(void)
                     CHANGED();
                 }
             }
-            else if (!rec_long && live_mode && spage < PG_FX) {
-                if (live_rec) live_rec = 0;
-                else { live_rec = 1; if (!clk_run) { clk_go++; clk_run = 1; } }
+            else if (!rec_long && live_mode && spage < PG_FX) {   /* the LIVE page: a take on, off */
+                if (live_rec) rec_stop();
+                else rec_start(trk);
+                CHANGED();
+            }
+            else if (!rec_long && !edit && spage == PG_MAIN) {   /* home: straight into a take on the chosen track */
+                live_mode = 1; chord_n = 0;
+                rec_start(trk);
+                CHANGED();
+            }
+            else if (!rec_long && spage == PG_REC) {   /* the RECORD page: REC asks, REC again clears */
+                if (!rq_ask || fm1_ms - rq_t > 3000u) { rq_ask = 1; rq_t = fm1_ms; }
+                else if (rq_cur == 0u) {
+                    pat_clear(trk, set.sel[trk] % NPAT); rq_ask = 0;
+                    msg = "PATTERN CLEARED"; msg_ok = 1; msg_t = fm1_ms ? fm1_ms : 1u;
+                    CHANGED();
+                } else { rq_ask = 0; wipe_ask = 1; }   /* (everything: as REC twice on home did) */
             }
             rec_long = 1;
         }
@@ -4235,7 +4405,12 @@ static void app_main(void)
         if (b & (1u << BTN_ARP)) { arp_used = edit != 0u; arp_t0 = fm1_ms; }
         if (rel & (1u << BTN_ARP)) {           /* let go: as a pedal's button, a tap turns it on / off, a hold (0.5 s)
                                                    opens its page */
-            if (!arp_used && !edit) {
+            if (!arp_used && !edit && live_mode && spage < PG_FX) {   /* the LIVE page: the last take undone */
+                if (live_rec) rec_stop();
+                if (undo_back()) { msg = "TAKE UNDONE"; msg_ok = 1; CHANGED(); }
+                else { msg = "NOTHING TO UNDO"; msg_ok = 0; }
+                msg_t = fm1_ms ? fm1_ms : 1u;
+            } else if (!arp_used && !edit) {
                 if (fm1_ms - arp_t0 >= 500u) spage = PG_ARP;
                 else if (trk < NSYN) {
                     set.arp_on ^= (uint8_t)(1u << trk);
@@ -4319,7 +4494,8 @@ static void app_main(void)
             fm1_led_key(BTN_PLAY, confirm == 2u && (fm1_ms / 150u) % 2u);
         else fm1_led_key(BTN_PLAY, run || mclk_run || (mclk_bpm && fm1_ms - mclk_beat_ms < 80u));   /* lit: running; a blink a beat */
         fm1_led_key(BTN_REC, ((spage == PG_PROJ && confirm == 1u) || wipe_ask || cp_ask || usr_ask ? (fm1_ms / 150u) % 2u : 0u)
-                             || (live_mode && live_rec));   /* (live: lit while recording; "sure?": blinking) */
+                             || (live_mode && live_rec && (!rec_wait || (fm1_ms / 150u) % 2u)) || (spage == PG_REC && rq_ask && (fm1_ms / 150u) % 2u));   /* (live: lit while
+                                                   recording, blinking in the count-in; "sure?": blinking) */
         if (spage == PG_MIX)                    /* the mixer: SAVE ARP SEQ PLAY lit = LEAD PAD BASS DRUMS playing (not muted) */
             for (k = 0; k < NTRK; k++) fm1_led_key(MUTE_BTN[k], !(trk_mute >> SEQ_ORDER[k] & 1u));
 #if BOARD_SMK37
@@ -4348,14 +4524,20 @@ static void app_main(void)
          * (1), the arpeggiator (2), the mixer (3) */
         {
             uint32_t scr = IS_FX_PAGE(spage) ? 1u : spage == PG_ARP ? 2u : spage == PG_MIX ? 3u : spage == PG_SSEQ ? 4u : spage == PG_PROJ ? 5u
-                         : spage == PG_KEY ? 7u : spage == PG_SOUND ? 8u : spage == PG_CHAIN ? 9u : spage == PG_COPY ? 10u : 0u;
+                         : spage == PG_KEY ? 7u : spage == PG_SOUND ? 8u : spage == PG_CHAIN ? 9u : spage == PG_COPY ? 10u
+                         : spage == PG_REC ? 11u : 0u;
             if (scr != pedal_mode) {
                 pedal_mode = scr;
                 lcd_fill(0, 0, 240, 240, C_BG);  /* (all of it: the screens differ in their parts) */
                 view_drawn = big_drawn = info_drawn = head_drawn = pedal_drawn = status_drawn = ~0u;
             }
         }
-        if (pedal_mode == 9u || pedal_mode == 10u) {   /* the signal chain (CHAIN), the copy page (COPY) */
+        if (pedal_mode == 11u) {                /* the RECORD page */
+            uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
+            if (rq_ask && fm1_ms - rq_t > 3000u) rq_ask = 0;
+            st = mix(mix(mix(mix(mix(mix(mix(trk, rq_cur), rq_ask), set.mu.ub.recopt), set.sel[trk]), show_msg ? msg_t : 0u), wipe_ask), 111u);
+            if (st != pedal_drawn) { pedal_drawn = st; draw_rec(trk, rq_cur, rq_ask, show_msg ? msg : 0, msg_ok); }
+        } else if (pedal_mode == 9u || pedal_mode == 10u) {   /* the signal chain (CHAIN), the copy page (COPY) */
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
             uint32_t ty3 = trk < NSYN ? set.styp[trk] * 7u + set.styp[(trk + 1u) % NSYN] * 3u + set.styp[(trk + 2u) % NSYN] : 0u;
             if ((st = mix(mix(mix(mix(mix(trk, trk_mute >> trk & 1u), pedal_mode), show_msg ? msg_t : 0u), ty3), set.sel[trk])) != head_drawn) {
@@ -4464,10 +4646,21 @@ static void app_main(void)
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
             st = mix(mix(mix(mix(mix(mix(trk, drum_edit ? 16u + drum : 0u), trk_mute >> trk & 1u), play_pat[trk]), set.sel[trk]), flash), set.sseq_on | live_mode << 1 | live_rec << 2 | edit << 3);
             if (flash) st = mix(st, trk < NSYN ? set.snd[trk].preset : 16u + set.dkit);
-            st = mix(mix(mix(mix(st, show_msg), show_msg ? msg_t : 0u), wipe_ask), set.oct);   /* (the OCT badge) */
+            st = mix(mix(mix(mix(mix(st, show_msg), show_msg ? msg_t : 0u), wipe_ask), set.oct), rec_beats());   /* (the OCT badge; the count-in) */
             if (st != big_drawn) {
                 big_drawn = st;
-                if (wipe_ask) head_text("CLEAR ALL?", RGB(255, 200, 60), RGB(255, 200, 60));
+                uint32_t cb = rec_beats();
+                if (cb) {                       /* the count-in: 4 . 3 . 2 . 1 */
+                    uint32_t j;
+                    head_begin(RGB(214, 48, 38));
+                    for (j = 0; j < 4u; j++) {
+                        char nb2[2] = {(char)('4' - j), 0};
+                        uint32_t now = 4u - j == cb, past = 4u - j > cb;
+                        cv_text_bg(36 + (int32_t)j * 52, 3, &FONT_L, nb2, now ? RGB(214, 48, 38) : past ? C_DIMC : C_SUB, C_PANEL);
+                    }
+                    cv_blit(0, Y_BIG);
+                }
+                else if (wipe_ask) head_text("CLEAR ALL?", RGB(255, 200, 60), RGB(255, 200, 60));
                 else if (show_msg)              /* SAVED 3, LOAD FAILED, ALL CLEARED ... */
                     head_text(msg, msg_ok ? C_WHITE : C_MUTE, msg_ok ? C_PLAYG : C_MUTE);   /* (red: it did not happen) */
                 else draw_big(trk, drum_edit, drum, flash);

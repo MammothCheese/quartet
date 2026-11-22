@@ -30,6 +30,29 @@ static volatile uint32_t rep_len;               /* BEAT REPEAT while held: the s
 #define REP_HALF 0x80u
 /* the interrupt writes these */
 static volatile uint32_t clk_step;              /* steps since PLAY (for the beat display) */
+static volatile uint32_t clk_pre;               /* main loop: steps of count-in before step 1 (read as PLAY starts) */
+static volatile uint32_t clk_count;             /* the count-in's beats still to come (4 .. 1), 0: none */
+static volatile uint32_t clk_ack;               /* the last clk_go the interrupt has started from */
+static volatile uint32_t clk_click;             /* main loop: 1 = a click on every beat (recording) */
+/* the click: a short blip, higher on the bar's first beat, into the mix after the pedals */
+#define CK_LEN 1300                             /* (30 ms) */
+static int32_t ck_at = -1, ck_age = CK_LEN;
+static uint32_t ck_ph, ck_inc;
+static void click_start(int32_t at, int accent)
+{
+    ck_at = at; ck_age = 0; ck_ph = 0;
+    ck_inc = accent ? 214254000u : 146082000u;  /* (2.2 kHz, 1.5 kHz) */
+}
+static void click_render(int32_t *out, uint32_t n)
+{
+    uint32_t i = ck_at >= 0 ? (uint32_t)ck_at : 0u;
+    for (; i < n && ck_age < CK_LEN; i++, ck_age++) {
+        int32_t v = ((sine(ck_ph) >> 2) * (CK_LEN - ck_age)) / CK_LEN;
+        ck_ph += ck_inc;
+        out[2u * i] += v; out[2u * i + 1u] += v;
+    }
+    ck_at = -1;
+}
 static volatile uint32_t clk_sub;               /* the tick within the step, 0..TPS-1 (live recording rounds with it) */
 /* (trk_pos[] and play_pat[], the step and the pattern each track plays now, are declared in quartet.c: the track
  * modules read them; only this file writes them) */
@@ -324,6 +347,7 @@ static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
         seq_advance(tick == 0u);
         repeat_step(tick / TPS, tick == 0u);
         clk_step = tick / TPS;
+        if (clk_click && (tick / TPS) % 4u == 0u) click_start((int32_t)blk_pos, (tick / TPS) % 16u == 0u);   /* (the beat) */
         steps_fire();
     } else {
         broken_tick();
@@ -364,7 +388,7 @@ static void master_limit(int32_t *out, uint32_t n)
 }
 static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN frames */
 {
-    static uint32_t go_done, was_run, pos_q8, tick, free_q8, free_tick;
+    static uint32_t go_done, was_run, pos_q8, tick, free_q8, free_tick, pre_left;
     uint32_t len_q8 = clk_tick_q8, run = clk_run, t, i = 0, k;
     for (t = 0; t < NTRK; t++) for (k = 0; k < n; k++) tb[t][k] = 0;   /* each track's own buffer (gb_fx.h) */
     if (!run) {                                 /* stopped: a pattern chosen starts at once (SUPER SEQ: the first box) */
@@ -372,7 +396,14 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
         else { chain_rest = 0; for (t = 0; t < NTRK; t++) if (set.sel[t] < NPAT) play_pat[t] = set.sel[t]; }
     }
     blk_pos = 0;
-    if (go_done != clk_go) { go_done = clk_go; pos_q8 = 0; tick = 0; clock_fire(0); }   /* PLAY: step 1 now */
+    if (go_done != clk_go) {                    /* PLAY: step 1 now (or a count-in bar first: silent, a click a beat) */
+        go_done = clk_go; pos_q8 = 0; tick = 0;
+        pre_left = clk_pre * TPS; clk_pre = 0;
+        if (pre_left) { clk_count = pre_left / (TPS * 4u); click_start(0, 1); }
+        else clock_fire(0);
+        clk_ack = go_done;
+    }
+    if (!run) { pre_left = 0; clk_count = 0; }
     if (was_run && !run) {                      /* STOP: the notes let go; the pedals fall silent (gb_fx.h); no late step */
         drums_stop(); synth_stop(); fx_flush_req = 1; fx_quiet = 1;
         ws_home_all();                          /* (WRONG STATION: the real sounds back) */
@@ -393,7 +424,13 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
         if (run) {
             uint32_t todo;
             uint32_t cur = tick_len(len_q8, tick);   /* (this tick's length: swing stretches and shrinks them) */
-            if (pos_q8 >= cur) { pos_q8 -= cur; blk_pos = i; clock_fire(++tick); continue; }
+            if (pos_q8 >= cur) {
+                pos_q8 -= cur; blk_pos = i;
+                if (!pre_left) clock_fire(++tick);
+                else if (--pre_left == 0u) { tick = 0; clk_count = 0; clock_fire(0); }   /* (the count-in done: step 1) */
+                else if (++tick % (TPS * 4u) == 0u) { clk_count = pre_left / (TPS * 4u); click_start((int32_t)i, 0); }
+                continue;
+            }
             todo = (cur - pos_q8 + 255u) >> 8;  /* whole samples to the next tick */
             if (todo < seg) seg = todo;
         }
@@ -404,6 +441,7 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
         if (run) pos_q8 += seg << 8;
     }
     fx_process(out, n);                         /* the tracks through their effects, mixed into out */
+    click_render(out, n);                       /* (the count-in, the recording's click) */
     master_limit(out, n);
 }
 
