@@ -99,5 +99,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/emu/quartet.js docs/emu/quartet.wasm
-          git commit -m "Emulator: rebuilt for the current firmware [skip ci]"
+          # (no "[skip ci]": a push made with the workflow's own token starts no workflow anyway, and with it in the
+          # message a release tag put on this commit would not build)
+          git commit -m "Emulator: rebuilt for the current firmware"
           git pull --rebase origin main && git push
