@@ -3,7 +3,7 @@
 
 **Four instruments. One little band.**
 
-Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 23 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 37 pedals, live recording and a song arranger.
+Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 23 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 40 pedals, live recording and a song arranger.
 
 > **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, go to the **home screen**, **hold REC for one second** until **CLEAR ALL?** appears, then **press REC again within three seconds** (any other button cancels). This erases the demo groove for good, but not your four saved projects.
 
@@ -17,7 +17,7 @@ The **home screen** shows the selected instrument and pattern (A–J), tempo, be
 
 ![Quartet screens](screens.png)
 
-On the home screen, **KNOB1** sets tempo and **KNOB2** the **swing** for the whole song, 50 % (straight) to 66 % (a heavy shuffle), a click a step, shown as **SW** on the line under the title: every second 16th comes a little later, while the beat itself stays exactly in time. The sound itself is shaped in **EDIT**. **PRESETS** chooses patterns, **SEQ** opens the sequencer (and SUPER SEQ), **EDIT** opens the sound editor, **GLO** opens the mixer and **SAVE** opens project storage. **HOME** always returns here.
+On the home screen the four knobs are: **KNOB1** the tempo; **KNOB2** the chosen track's **mix level** (the mixer's, shown with a speaker); **KNOB3** its **brightness** (a synth's filter, the same as EDIT's cutoff, shown with a sun; drums have none: **--**); **KNOB4** the **pedal fade**, how pedals switch on and off: at once (**-**) or fading in and out over 1, 2, 3 or 4 bars (shown with a ramp). All four show on the line under the title, the bars in the track's colour. When the keys are shifted an octave, **OCT+1** (or −1, ±2) shows in the top bar. Swing is on the SONG page (below). The sound itself is shaped in **EDIT**. **PRESETS** chooses patterns, **SEQ** opens the sequencer (and SUPER SEQ), **EDIT** opens the sound editor, **GLO** opens the mixer and **SAVE** opens project storage. **HOME** always returns here.
 
 ## How the controls work
 
@@ -126,55 +126,60 @@ OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose
 
 ## Effects pedals and arpeggiator
 
-The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 37**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **PRESETS** chooses the **type** (category, shown beside the instrument's name) and **ALGORITHM** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Loose, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. Every pedal is drawn like a screen-printed boutique pedal, with its own art across the case: a storm and a lightning bolt on Distortion, a volcano on Fuzz, a lighthouse on Tremolo, ripples on Delay, a night swirl on Reverb, a comet on Shimmer, tape reels on Tape Echo, a melting clock on Loose, confetti on Glitch, and so on. Its name is lettered on the case, its three knobs are coloured knurled caps or black skirted ones with their names and values underneath (digital pedals in %), and its LED glows when it is on; off, the LED goes dark with OFF beside it.
+The top-row buttons **FX, SEL, ENV and LFO** are **four pedal slots for the selected instrument**, and each slot can hold **any pedal from a library of 40**. **Tap** a button to switch its pedal **on or off**: its name shows at the top (**GLITCH ON**, **GLITCH OFF**) and the button is lit while it is on. **Hold** it half a second to open the pedal: **PRESETS** chooses the **type** (category, shown beside the instrument's name) and **ALGORITHM** the **pedal** within it, a click each. A pedal already in another of the instrument's slots isn't offered (it comes back when that slot changes); nor is Glitch beside Loose, as they share the instrument's sound memory. On the pedal, **KNOB1** also switches it on (a click clockwise) and off (a click anticlockwise); **KNOB2–4** adjust it. **HOME** returns to the sequencer. Every pedal is drawn like a screen-printed boutique pedal, with its own art across the case: a storm and a lightning bolt on Distortion, a volcano on Fuzz, a lighthouse on Tremolo, ripples on Delay, a night swirl on Reverb, a comet on Shimmer, tape reels on Tape Echo, a melting clock on Loose, confetti on Glitch, and so on. Its name is lettered on the case, its three knobs are coloured knurled caps or black skirted ones with their names and values underneath (digital pedals in %), and its LED glows when it is on; off, the LED goes dark with OFF beside it.
 
 ![A pedal](guide/pedal.png) A new project starts with Reverb, Delay, Distortion and Chorus in the four slots. (**EDIT** is no longer a pedal slot: it is the sound editor.)
 
 | Category | Pedal | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|
-| **Drive** | Distortion | Level | Tone | Distortion |
-| | Overdrive: soft, warm | Level | Tone | Drive |
-| | Fuzz: hard, buzzy | Level | Tone | Fuzz |
-| | Octave Fuzz: an octave up, fuzzed | Level | Tone | Fuzz |
-| | Wavefolder: metallic, folds back on itself | Level | Tone | Fold |
-| | Bitcrusher: fewer bits and a lower sample rate, crunchy digital grit | Bits | Rate | Mix |
-| **Filter** | Filter Seq: the filter steps in time with the tempo | Rate 1/4–1/16 | Depth | Resonance |
-| | Wah: opens as you play louder | Sensitivity | Range | Resonance |
-| | DJ Filter: one knob from low-pass (muffled) through open to high-pass (thin) | Filter LP–OPEN–HP | Resonance | Level |
-| | Acid: a resonant filter that snaps open on every note (on drums: every hit) | Cutoff | Resonance | Decay |
+| **Drive** | Overdrive: soft, warm | Level | Tone | Drive |
+|  | Distortion | Level | Tone | Distortion |
+|  | Fuzz: hard, buzzy | Level | Tone | Fuzz |
+|  | Octave Fuzz: an octave up, fuzzed | Level | Tone | Fuzz |
+|  | Wavefolder: metallic, folds back on itself | Level | Tone | Fold |
+|  | Bitcrusher: fewer bits and a lower sample rate, crunchy digital grit | Bits | Rate | Mix |
+|  | Compressor: evens out loud and quiet; a slow attack lets each note's start through | Squash | Attack | Level |
+| **Filter** | Wah: opens as you play louder | Sensitivity | Range | Resonance |
+|  | DJ Filter: one knob from low-pass (muffled) through open to high-pass (thin) | Filter LP–OPEN–HP | Resonance | Level |
+|  | Acid: a resonant filter that snaps open on every note (on drums: every hit) | Cutoff | Resonance | Decay |
+|  | Filter Seq: the filter steps in time with the tempo | Rate 1/4–1/16 | Depth | Resonance |
 | **Modulation** | Chorus | Rate | Depth | Level |
-| | Phaser | Rate | Depth | Feedback |
-| | Flanger: jet-plane sweep | Rate | Depth | Feedback |
-| | Tremolo: volume pulsing | Rate | Depth | Shape: round to square |
-| | Slicer: rhythmic chopping, in time | Rate 1/8–1/32 | Depth | Pattern 1–8 |
-| | Pump: ducks the instrument on every kick, the sidechain "breathing" | Depth | Release | Source: kick / 1/4 / 1/8 |
-| | Vibrato: pitch wobble | Rate | Depth | Mix |
+|  | Flanger: jet-plane sweep | Rate | Depth | Feedback |
+|  | Phaser | Rate | Depth | Feedback |
+|  | Tremolo: volume pulsing | Rate | Depth | Shape: round to square |
+|  | Vibrato: pitch wobble | Rate | Depth | Mix |
+|  | Slicer: rhythmic chopping, in time | Rate 1/8–1/32 | Depth | Pattern 1–8 |
+|  | Pump: ducks the instrument on every kick, the sidechain "breathing" | Depth | Release | Source: kick / 1/4 / 1/8 |
+|  | Rotary: a spinning-speaker cabinet that spins up or slows down as SPEED turns | Speed | Depth | Mix |
 | **Space** | Reverb | Level | Tone | Time |
-| | Delay | Repeat rate | Echo | Intensity |
-| | Tape Echo: wobbly, darkening repeats | Echo | Time | Repeats |
-| | Shimmer: reverb that rises in octaves | Level | Time | Shimmer |
-| | Reverse Delay: backwards echoes that swell into each repeat | Echo | Time | Repeats |
-| | Spring Reverb: the splashy, metallic spring of an old amp | Level | Tone | Time |
+|  | Spring Reverb: the splashy, metallic spring of an old amp | Level | Tone | Time |
+|  | Shimmer: reverb that rises in octaves | Level | Time | Shimmer |
+|  | Delay | Repeat rate | Echo | Intensity |
+|  | Tape Echo: wobbly, darkening repeats | Echo | Time | Repeats |
+|  | Reverse Delay: backwards echoes that swell into each repeat | Echo | Time | Repeats |
 | **Pitch** | Shifter: the notes moved up or down | Semitones −12…+12 | Octave −2…+2 | Mix |
-| | Harmonizer: a second note at an interval above or below | Interval (octave, 5th, 4th, 3rd, minor 3rd, down or up) | Level | Tone |
-| | Ring Mod: the sound multiplied by a tone: metallic, bell-like | Frequency | Mix | Wobble |
-| **Other** | Old Media: a worn tape or record: wobble, hiss and crackle, a dull and squashed sound | Wear | Noise | Tone |
-| | Glitch: on a step, now and then, a slice repeats, reverses or stutters | Chance | Length 1/32–1/8 | Mix |
-| | Underwater: muffled and drifting | Depth | Wobble | Level |
-| | Synth: a square wave following the lowest note | Octave 0/−1/−2 | Tone | Mix |
-| | Lo-Fi: lower sample rate, noise and a worn digital sound | Rate | Noise | Dirt |
-| | Loose: some notes play late (now and then twice), and a second player follows a step behind | Late | Double | Drift |
-| | Music Box: a little plucked metal bell on each note, slightly uneven | Decay | Tone | Mix |
-| | Wrong Station: now and then tunes to a neighbouring sound (drums: kit) with a burst of static, then back | Chance | Drift (how far along the list) | Hold 1/4 bar–2 bars |
-| | Mech Failure: wears out as it plays (missed and stuck notes, out of tune) until it suddenly recovers | Wear | Stick | Recovery |
-| | Memory Loss: each time round more steps are forgotten, down to a floor; Recall brings them back in waves | Speed | Floor | Recall |
-| | Tape Worm: keeps the last steps played and now and then loops a fragment of them | Chance | Length 1/8–1 bar | Repeats 1–4 |
+|  | Harmonizer: a second note at an interval above or below | Interval (octave, 5th, 4th, 3rd, minor 3rd, down or up) | Level | Tone |
+|  | Synth: a square wave following the lowest note | Octave 0/−1/−2 | Tone | Mix |
+|  | Music Box: a little plucked metal bell on each note, slightly uneven | Decay | Tone | Mix |
+|  | Ring Mod: the sound multiplied by a tone: metallic, bell-like | Frequency | Mix | Wobble |
+| **Texture** | Old Media: a worn tape or record: wobble, hiss and crackle, a dull and squashed sound | Wear | Noise | Tone |
+|  | Lo-Fi: lower sample rate, noise and a worn digital sound | Rate | Noise | Dirt |
+|  | Underwater: muffled and drifting | Depth | Wobble | Level |
+|  | Wrong Station: now and then tunes to a neighbouring sound (drums: kit) with a burst of static, then back | Chance | Drift (how far along the list) | Hold 1/4 bar–2 bars |
+| **Behaviour** | Glitch: on a step, now and then, a slice repeats, reverses or stutters | Chance | Length 1/32–1/8 | Mix |
+|  | Loose: some notes play late (now and then twice), and a second player follows a step behind | Late | Double | Drift |
+|  | Mech Failure: wears out as it plays (missed and stuck notes, out of tune) until it suddenly recovers | Wear | Stick | Recovery |
+|  | Memory Loss: each time round more steps are forgotten, down to a floor; Recall brings them back in waves | Speed | Floor | Recall |
+|  | Tape Worm: keeps the last steps played and now and then loops a fragment of them | Chance | Length 1/8–1 bar | Repeats 1–4 |
+|  | Bloom: each note starts clean and grows richer harmonics as it is held | Time | Depth | Tone |
+
+**Pedal fade.** With KNOB4 on the home screen set to 1–4 bars, tapping a pedal on fades it in over that many bars, and tapping it off fades it out: a drive or filter blends from the clean sound to the pedal's; a space pedal (reverb, delay, …) has its send turned up or down, so its tail rings out. Set to **-**, pedals switch at once. Pressing STOP ends any fade. The note pedals (Wrong Station, Mech Failure, Memory Loss, Tape Worm) can't fade: they change notes, so they switch at once.
 
 Most values run 0–20. **Space pedals are shared**: there is one of each (Reverb, Delay, Tape Echo, Shimmer, Reverse Delay, Spring Reverb) for the whole band. Each instrument sets **how much it sends** (Level / Echo); the other two knobs belong to the shared pedal and change it for every instrument using it. All other pedals are each instrument's own, slot by slot, and run in slot order (FX first).
 
 **PLAY / STOP**: stopping silences every pedal at once: echoes, reverb tails, loops, Glitch, and Loose's late notes and second player all end (the space pedals fade out in a few milliseconds), and nothing left over is heard when you start again. While stopped, the pedals come back as soon as you play a key.
 
-The chip can only do so much at once: if switching a pedal on (or choosing a heavier one) would overload it, the pedal stays off and **CPU FULL** shows. Switch another pedal off first. Phaser, Filter Seq and Wah are the heaviest; the drives, Tremolo, Slicer, Glitch and Synth the lightest.
+The chip can only do so much at once: if switching a pedal on (or choosing a heavier one) would overload it, the pedal stays off and **CPU FULL** shows. Switch another pedal off first. Rotary, Phaser, Filter Seq and Wah are the heaviest; the drives, Compressor, Tremolo, Slicer, Glitch and Synth the lightest.
 
 The **arpeggiator** plays held notes or pattern chords in sequence. Like a pedal button, **tap ARP** to switch it on or off (**ARP ON** shows; ARP is lit while it is on) and **hold it 0.5 seconds** for its screen: **KNOB1** on/off, **KNOB2** rate (1/4–1/32), **KNOB3** octaves (1–4), **KNOB4** direction (up/down/random). Its notes are **locked to the beat**: they always fall on the grid of its rate, from the bar's start (a key pressed between two beats starts on the next).
 
@@ -204,9 +209,9 @@ When SUPER SEQ is on, it chooses the playing patterns instead of PRESETS. **PLAY
 
 ## Mixer and saving
 
-**GLO** opens the mixer: a channel per track, each with a knurled knob in its colour. **KNOB1–4** set the volumes of lead, pads, bass and drums, shown under the knob and as a column of LEDs. On the mixer, **FX / SEL / ENV / LFO** mute lead, pads, bass and drums: the LED by the button's name glows while the track plays and goes dark when muted. Tap **GLO** again for the **KEY page**, and once more to go home (**HOME** also goes straight home). If audio crackles, try switching a pedal off.
+**GLO** opens the mixer: a channel per track, each with a knurled knob in its colour. **KNOB1–4** set the volumes of lead, pads, bass and drums, shown under the knob and as a column of LEDs. On the mixer, **FX / SEL / ENV / LFO** mute lead, pads, bass and drums: the LED by the button's name glows while the track plays and goes dark when muted. Tap **GLO** again for the **SONG page**, and once more to go home (**HOME** also goes straight home). If audio crackles, try switching a pedal off.
 
-**The KEY page** (from Conductor) shows the key, its relative minor and its signature, and one octave of keyboard with the key's notes lit and named (the notes you play light gold). **ALGORITHM** chooses the key, a sharp or a flat at a time (C, G, D … or F, B-flat, E-flat …; QUARTET's demo groove is in C minor, the key of E-flat). **KNOB1** switches **LOCK** on: the keys then play only the key's notes, a note outside it sounding the one below. **KNOB2** switches **LIGHTS** on: the key's notes glow on the FM-1's keys (lead, pads and bass, outside the step recorder).
+**The SONG page** (the key page, from Conductor) shows the key, then one line with **LOCK** and **LIGHTS** (lit when on) and the key's relative minor (e.g. **A MINOR**), then the **SWING**, and one octave of keyboard with the key's notes lit and named (the notes you play light gold). **ALGORITHM** chooses the key, a sharp or a flat at a time (C, G, D … or F, B-flat, E-flat …; QUARTET's demo groove is in C minor, the key of E-flat). **KNOB1** switches **LOCK** on: the keys then play only the key's notes, a note outside it sounding the one below. **KNOB2** switches **LIGHTS** on: the key's notes glow on the FM-1's keys (lead, pads and bass, outside the step recorder). **KNOB3** sets the **swing** for the whole song, 50 % (straight) to 66 % (a heavy shuffle), a click a step: every second 16th comes a little later, while the beat itself stays exactly in time.
 
 Quartet **automatically remembers current work** after playback stops and the sound has been quiet for two seconds. Four separate save slots let you keep projects.
 
@@ -223,7 +228,7 @@ To clear the current project, **hold REC on the home screen**, then confirm with
 | **SELECT** | Select instrument | Select instrument | SUPER SEQ: select row; SOUND, chain: another instrument; copy page: the track to copy from |
 | **PRESETS** | Select pattern A–J | Select pattern | SUPER SEQ: select song; pedal: the type (category); chain: another pedal; copy page: the pattern to copy from |
 | **ALGORITHM** | Select sound/kit (no test note) | Melodic step cursor | Pedal: the pedal within its type; SOUND: the page; chain: the slot; copy page: the pattern; SUPER SEQ: the box; save: the slot; KEY: the key; arpeggiator, mixer: nothing |
-| **KNOB1–4** | Tempo / swing (KNOB3–4: nothing) | Bars / note length / expression / note (drums: bars / — / expression / bar) | LIVE: bars / cursor / bar / —; KEY: lock / lights; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
+| **KNOB1–4** | Tempo / the chosen track's mix level / its brightness / pedal fade (0–4 bars) | Bars / note length / expression / note (drums: bars / — / expression / bar) | LIVE: bars / cursor / bar / —; SONG: lock / lights / swing; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
 | **Keys** | Play notes; drums: first six white keys | Melodic notes; drums: black keys choose voice, white keys toggle hits | LIVE: play and record |
 | **OCT− / OCT+** | Tap: octave; hold: the pattern an octave | Tap: drum step page; hold: the pattern an octave (synths) | Octave where applicable |
 | **PLAY** | Start/stop from step one | Start/stop | LIVE: start/stop (stopping ends recording); save: load |

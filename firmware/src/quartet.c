@@ -21,7 +21,7 @@
  *   offered in four groups a type (SND_GRP: LEAD keys, band, synth, odd; PAD strings, keys, synth, atmos; BASS
  *   acoustic, analog, digital, wild), the others loadable still. DRUMS: kits 0-17 (KIT_GRP: groove, machines,
  *   electro, odd), USER 96-99
- * (its name shows big). Home: KNOB1 tempo, KNOB2 swing 50-66 % (KNOB3-4 nothing: the sound is EDIT's). EDIT: the SOUND page, the sound in
+ * (its name shows big). Home: KNOB1 tempo, KNOB2 the chosen track's mix level, KNOB3 its brightness (a synth's cutoff), KNOB4 the pedals' fade in / out (0-4 bars); the octave, when shifted, a badge in the top bar. EDIT: the SOUND page, the sound in
  * depth (EDIT again: the signal chain, again: home; HOME: home; SELECT another track):
  *   ALGORITHM the page: INSTR a menu: type (LEAD/PAD/BASS), bank, sound (the bank's listed), USER slot (REC twice: save)
  *                    MAIN glide, cutoff, resonance, filter envelope   OSC wave 1, wave 2, osc 2 tuning, mix
@@ -36,17 +36,17 @@
  * Pedals (gb_fx.h), for the chosen track: four slots (FX SEL ENV LFO), each holding any pedal of the library. A tap
  * on a top button switches its pedal on / off ("GLITCH ON" big on top; lit = on); held 0.5 s it shows the pedal (the
  * track's name above it, the pedal's category beside it, the ON lamp, three knobs; HOME goes back). There PRESETS picks
- * the type (DRIVE, FILTER, MODULATION, SPACE, PITCH, OTHER), ALGORITHM the pedal in it (a click each; a pedal in
+ * the type (DRIVE, FILTER, MODULATION, SPACE, PITCH, TEXTURE, BEHAVIOUR: PORD's order), ALGORITHM the pedal in it (a click each; a pedal in
  * another of the track's slots is not offered, nor GLITCH beside LOOSE: ped_free()); KNOB1 switches it on (a click
  * clockwise) / off (a click back), KNOB2-4 turn its knobs. (EDIT's slot is unused: EDIT is the sound editor.)
  * The space pedals (reverb, delay, tape echo, shimmer, reverse delay, spring reverb) are one each, shared: a track's
  * first knob is what it sends. STOP silences every pedal (gb_fx.h fx_flush).
  * A pedal that would overload the chip is refused: "CPU FULL" (ped_fits()). New: reverb, delay, distortion,
  * chorus in the four slots.
- *   GLO   a tap: the MIXER (again: the KEY page, again: home): four channel strips; KNOB1-4 the volume of LEAD, PAD,
+ *   GLO   a tap: the MIXER (again: the SONG page, again: home): four channel strips; KNOB1-4 the volume of LEAD, PAD,
  *         BASS, DRUMS (100 = as is); there (only), FX / SEL / ENV / LFO mute LEAD / PAD / BASS / DRUMS, lit = playing.
- *         The KEY page (Conductor's): ALGORITHM the key (sharps / flats), KNOB1 LOCK (the keys play only its notes, one
- *         off it the note below), KNOB2 LIGHTS (its notes glow on the keys).
+ *         The SONG page (the KEY page as was, Conductor's): ALGORITHM the key (sharps / flats), KNOB1 LOCK (the keys play
+ *         only its notes, one off it the note below), KNOB2 LIGHTS (its notes glow on the keys), KNOB3 the swing 50-66 %.
  *         Held: BEAT REPEAT, the slice playing goes round until let go (then the music is where it would have been);
  *         meanwhile the white keys 1-5 choose the slice: 1/2 bar, 1/4, 1/8 (to start), 1/16, 1/32
  *   ARP   (outside edit mode) as a pedal's button: a tap turns the chosen synth track's arpeggiator on / off ("ARP ON"),
@@ -209,6 +209,7 @@ typedef struct {                                /* the USER bank: sounds you sav
     struct { uint8_t used, base; dsnd_t d[NDR]; } kit[NUKIT];   /* a kit: the kit it was made from, its six drums */
     uint8_t theme;                              /* (later) the screen's theme (HOME held, ALGORITHM): with the instrument,
                                                    in the room the older saves' BASS patterns left, so no save changes size */
+    uint8_t pfade;                              /* (later still) the pedals' fade in / out: 0 at once, 1-4 bars (home, KNOB4) */
 } ubank_t;
 typedef char ubank_fits[sizeof(ubank_t) <= sizeof(mono_t) * 10u * 64u ? 1 : -1];
 static struct {
@@ -669,9 +670,9 @@ static const pdef_t PDEF[NPD] = {
     {"SHIMMER", 3, {170, 200, 240}, 1, {KL("LEVEL", 0, 70), KL("TIME", 3, 90), KL("SHIMMER", 4, 70)}},
     {"CASSETTE", 5, {60, 60, 70}, 0, {KL("WOW", 0, 60), KL("HISS", 1, 40), KL("TONE", 2, 60)}},
     {"VINYL", 5, {110, 30, 30}, 0, {KL("CRACKLE", 0, 60), KL("AGE", 1, 60), KL("LEVEL", 2, 64)}},
-    {"GLITCH", 5, {50, 230, 120}, 1, {KL("CHANCE", 0, 50), {"LENGTH", 1, 2, 1, KV_GL}, KL("MIX", 2, 100)}},
+    {"GLITCH", 6, {50, 230, 120}, 1, {KL("CHANCE", 0, 50), {"LENGTH", 1, 2, 1, KV_GL}, KL("MIX", 2, 100)}},
     {"UNDERWATER", 5, {20, 90, 140}, 0, {KL("DEPTH", 0, 80), KL("WOBBLE", 1, 50), KL("LEVEL", 2, 64)}},
-    {"SYNTH", 5, {130, 200, 40}, 1, {{"OCTAVE", 0, 2, 1, KV_OCT}, KL("TONE", 1, 60), KL("MIX", 2, 80)}},
+    {"SYNTH", 4, {130, 200, 40}, 1, {{"OCTAVE", 0, 2, 1, KV_OCT}, KL("TONE", 1, 60), KL("MIX", 2, 80)}},
     {"PUMP", 2, {235, 235, 120}, 1, {KL("DEPTH", 0, 100), KL("RELEASE", 1, 60), {"SOURCE", 2, 2, 0, KV_SRC}}},
     {"BITCRUSHER", 0, {90, 200, 220}, 1, {KL("BITS", 0, 80), KL("RATE", 1, 40), KL("MIX", 2, 127)}},
     {"REVERSE DELAY", 3, {100, 40, 140}, 0, {KL("ECHO", 0, 70), {"TIME", 3, NDLY - 1u, 2, KV_DLY}, KL("REPEATS", 4, 50)}},
@@ -680,19 +681,22 @@ static const pdef_t PDEF[NPD] = {
     {"HARMONIZER", 4, {60, 150, 110}, 0, {{"INTERVAL", 0, 9, 8, KV_INT}, KL("LEVEL", 1, 90), KL("TONE", 2, 90)}},
     {"LO-FI", 5, {150, 130, 100}, 0, {KL("RATE", 0, 50), KL("NOISE", 1, 40), KL("DIRT", 2, 60)}},
     {"SLOW", 5, {120, 160, 210}, 1, {KL("RISE", 0, 20), KL("DEPTH", 1, 110), KL("SENS", 2, 80)}},
-    {"GHOST", 5, {210, 210, 220}, 1, {KL("DELAY", 0, 60), KL("LEVEL", 1, 50), KL("DRIFT", 2, 50)}},
-    {"MUSIC BOX", 5, {230, 170, 190}, 1, {KL("DECAY", 0, 70), KL("TONE", 1, 70), KL("MIX", 2, 100)}},
-    {"BROKEN CLOCK", 5, {140, 110, 60}, 0, {KL("AMOUNT", 0, 70), KL("CHANCE", 1, 50), KL("HICCUP", 2, 20)}},
-    {"SHADOW", 5, {50, 50, 70}, 0, {KL("LEVEL", 0, 60), KL("TONE", 1, 40), {"OCTAVE", 2, 1, 0, KV_OCT2}}},
-    {"LOOSE", 5, {200, 170, 110}, 1, {KL("LATE", 0, 50), KL("DOUBLE", 1, 50), KL("DRIFT", 2, 40)}},   /* GHOST + BROKEN CLOCK */
+    {"GHOST", 6, {210, 210, 220}, 1, {KL("DELAY", 0, 60), KL("LEVEL", 1, 50), KL("DRIFT", 2, 50)}},
+    {"MUSIC BOX", 4, {230, 170, 190}, 1, {KL("DECAY", 0, 70), KL("TONE", 1, 70), KL("MIX", 2, 100)}},
+    {"BROKEN CLOCK", 6, {140, 110, 60}, 0, {KL("AMOUNT", 0, 70), KL("CHANCE", 1, 50), KL("HICCUP", 2, 20)}},
+    {"SHADOW", 4, {50, 50, 70}, 0, {KL("LEVEL", 0, 60), KL("TONE", 1, 40), {"OCTAVE", 2, 1, 0, KV_OCT2}}},
+    {"LOOSE", 6, {200, 170, 110}, 1, {KL("LATE", 0, 50), KL("DOUBLE", 1, 50), KL("DRIFT", 2, 40)}},   /* GHOST + BROKEN CLOCK */
     {"OLD MEDIA", 5, {120, 70, 45}, 0, {KL("WEAR", 0, 60), KL("NOISE", 1, 45), KL("TONE", 2, 60)}},   /* CASSETTE + VINYL */
     {"DJ FILTER", 1, {40, 200, 230}, 1, {{"FILTER", 0, 127, 34, KV_DJ}, KL("RES", 1, 50), KL("LEVEL", 2, 64)}},
     {"ACID", 1, {196, 232, 40}, 1, {KL("CUTOFF", 0, 30), KL("RES", 1, 90), KL("DECAY", 2, 40)}},
     {"RING MOD", 4, {190, 196, 204}, 1, {KL("FREQ", 0, 70), KL("MIX", 1, 90), KL("WOBBLE", 2, 20)}},
     {"WRONG STATION", 5, {232, 214, 170}, 1, {KL("CHANCE", 0, 60), KL("DRIFT", 1, 30), {"HOLD", 2, 3, 1, KV_HOLD}}},
-    {"MECH FAILURE", 5, {110, 118, 126}, 0, {KL("WEAR", 0, 70), KL("STICK", 1, 60), KL("RECOVERY", 2, 30)}},
-    {"MEMORY LOSS", 5, {206, 200, 222}, 1, {KL("SPEED", 0, 60), KL("FLOOR", 1, 30), KL("RECALL", 2, 40)}},
-    {"TAPE WORM", 5, {214, 178, 120}, 1, {KL("CHANCE", 0, 60), {"LENGTH", 1, 3, 1, KV_TWL}, {"REPEATS", 2, 3, 1, KV_REP}}},
+    {"MECH FAILURE", 6, {110, 118, 126}, 0, {KL("WEAR", 0, 70), KL("STICK", 1, 60), KL("RECOVERY", 2, 30)}},
+    {"MEMORY LOSS", 6, {206, 200, 222}, 1, {KL("SPEED", 0, 60), KL("FLOOR", 1, 30), KL("RECALL", 2, 40)}},
+    {"TAPE WORM", 6, {214, 178, 120}, 1, {KL("CHANCE", 0, 60), {"LENGTH", 1, 3, 1, KV_TWL}, {"REPEATS", 2, 3, 1, KV_REP}}},
+    {"COMPRESSOR", 0, {60, 90, 170}, 0, {KL("SQUASH", 0, 70), KL("ATTACK", 1, 40), KL("LEVEL", 2, 64)}},
+    {"ROTARY", 2, {150, 90, 40}, 0, {KL("SPEED", 0, 20), KL("DEPTH", 1, 90), KL("MIX", 2, 110)}},
+    {"BLOOM", 6, {210, 80, 150}, 0, {KL("TIME", 0, 50), KL("DEPTH", 1, 80), KL("TONE", 2, 60)}},
 };
 /* pedals no longer offered (an older save that has one keeps it, as it was): SHADOW (SHIFTER / HARMONIZER do it), GATED
  * FUZZ, SLOW (the sound's attack does it), UNI; GHOST and BROKEN CLOCK (now LOOSE), CASSETTE and VINYL (now OLD MEDIA) */
@@ -701,8 +705,25 @@ static int ped_shown(uint32_t p)
     return p != PD_SHADOW && p != PD_GATEF && p != PD_SLOW && p != PD_UNI && p != PD_GHOST && p != PD_BROKEN
         && p != PD_CASS && p != PD_VINYL;
 }
-#define NPCAT 6u
-static const char *const PCAT_NAME[NPCAT] = {"DRIVE", "FILTER", "MODULATION", "SPACE", "PITCH", "OTHER"};
+#define NPCAT 7u
+static const char *const PCAT_NAME[NPCAT] = {"DRIVE", "FILTER", "MODULATION", "SPACE", "PITCH", "TEXTURE", "BEHAVIOUR"};
+/* the order the pedals are offered in, category by category (their numbers stay what saves know them by) */
+static const uint8_t PORD[] = {
+    PD_OD, PD_DIST, PD_FUZZ, PD_OCTF, PD_FOLD, PD_CRUSH, PD_COMP,                  /* DRIVE */
+    PD_WAH, PD_DJF, PD_ACID, PD_FSEQ,                                             /* FILTER */
+    PD_CHO, PD_FLG, PD_PHS, PD_TREM, PD_VIB, PD_SLICE, PD_PUMP, PD_ROTARY,        /* MODULATION */
+    PD_REV, PD_SPRING, PD_SHIM, PD_DLY, PD_TAPE, PD_REVD,                         /* SPACE */
+    PD_SHIFT, PD_HARM, PD_SYNTH, PD_MBOX, PD_RING,                                /* PITCH */
+    PD_OLDM, PD_LOFI, PD_WATER, PD_WRONG,                                         /* TEXTURE */
+    PD_GLITCH, PD_LOOSE, PD_MECH, PD_MEML, PD_WORM, PD_BLOOM};                    /* BEHAVIOUR */
+#define NPORD (sizeof PORD / sizeof PORD[0])
+static uint32_t pord_at(uint32_t p)             /* p's place in PORD; one not offered: its category's first */
+{
+    uint32_t i;
+    for (i = 0; i < NPORD; i++) if (PORD[i] == p) return i;
+    for (i = 0; i < NPORD; i++) if (PDEF[PORD[i]].cat == PDEF[p % NPD].cat) return i;
+    return 0;
+}
 static uint32_t ped_free(uint32_t t, uint32_t e, uint32_t p)   /* can slot e of track t take pedal p? Not one already in
                                                    another of its slots, nor GLITCH beside GHOST (they share the track's line) */
 {
@@ -719,24 +740,23 @@ static uint32_t ped_free(uint32_t t, uint32_t e, uint32_t p)   /* can slot e of 
 static int32_t ped_first(uint32_t t, uint32_t e, uint32_t cat)   /* a category's first pedal free for the slot; -1: none */
 {
     uint32_t p;
-    for (p = 0; p < NPD; p++) if (PDEF[p].cat == cat && ped_free(t, e, p)) return (int32_t)p;
+    uint32_t i;
+    for (i = 0; i < NPORD; i++) { p = PORD[i]; if (PDEF[p].cat == cat && ped_free(t, e, p)) return (int32_t)p; }
     return -1;
 }
 static uint32_t ped_step(uint32_t t, uint32_t e, uint32_t p, int32_t stp)   /* stp free pedals on in p's category, round */
 {
-    uint32_t cat = PDEF[p % NPD].cat, k;
-    while (stp > 0) { for (k = 0; k < NPD; k++) { p = (p + 1u) % NPD; if (PDEF[p].cat == cat && ped_free(t, e, p)) break; } stp--; }
-    while (stp < 0) { for (k = 0; k < NPD; k++) { p = (p + NPD - 1u) % NPD; if (PDEF[p].cat == cat && ped_free(t, e, p)) break; } stp++; }
+    uint32_t cat = PDEF[p % NPD].cat, k, at = pord_at(p);   /* (in PORD's order) */
+    while (stp > 0) { for (k = 0; k < NPORD; k++) { at = (at + 1u) % NPORD; if (PDEF[PORD[at]].cat == cat && ped_free(t, e, PORD[at])) break; } p = PORD[at]; stp--; }
+    while (stp < 0) { for (k = 0; k < NPORD; k++) { at = (at + NPORD - 1u) % NPORD; if (PDEF[PORD[at]].cat == cat && ped_free(t, e, PORD[at])) break; } p = PORD[at]; stp++; }
     return p;
 }
 
 static uint32_t ped_any_step(uint32_t t, uint32_t e, uint32_t p, int32_t stp)   /* stp free pedals on through the whole
                                                    library, category after category, round (the chain's PRESETS) */
 {
-    uint8_t ord[NPD];
-    uint32_t n = 0, ca, q, at = 0, k;
-    for (ca = 0; ca < NPCAT; ca++) for (q = 0; q < NPD; q++) if (PDEF[q].cat == ca) ord[n++] = (uint8_t)q;
-    for (k = 0; k < n; k++) if (ord[k] == p % NPD) at = k;
+    const uint8_t *ord = PORD;                  /* (category after category, in their order) */
+    uint32_t n = NPORD, at = pord_at(p % NPD), k;
     while (stp != 0) {
         int32_t d = stp > 0 ? 1 : -1;
         for (k = 0; k < n; k++) { at = (uint32_t)(((int32_t)at + d + (int32_t)n) % (int32_t)n); if (ped_free(t, e, ord[at])) break; }
@@ -781,7 +801,7 @@ static void pedal_knobs(uint32_t trk, uint32_t e, pknob_t k[3])
  * come to 156 (on the FM-1 ~40 % of the CPU, on top of the instruments); more than PED_BUDGET is refused */
 static const uint8_t PD_COST[NPD] = {5, 8, 4, 5, 6, 4, 17, 16, 7, 18, 5, 2, 4, 5, 19, 1, 1, 1, 1, 9, 5, 3, 6, 4, 3,
                                      2, 1, 1, 9, 10, 3, 4, 5, 29, 1, 10, 6, 11,    /* (LOOSE, OLD MEDIA) */
-                                     11, 11, 9, 2, 1, 1, 1};   /* (DJ FILTER, ACID, RING MOD measured as the rest; the note pedals: next to nothing) */   /* (MUSIC BOX: measured with notes and drums playing on every track) */
+                                     11, 11, 9, 2, 1, 1, 1, 4, 20, 10};   /* (COMPRESSOR, ROTARY, BLOOM: measured as the rest) */   /* (DJ FILTER, ACID, RING MOD measured as the rest; the note pedals: next to nothing) */   /* (MUSIC BOX: measured with notes and drums playing on every track) */
 static const uint8_t SP_COST[NSPACE_ALL] = {19, 9, 17, 18, 6, 15};   /* reverb, delay, tape echo, shimmer, reverse, spring */
 #define PED_BUDGET 170u
 static int ped_fits(void)
@@ -789,7 +809,7 @@ static int ped_fits(void)
     uint32_t t, e, c = 0, sp = 0;
     for (t = 0; t < NTRK; t++)
         for (e = 0; e < NPED_SLOTS; e++)
-            if (set.fx[t].on >> e & 1u) {
+            if (set.fx[t].on >> e & 1u || pfg[t][e]) {   /* (on, or still fading out) */
                 uint32_t p = set.ped[t][e] % NPD;
                 c += PD_COST[p];
                 if (PD_SPACE(p)) sp |= 1u << sp_of(p);
@@ -1017,6 +1037,13 @@ static void head_track(uint32_t trk, const char *name, int chips)
             bx += bw + 6;
         }
     }
+    if (chips && scr_home && (int8_t)set.oct) {   /* the keys shifted an octave or two: OCT+1 (home only) */
+        char ob[6] = "OCT+0";
+        int32_t o = (int8_t)set.oct, w;
+        ob[3] = o < 0 ? '-' : '+'; ob[4] = (char)('0' + (o < 0 ? -o : o));
+        w = text_w(&FONT_S, ob) + 10;
+        if (bx + w <= lim) { cv_rrect(bx, 11, w, 16, 8, C_KEYCAP); cv_text_bg(bx + 5, 11, &FONT_S, ob, C_TXT, C_KEYCAP); bx += w + 6; }
+    }
     if (chips && set.sseq_on) {                 /* SUPER SEQ plays the patterns: SUPER SEQ ON (or SUPER, if short of room) */
         const char *bt = bx + 106 <= lim ? "SUPER SEQ ON" : bx + 50 <= lim ? "SUPER" : 0;
         if (bt) {
@@ -1105,7 +1132,7 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
             *p++ = ' '; p = put(p, DYN_LONG[ui_dyn % NDYN]);
         } else p = put(p, LEG[(proj >> 6) % 6u]);
     } else if (page == PG_KEY) {                /* the key page */
-        p = put(p, "ALG:KEY  K1:LOCK  K2:LIGHTS");
+        p = put(p, "ALG:KEY K1:LOCK K2:LIGHT K3:SW");
     } else if (page == PG_PROJ) {               /* the save page: how to work it */
         p = put(p, "K1:SLOT  REC:SAVE  PLAY:LOAD");
     } else if (page == PG_ARP) {                /* the arpeggiator: how to work it */
@@ -1144,6 +1171,7 @@ static void info_cell(int32_t x, const char *lab, const char *val, uint16_t lc, 
     if (lab[0]) tx = cv_text_bg(tx, 3, &FONT_S, lab, lc, C_PANEL) + 4;   /* (no label: the value alone, centred) */
     cv_text_bg(tx, 3, &FONT_S, val, vc, C_PANEL);
 }
+static uint16_t mix565(uint16_t a, uint16_t b, int32_t k);
 static void draw_info(uint32_t trk, uint32_t mode, uint32_t cur, uint32_t page, int32_t oct)   /* mode 0 home, 1 synth edit, 2 drum edit, 3 live; page: shown */
 {
     char v[8], *p;
@@ -1174,24 +1202,42 @@ static void draw_info(uint32_t trk, uint32_t mode, uint32_t cur, uint32_t page, 
             info_cell(180, "REC", live_rec ? "ON" : "OFF", live_rec ? C_MUTE : C_SUB, live_rec ? C_MUTE : C_DIMC);
         }
     } else {
-        uint32_t beat = (clk_step / 4u) % 4u;
-        int32_t bx;                             /* play, the tempo (KNOB1), the swing (KNOB2), the beat, the octave */
-        cv_rrect(0, 1, 26, 20, 10, C_PANEL);
-        if (clk_run) for (i = 0; i < 10u; i++) cv_rect(9 + (int32_t)i, 6 + (int32_t)i / 2, 1, 11 - ((int32_t)i / 2) * 2, C_PLAYG);
-        else cv_rect(8, 6, 10, 10, C_SUB);
-        cv_rrect(29, 1, 66, 20, 10, C_PANEL);
+        int32_t bx;                             /* play, then the four knobs: the tempo, the chosen track's mix level and
+                                                   brightness (bars in its colour), the pedals' fade */
+        (void)oct; (void)i;
+        cv_rrect(0, 1, 20, 20, 10, C_PANEL);
+        if (clk_run) for (i = 0; i < 9u; i++) cv_rect(6 + (int32_t)i, 6 + (int32_t)i / 2, 1, 11 - ((int32_t)i / 2) * 2, C_PLAYG);
+        else cv_rect(5, 6, 10, 10, C_SUB);
+        cv_rrect(22, 1, 52, 20, 10, C_PANEL);   /* KNOB1: the tempo */
         *put_num(v, set.bpm, 1) = 0;
-        bx = 62 - (text_w(&FONT_S, v) + 4 + text_w(&FONT_S, "BPM")) / 2;
-        cv_text_bg(cv_text_bg(bx, 3, &FONT_S, v, C_TXT, C_PANEL) + 4, 3, &FONT_S, "BPM", C_SUB, C_PANEL);
-        cv_rrect(98, 1, 56, 20, 10, C_PANEL);
-        p = put(v, "SW "); p = put_num(p, SWING_PCT(set.swing), 2); *p++ = '%'; *p = 0;
-        cv_text_bg(126 - text_w(&FONT_S, v) / 2, 3, &FONT_S, v, set.swing ? C_TXT : C_SUB, C_PANEL);
-        cv_rrect(157, 1, 30, 20, 10, C_PANEL);
-        for (i = 0; i < 4u; i++) disc(163 + (int32_t)i * 6, 11, i ? 2 : 3, clk_run && i == beat ? col : i ? C_DIMC : C_SUB);
-        cv_rrect(190, 1, 50, 20, 10, C_PANEL);
-        v[0] = oct < 0 ? '-' : '+'; v[1] = (char)('0' + (oct < 0 ? -oct : oct)); v[2] = 0;
-        bx = 215 - (text_w(&FONT_S, "OCT") + 2 + text_w(&FONT_S, v)) / 2;
-        cv_text_bg(cv_text_bg(bx, 3, &FONT_S, "OCT", C_SUB, C_PANEL) + 2, 3, &FONT_S, v, C_TXT, C_PANEL);
+        bx = 48 - (text_w(&FONT_S, v) + 3 + text_w(&FONT_S, "BPM")) / 2;
+        cv_text_bg(cv_text_bg(bx, 3, &FONT_S, v, C_TXT, C_PANEL) + 3, 3, &FONT_S, "BPM", C_SUB, C_PANEL);
+        {                                       /* KNOB2 the mix (a speaker), KNOB3 the brightness (a sun): a sign and a bar */
+            for (i = 0; i < 2u; i++) {
+                int32_t x = 76 + (int32_t)i * 62, bx0 = x + 25, bw = 29, f, j;   /* (both bars the same: x + 25 .. + 54) */
+                uint32_t has = i == 0u || trk < NSYN, vv = i ? (trk < NSYN ? set.snd[trk].cut : 0u) : set.vol[trk];
+                uint16_t ic = has ? C_SUB : C_DIMC;
+                cv_rrect(x, 1, 60, 20, 10, C_PANEL);
+                if (!i) { cv_rect(x + 9, 9, 3, 5, ic); for (j = 0; j < 5; j++) cv_rect(x + 12 + j, 11 - j, 1, 2 * j + 1, ic); }
+                else {
+                    disc(x + 15, 11, 3, ic);   /* (the sun: in from the cell's round end, its rays whole) */
+                    cv_rect(x + 15, 4, 1, 2, ic); cv_rect(x + 15, 17, 1, 2, ic); cv_rect(x + 8, 11, 2, 1, ic); cv_rect(x + 21, 11, 2, 1, ic);
+                    cv_rect(x + 10, 6, 1, 1, ic); cv_rect(x + 20, 6, 1, 1, ic); cv_rect(x + 10, 16, 1, 1, ic); cv_rect(x + 20, 16, 1, 1, ic);
+                }
+                if (!has) { cv_text_bg(bx0 + 8, 3, &FONT_S, "--", C_DIMC, C_PANEL); continue; }   /* (drums: no filter) */
+                cv_rrect(bx0, 7, bw, 8, 4, C_KEYCAP);
+                f = (int32_t)vv * bw / 127;
+                if (f > 2) cv_rrect(bx0, 7, f, 8, 4, col);
+            }
+        }
+        cv_rrect(200, 1, 40, 20, 10, C_PANEL);  /* KNOB4: the fade (a fade ramp) and its bars (- at once) */
+        {
+            uint32_t fb = set.mu.ub.pfade <= 4u ? set.mu.ub.pfade : 0u;
+            uint16_t fc = fb ? C_SUB : C_DIMC;  /* (a fade ramp: low, a slope up, high) */
+            thick(203, 15, 207, 15, fc); thick(207, 15, 214, 6, fc); thick(214, 6, 218, 6, fc);
+            v[0] = fb ? (char)('0' + fb) : '-'; v[1] = 0;
+            cv_text_bg(224, 3, &FONT_S, v, fb ? C_TXT : C_DIMC, C_PANEL);
+        }
     }
     cv_blit(0, Y_INFO);
 }
@@ -1629,7 +1675,7 @@ static void mask_corners(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r) 
 enum { LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FOLD, LK_CRUSH, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE,
        LK_VIB, LK_PUMP, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_REVD, LK_SPRING, LK_SHIFT, LK_HARM, LK_OLDM, LK_GLITCH,
        LK_WATER, LK_SYNTH, LK_LOFI, LK_LOOSE, LK_MBOX, LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML,
-       LK_WORM, LK_ARP, NLOOK };
+       LK_WORM, LK_COMP, LK_ROT, LK_BLOOM, LK_ARP, NLOOK };
 enum { L_SANS = 1, L_LOWER = 2, L_PCT = 4, L_SKIRT = 8, L_SIDES = 16, L_CENTRE = 32 };
 typedef struct {
     const char *title;
@@ -1676,13 +1722,16 @@ static const plook_t PLOOK[NLOOK] = {
     {"MECH FAILURE", RGB(110, 118, 126), RGB(250, 170, 60), RGB(240, 240, 244), RGB(255, 210, 150), RGB(24, 24, 26), RGB(250, 170, 60), RGB(255, 90, 40), L_SKIRT, 18, 62, 84, 216, 56, 0, 0, 0},
     {"memory loss", RGB(206, 200, 222), RGB(70, 60, 110), RGB(70, 60, 110), RGB(110, 100, 150), RGB(240, 238, 248), RGB(70, 60, 110), RGB(170, 140, 255), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
     {"tape worm", RGB(214, 178, 120), RGB(60, 36, 18), RGB(60, 36, 18), RGB(110, 60, 30), RGB(70, 44, 24), RGB(230, 200, 150), RGB(255, 110, 40), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"COMPRESSOR", RGB(40, 66, 140), RGB(240, 242, 250), RGB(200, 214, 244), RGB(255, 255, 255), RGB(24, 24, 26), W_, RGB(255, 60, 50), L_SKIRT, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"rotary", RGB(122, 72, 36), RGB(250, 230, 190), RGB(250, 230, 190), RGB(255, 244, 220), RGB(24, 24, 26), W_, RGB(255, 100, 40), L_SKIRT | L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"bloom", RGB(30, 56, 40), RGB(250, 170, 205), RGB(250, 170, 205), RGB(255, 232, 242), RGB(236, 112, 166), W_, RGB(255, 120, 180), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
     {"ARPEGGIATOR", RGB(14, 40, 46), RGB(90, 220, 220), RGB(90, 220, 220), RGB(220, 255, 255), RGB(70, 200, 200), W_, RGB(100, 255, 240), L_SANS, 18, 60, 84, 216, 56, 0, 0, 1},
 };
 static const uint8_t PD_LOOK[NPD] = {           /* by PD_ number; those no longer offered borrow a look (and keep their name) */
     LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FUZZ, LK_FOLD, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE, LK_VIB,
     LK_VIB, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_OLDM, LK_OLDM, LK_GLITCH, LK_WATER, LK_SYNTH, LK_PUMP, LK_CRUSH, LK_REVD,
     LK_SPRING, LK_SHIFT, LK_HARM, LK_LOFI, LK_TREM, LK_LOOSE, LK_MBOX, LK_LOOSE, LK_REV, LK_LOOSE, LK_OLDM,
-    LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML, LK_WORM};
+    LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML, LK_WORM, LK_COMP, LK_ROT, LK_BLOOM};
 
 static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs and the name */
 {
@@ -2134,6 +2183,43 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
         }
         adisc(hx + 6, hy + 2, 9, tp); adisc(hx + 9, hy - 1, 2, RGB(250, 240, 220));
         aring(26, 196, 8, 2, tp); aring(44, 202, 6, 2, tp);   /* (the reels it came off) */
+        break;
+    }
+    case LK_COMP: {                             /* COMPRESSOR: a big wave squeezed through a clamp, out small and even */
+        uint16_t sv = RGB(200, 214, 244), dk = RGB(20, 34, 80);
+        int32_t px = 10, py = 180;
+        for (k = 0; k <= 220; k += 2) {
+            int32_t amp = k < 96 ? 26 : k < 118 ? 26 - (k - 96) : 6, y = 180 + asn(k * 9, amp);
+            aline(px, py, 10 + k, y, sv, 2);
+            px = 10 + k; py = y;
+        }
+        arrect(98, 142, 22, 18, 3, dk); arrect(98, 200, 22, 18, 3, dk);   /* (the clamp's jaws, its screw below) */
+        aline(109, 218, 109, 226, dk, 3); aline(96, 226, 122, 226, dk, 4);
+        break;
+    }
+    case LK_ROT: {                              /* ROTARY: the cabinet's louvres, the horn going round, its swirl */
+        uint16_t cr = RGB(250, 230, 190), dk = RGB(70, 38, 16);
+        arrect(40, 128, 160, 88, 10, dk);
+        for (k = 0; k < 7; k++) arrect(48, 136 + k * 11, 144, 5, 2, mix565(cr, dk, 55));
+        adisc(120, 160, 7, cr);
+        aline(84, 160, 156, 160, cr, 4);         /* (the horn: two bells on a rotor) */
+        afill((const int16_t[]){84, 160, 70, 150, 70, 170}, 3, cr, 0, 0);
+        afill((const int16_t[]){156, 160, 170, 150, 170, 170}, 3, cr, 0, 0);
+        aarc(120, 160, 62, 8, 200, 330, cr, 2); aarc(120, 160, 62, 8, 20, 150, cr, 2);
+        aarc(120, 160, 74, 14, 210, 300, mix565(cr, body, 40), 1); aarc(120, 160, 74, 14, 30, 120, mix565(cr, body, 40), 1);
+        break;
+    }
+    case LK_BLOOM: {                            /* BLOOM: buds opening along a stem, the last in full flower */
+        uint16_t pk = RGB(250, 170, 205), st2 = RGB(110, 170, 90), cy = RGB(255, 220, 120);
+        aline(20, 206, 220, 206, mix565(st2, body, 40), 2);
+        for (k = 0; k < 4; k++) {
+            int32_t x = 40 + k * 50, h = 30 + k * 6, r = 3 + k * 3, y = 206 - h, j;
+            aline(x, 206, x, y, st2, 2);
+            if (k == 0) { adisc(x, y, 4, mix565(pk, body, 30)); continue; }
+            for (j = 0; j < 6; j++) adisc(x + acs(j * 60 + k * 15, r), y + asn(j * 60 + k * 15, r), r, mix565(pk, body, 30 - k * 10));
+            adisc(x, y, r / 2 + 2, cy);
+        }
+        astars(7, 10, 128, 230, 150, 10, pk);
         break;
     }
     case LK_ARP: {
@@ -2690,19 +2776,20 @@ static void draw_theme_menu(uint32_t cur)        /* HOME + PRESETS: the themes, 
     cv_blit(40, (uint32_t)(120 - h / 2));
 }
 
-/* ---- the KEY page (GLO from the mixer; Conductor's): the key, its relative minor, the lock and the lights; one
- * octave of keyboard from the key's home note, its notes lit and named, the notes held gold. ALGORITHM the key (a sharp or flat a click), KNOB1 the lock, KNOB2 the lights */
+/* ---- the SONG page (the KEY page as was; GLO from the mixer; Conductor's): the key; LOCK, LIGHTS and its relative minor on
+ * a line; the swing; one octave of keyboard from the key's home note, its notes lit and named, the notes held gold.
+ * ALGORITHM the key (a sharp or flat a click), KNOB1 the lock, KNOB2 the lights, KNOB3 the swing */
 static const char *const KMAJ[15] = {"C-FLAT", "G-FLAT", "D-FLAT", "A-FLAT", "E-FLAT", "B-FLAT", "F", "C", "G", "D", "A",
                                       "E", "B", "F-SHARP", "C-SHARP"};
 static const char *const KMIN[15] = {"A-FLAT", "E-FLAT", "B-FLAT", "F", "C", "G", "D", "A", "E", "B", "F-SHARP", "C-SHARP",
                                       "G-SHARP", "D-SHARP", "A-SHARP"};
-static void head_key(void)                      /* KEY, the stripe in the four track colours */
+static void head_key(void)                      /* SONG, the stripe in the four track colours */
 {
     uint32_t r;
     cv_begin(240, H_BIG, C_BG);
     cv_rrect(0, 0, 240, H_BIG, 6, C_PANEL);
     for (r = 0; r < NTRK; r++) cv_rrect(6, 5 + (int32_t)r * 7, 4, 6, 2, rgbk(TRK_RGB[SEQ_ORDER[r]], 100));
-    cv_text_bg(18, 3, &FONT_L, "KEY", C_TXT, C_PANEL);
+    cv_text_bg(18, 3, &FONT_L, "SONG", C_TXT, C_PANEL);
     cv_blit(0, Y_BIG);
 }
 static void sc_sharp(int32_t x, int32_t y, uint16_t c)   /* a sharp, about 7 x 15, its middle at y */
@@ -2725,20 +2812,27 @@ static void draw_key(uint32_t held)             /* held: the pitch classes playe
         cv_rrect(0, 0, 240, H_PEDAL, 8, C_PANEL);
         p = put(t, KMAJ[key + 7]); *put(p, " MAJOR") = 0;
         cv_text_bg(120 - text_w(&FONT_L, t) / 2, 0, &FONT_L, t, gold, C_PANEL);
-        p = put(t, KMIN[key + 7]); p = put(p, " MINOR   ");
-        if (!nks) p = put(p, "NO SHARPS OR FLATS");
-        else { p = put_num(p, (uint32_t)nks, 1); p = put(p, key > 0 ? (nks > 1 ? " SHARPS" : " SHARP") : (nks > 1 ? " FLATS" : " FLAT")); }
-        *p = 0;
-        cv_text_bg(120 - text_w(&FONT_S, t) / 2, 32, &FONT_S, t, C_SUB, C_PANEL);
-        {                                       /* LOCK and LIGHTS: lit when on */
+        (void)nks;
+        {                                       /* one line: LOCK (KNOB1) and LIGHTS (KNOB2), lit when on; the other scale */
             static const char *const LB[2] = {"LOCK", "LIGHTS"};
+            int32_t bx = 8;
             for (k = 0; k < 2; k++) {
                 uint32_t on = k ? lights : lock;
-                int32_t bx = 34 + k * 92;
-                p = put(t, LB[k]); *put(p, on ? " ON" : " OFF") = 0;
-                cv_rrect(bx, 51, 80, 18, 4, on ? gold : C_KEYCAP);
-                cv_text_bg(bx + 40 - text_w(&FONT_S, t) / 2, 52, &FONT_S, t, on ? C_ON : C_SUB, on ? gold : C_KEYCAP);
+                int32_t w = text_w(&FONT_S, LB[k]) + 16;
+                cv_rrect(bx, 32, w, 18, 9, on ? gold : C_KEYCAP);
+                cv_text_bg(bx + 8, 33, &FONT_S, LB[k], on ? C_ON : C_SUB, on ? gold : C_KEYCAP);
+                bx += w + 6;
             }
+            p = put(t, KMIN[key + 7]); *put(p, " MINOR") = 0;
+            cv_text_bg(232 - text_w(&FONT_S, t), 33, &FONT_S, t, C_SUB, C_PANEL);
+        }
+        {                                       /* the swing (KNOB3): a bar from straight (50 %) to a heavy shuffle (66 %) */
+            uint32_t sw = SWING_PCT(set.swing), w = (sw - 50u) * 120u / 16u;
+            cv_text_bg(8, 55, &FONT_S, "SWING", C_SUB, C_PANEL);
+            cv_rrect(66, 59, 124, 10, 5, C_KEYCAP);
+            if (w) cv_rrect(68, 61, (int32_t)w, 6, 3, gold);
+            p = put_num(t, sw, 2); *p++ = '%'; *p = 0;
+            cv_text_bg(232 - text_w(&FONT_S, t), 55, &FONT_S, t, sw > 50u ? C_TXT : C_SUB, C_PANEL);
         }
         {                                       /* the piano: the key's home note to the next (a black home: from the
                                                    white key below); its notes lit and named, the notes held gold */
@@ -4014,21 +4108,34 @@ static void app_main(void)
                 }
             }
             if (ch) { CHANGED(); usr_ask = 0; }
-        } else if (spage == PG_KEY) {           /* the key: KNOB1 the lock, KNOB2 the lights */
+        } else if (spage == PG_KEY) {           /* the song page: KNOB1 the lock, KNOB2 the lights, KNOB3 the swing */
             uint8_t lk = set.keyopt & 1u, li = set.keyopt >> 1 & 1u;
             if (knob(ENC_KNOB1, &lk, 0, 1) | knob(ENC_KNOB2, &li, 0, 1)) { set.keyopt = (uint8_t)(lk | li << 1); CHANGED(); }
-            fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
-        } else if (spage == PG_COPY) {          /* the copy page: no knobs */
-            fm1_enc_take(ENC_KNOB1); fm1_enc_take(ENC_KNOB2); fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
-        } else if (spage == PG_MAIN) {          /* home: KNOB1 the tempo, KNOB2 the swing (the sound itself: EDIT) */
-            if (knob(ENC_KNOB1, &set.bpm, BPM_MIN, BPM_MAX)) { clock_set_bpm(set.bpm); CHANGED(); }
-            if ((e = fm1_enc_take(ENC_KNOB2)) != 0) {   /* swing 50 % (straight) .. 66 %, 1 % a click (set.swing 0..127) */
+            if ((e = fm1_enc_take(ENC_KNOB3)) != 0) {   /* swing 50 % (straight) .. 66 %, 1 % a click (set.swing 0..127) */
                 int32_t pc = (int32_t)SWING_PCT(set.swing) + e;
                 pc = pc < 50 ? 50 : pc > 66 ? 66 : pc;
                 set.swing = (uint8_t)(((pc - 50) * 127 + 8) / 16);
                 CHANGED();
             }
-            fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
+            fm1_enc_take(ENC_KNOB4);
+        } else if (spage == PG_COPY) {          /* the copy page: no knobs */
+            fm1_enc_take(ENC_KNOB1); fm1_enc_take(ENC_KNOB2); fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
+        } else if (spage == PG_MAIN) {          /* home: KNOB1 the tempo, KNOB2 the chosen track's mix level (the mixer's),
+                                                   KNOB3 its brightness (a synth's cutoff, EDIT's MAIN), KNOB4 the pedals'
+                                                   fade in / out, 0-4 bars */
+            int ch = 0;
+            if (knob(ENC_KNOB1, &set.bpm, BPM_MIN, BPM_MAX)) { clock_set_bpm(set.bpm); CHANGED(); }
+            if ((e = fm1_enc_take(ENC_KNOB2)) != 0) {   /* (4 a click: the whole way in about 30 clicks) */
+                int32_t v = (int32_t)set.vol[trk] + e * 4;
+                set.vol[trk] = (uint8_t)(v < 0 ? 0 : v > 127 ? 127 : v); ch = 1;
+            }
+            if ((e = fm1_enc_take(ENC_KNOB3)) != 0 && trk < NSYN) {
+                int32_t v = (int32_t)set.snd[trk].cut + e * 4;
+                set.snd[trk].cut = (uint8_t)(v < 0 ? 0 : v > 127 ? 127 : v); ch = 1;
+            }
+            if (set.mu.ub.pfade > 4u) set.mu.ub.pfade = 0;
+            ch |= knob(ENC_KNOB4, &set.mu.ub.pfade, 0, 4);
+            if (ch) CHANGED();
         }
         /* REC: a tap = a rest (synth step recorder) / recording on, off (the live page: it starts the music too); held
          * 1 s = clear the pattern (live: the one playing). HOME: held 1 s asks "CLEAR ALL?", REC again clears everything */
@@ -4121,7 +4228,7 @@ static void app_main(void)
             }
             arp_used = 1;
         }
-        /* GLO: a tap (let go within 0.25 s) opens the mixer, then the KEY page, then home; held: BEAT REPEAT, the slice
+        /* GLO: a tap (let go within 0.25 s) opens the mixer, then the SONG page, then home; held: BEAT REPEAT, the slice
          * playing goes round until let go (the white keys meanwhile choose its length) */
         if (b & (1u << BTN_GLO)) { glo_t0 = fm1_ms; glo_dn = 1; glo_used = 0; }
         if (glo_dn && fm1_in.buttons >> BTN_GLO & 1u && (glo_used || fm1_ms - glo_t0 >= 250u)) {
@@ -4272,7 +4379,7 @@ static void app_main(void)
                     pcs |= 1u << ((set.keyopt & 1u ? key_lock(n) : n) % 12u);
                 }
             if (head_drawn) { head_drawn = 0; head_key(); }
-            st = mix(mix(mix((uint32_t)(int32_t)set.key, set.keyopt), pcs), 7u);
+            st = mix(mix(mix(mix((uint32_t)(int32_t)set.key, set.keyopt), pcs), 7u), set.swing);
             if (st != pedal_drawn) { pedal_drawn = st; draw_key(pcs); }
         } else if (pedal_mode == 5u) {          /* the save page: the slots, "sure?", a message */
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
@@ -4336,7 +4443,7 @@ static void app_main(void)
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
             st = mix(mix(mix(mix(mix(mix(trk, drum_edit ? 16u + drum : 0u), trk_mute >> trk & 1u), play_pat[trk]), set.sel[trk]), flash), set.sseq_on | live_mode << 1 | live_rec << 2 | edit << 3);
             if (flash) st = mix(st, trk < NSYN ? set.snd[trk].preset : 16u + set.dkit);
-            st = mix(mix(mix(st, show_msg), show_msg ? msg_t : 0u), wipe_ask);
+            st = mix(mix(mix(mix(st, show_msg), show_msg ? msg_t : 0u), wipe_ask), set.oct);   /* (the OCT badge) */
             if (st != big_drawn) {
                 big_drawn = st;
                 if (wipe_ask) head_text("CLEAR ALL?", RGB(255, 200, 60), RGB(255, 200, 60));
@@ -4379,7 +4486,7 @@ static void app_main(void)
         if (!pedal_mode) {
             uint32_t mode = syn_edit ? 1u : drum_edit ? 2u : live_mode ? 3u : 0u, c = trk < NSYN ? cur[trk] : 0u;
             st = mix(mix(mix(mix(mix(mix(mix(mode, trk), set.bpm), run), (uint32_t)(oct + 2)), len), set.swing), trk_mute >> trk & 1u);
-            if (mode == 0u && run) st = mix(st, 16u + (clk_step / 4u) % 4u);   /* (the beat light) */
+            if (mode == 0u) st = mix(mix(mix(st, set.vol[trk]), trk < NSYN ? set.snd[trk].cut : 0u), set.mu.ub.pfade);
             if (mode == 3u) st = mix(mix(mix(st, live_rec), c), dpage);   /* (live: REC, the cursor, the page) */
             if (mode == 1u) {
                 const uint8_t *nt = step_note(trk, pt, c);

@@ -13,6 +13,8 @@
  *               the other two knobs belong to the shared pedal (set.spk[pedal][0..1]), for every track using it
  *   OTHER       CASSETTE, VINYL, GLITCH (on the tempo), UNDERWATER, SYNTH (a square wave under the notes)
  *   (and PUMP, in MODULATION: ducks its track on every kick, or on the beat: the sidechain "breathing")
+ *   (the categories as they were when added; quartet.c PDEF and PORD have them as offered now: DRIVE FILTER MODULATION
+ *   SPACE PITCH TEXTURE BEHAVIOUR, with COMPRESSOR, ROTARY and BLOOM the latest)
  *   later: BITCRUSHER (drive); REVERSE DELAY, SPRING REVERB (space, shared); PITCH: SHIFTER, HARMONIZER; OTHER: LO-FI,
  *   SLOW (no attack: swells), GHOST (a quiet copy just behind), MUSIC BOX (a little bell on each note), BROKEN CLOCK
  *   (timing hiccups: gb_clock.h plays the track's steps late), SHADOW (a darker copy an octave down)
@@ -40,7 +42,8 @@ enum { PD_DIST, PD_OD, PD_FUZZ, PD_OCTF, PD_GATEF, PD_FOLD,              /* DRIV
        PD_LOFI, PD_SLOW, PD_GHOST, PD_MBOX, PD_BROKEN, PD_SHADOW,   /* OTHER */
        PD_LOOSE, PD_OLDM,                       /* (OTHER: GHOST + BROKEN CLOCK, CASSETTE + VINYL in one each) */
        PD_DJF, PD_ACID, PD_RING,                /* (later still: FILTER, FILTER, PITCH) */
-       PD_WRONG, PD_MECH, PD_MEML, PD_WORM,     /* (OTHER: the note pedals, gb_clock.h) */
+       PD_WRONG, PD_MECH, PD_MEML, PD_WORM,     /* (the note pedals, gb_clock.h) */
+       PD_COMP, PD_ROTARY, PD_BLOOM,            /* (later still: DRIVE, MODULATION, BEHAVIOUR) */
        NPD };
 enum { SP_REV, SP_DLY, SP_TAPE, SP_SHIM, SP_REVD, SP_SPRING, NSPACE_ALL };   /* the shared pedals (and their buses); the
                                                    first NSPACE keep their knobs in set.spk, the later ones in set.spk2 */
@@ -51,6 +54,21 @@ static int32_t sp_of(uint32_t p)                /* a pedal's shared pedal (SP_..
 }
 #define PD_SPACE(p) (sp_of(p) >= 0)
 static uint8_t *spk_of(uint32_t sp) { return sp < NSPACE ? set.spk[sp] : set.spk2[(sp - NSPACE) % 2u]; }   /* its two knobs */
+/* a pedal switched on or off fades in or out over set.mu.ub.pfade bars (0: over one block, at once): each slot's
+ * gain, Q20 (PF_ONE = all pedal), stepped once a block and ramped sample by sample. A slot's own pedal blends from the
+ * sound before it to the sound after it; a shared one (reverb, delays) has its send turned up or down instead, so its
+ * tail rings out. Read by ped_fits (quartet.c): a pedal fading out still runs */
+#define PF_ONE (1 << 20)                       /* (a fine scale: the fade's length exact to a block) */
+static volatile int32_t pfg[NTRK][NFX];
+static int32_t fx_dry[FXN];
+static uint32_t pf_step(uint32_t n)             /* the gain's step a block of n frames */
+{
+    uint32_t bars = set.mu.ub.pfade, spb;
+    if (!bars || bars > 4u) return PF_ONE;
+    spb = 10584000u / (set.bpm ? set.bpm : 120u) * bars;   /* (samples in a bar: 4 beats at 44.1 kHz) */
+    n = (uint32_t)PF_ONE * n / spb;
+    return n ? n : 1u;
+}
 static volatile uint32_t fx_flush_req;          /* gb_clock.h: the music stopped: every pedal falls silent (fx_process) */
 
 static int32_t tb[NTRK][FXN];                   /* each track's sound for this block, mono */
@@ -872,7 +890,7 @@ static void mbox_block(uint32_t t, pst_t *st, int16_t *b, const uint8_t *k, int3
     }
 }
 
-/* ---- the later pedals: DJ FILTER and ACID (filters), RING MOD (pitch); WRONG STATION's static (OTHER) ---- */
+/* ---- the later pedals: DJ FILTER and ACID (filters), RING MOD (pitch); WRONG STATION's static (texture) ---- */
 /* DJ FILTER: FILTER, RES, LEVEL. One knob from dark to thin: below the middle a low-pass closing, above it a high-pass
  * opening, in the middle (64) the sound as it is. Glided, so a sweep has no steps */
 static void djf_block(pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
@@ -959,6 +977,98 @@ static void wrong_block(uint32_t t, pst_t *st, int32_t *x, uint32_t n)
     st->s[0] = lp;
 }
 
+/* COMPRESSOR: SQUASH, ATTACK, LEVEL. Over a line (lower as SQUASH turns up) the sound is turned down 6:1, following its
+ * level: a slow ATTACK lets each note's start through before it clamps (punch), a fast one flattens it. Made up again
+ * by about as much as it takes off, so it stays about as loud; LEVEL then 0.5 .. 1.5x */
+static void comp_block(pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    int32_t env = st->s[0], g = st->s[1] ? st->s[1] : 32768;
+    int32_t thr = 16000 - (int32_t)k[0] * 115, ash = 4 + (int32_t)k[1] * 6 / 127;   /* (the line: 16000 .. 1400; attack:
+                                                   ~0.4 .. 23 ms) */
+    int32_t mk = 64 + 2097088 / (thr + (32767 - thr) / 6), vol = ((64 + (int32_t)k[2]) * mk) >> 7;   /* (made up half way
+                                                   to what full scale loses; Q7) */
+    uint32_t i;
+    for (i = 0; i < n; i++) {
+        int32_t a = absv(x[i]), e8;
+        if (a > 32767) a = 32767;
+        a <<= 8;                                /* (the follower in Q8: slow enough not to lose the small steps) */
+        env += (a - env) >> (a > env ? ash : 12);   /* (let go over ~90 ms) */
+        if ((i & 7u) == 0u) {
+            e8 = env >> 8;
+            g = e8 > thr ? (int32_t)(((uint32_t)(thr + (e8 - thr) / 6) << 15) / (uint32_t)e8) : 32768;
+        }
+        x[i] = (((x[i] * (g >> 3)) >> 12) * vol) >> 7;
+    }
+    st->s[0] = env; st->s[1] = g;
+}
+
+/* ROTARY: SPEED, DEPTH, MIX. A spinning-speaker cabinet: the treble from a horn going round (its pitch swaying as it
+ * comes and goes, its loudness swirling), the bass from a slower drum. SPEED sets where the rotors are heading, from a
+ * slow chorale to a fast tremolo, and they take a second or so to get there, as the real one does */
+static void rotary_block(pst_t *st, int16_t *b, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    int32_t tgt = (int32_t)LFO_INC[50u + (k[0] * 52u >> 7)], inc = st->s[0] ? st->s[0] : tgt;
+    int32_t dk = (int32_t)k[1] * 22 / 127, am = (int32_t)k[1] * 100 / 127, mx = k[2];
+    int32_t lo = st->s[1], hl = st->s[2], pl = st->dl;
+    uint32_t i, w = st->w, ph = st->ph, ph2 = st->ph2, ui;
+    inc += (tgt - inc) >> 7;                    /* (spinning up or down: ~0.75 s) */
+    ui = (uint32_t)inc;
+    for (i = 0; i < n; i++) {
+        int32_t s = sine(ph), c = sine(ph + 0x40000000u), cd = sine(ph2), d, y, yh, ah, ad, wet;
+        ph += ui; ph2 += ui - (ui >> 3);        /* (the drum a little slower) */
+        b[w] = sat16(x[i]);
+        d = (60 << 8) + ((s * dk) >> 7);        /* (the horn's sway: +-0.5 ms) */
+        if (!pl) pl = d;
+        pl += (d - pl) >> 2;
+        y = tap(b, PB_N - 1u, w, pl);
+        w = (w + 1u) & (PB_N - 1u);
+        hl += ((y - hl) * 3700) >> 15; yh = y - hl;   /* (the horn: above ~800 Hz) */
+        lo += ((x[i] - lo) * 3700) >> 15;       /* (the drum: below) */
+        ah = 32768 - (((c + 32768) * am) >> 9);
+        ad = 32768 - (((cd + 32768) * am) >> 10);
+        wet = ((yh >> 1) * (ah >> 2) >> 12) + ((lo >> 1) * (ad >> 2) >> 12);
+        x[i] += ((wet - x[i]) * mx) >> 7;
+    }
+    st->s[0] = inc; st->s[1] = lo; st->s[2] = hl; st->dl = pl; st->w = w; st->ph = ph; st->ph2 = ph2;
+}
+
+/* BLOOM: TIME, DEPTH, TONE. Each note starts clean; as it is held, higher harmonics grow into it (the octave, and an
+ * edge) over TIME (0.1 .. 4 s), as far as DEPTH, as bright as TONE. A new note starts clean again (synths: the voices
+ * started; drums: a sudden rise) */
+static void bloom_block(uint32_t t, pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    int32_t age = st->s[0], fast = st->s[1], slow = st->s[2], dc = st->s[3], lp = st->s[4], amt = st->s[5], env = st->s[6];
+    int32_t gn = st->s[7] ? st->s[7] : 4096, ib = (int32_t)((1u << 24) / (uint32_t)gn);
+    int32_t span = 4410 + (int32_t)k[0] * 1350, dep = k[1], kt = 3000 + (int32_t)k[2] * 230;
+    uint32_t i;
+    if (t < NSYN) {                             /* a note started since the last block? */
+        uint32_t v;
+        for (v = TRK[t].first; v < TRK[t].first + TRK[t].count; v++)
+            if (vx[v].gate && (int32_t)(vx[v].age - st->cnt) > 0) { age = 0; st->cnt = vx[v].age; }
+    }
+    for (i = 0; i < n; i++) {
+        int32_t v = clampv(x[i], 32767), h2, h3, a = absv(v), u;
+        if (t >= NSYN) {                        /* the drums: a sudden rise is a hit */
+            fast += (a - fast) >> 4; slow += (a - slow) >> 10;
+            if (fast > 2500 && fast > slow * 3 && age > 2000) age = 0;
+        }
+        if (age < span) age++;
+        env += a > env ? (a - env) >> 4 : (a - env) >> 11;   /* (the sound's level) */
+        if ((i & 15u) == 0u) {
+            amt = (int32_t)((uint32_t)age * 128u / (uint32_t)span) * dep;   /* (0 .. 16256) */
+            gn = (int32_t)((20000u << 12) / (uint32_t)(env > 400 ? env : 400));   /* (to ~20000, Q12) */
+            if (gn > 20 << 12) gn = 20 << 12;
+            ib = (int32_t)((1u << 24) / (uint32_t)gn);   /* (its inverse, Q12) */
+        }
+        u = clampv((v * (gn >> 4)) >> 8, 32767);   /* (at one level: the harmonics as strong at any loudness) */
+        h2 = (u * u) >> 15; dc += (h2 - dc) >> 9; h2 -= dc;   /* (the octave: the square, its offset taken out) */
+        h3 = (((u * u) >> 15) * u) >> 15;       /* (the edge: the cube) */
+        lp += (((h2 + h3) - lp) * kt) >> 15;    /* (as bright as TONE) */
+        x[i] += (((lp * (amt >> 2)) >> 12) * ib) >> 12;   /* (back to its level) */
+    }
+    st->s[0] = age; st->s[1] = fast; st->s[2] = slow; st->s[3] = dc; st->s[4] = lp; st->s[5] = amt; st->s[6] = env; st->s[7] = gn;
+}
+
 static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, int32_t *x, uint32_t n)
 {
     pst_t *st = &pst[t][e];
@@ -993,6 +1103,9 @@ static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, 
     else if (type == PD_RING) ring_block(st, k, x, n);
     else if (type == PD_WRONG) wrong_block(t, st, x, n);
     else if (type == PD_MECH || type == PD_MEML || type == PD_WORM) {}   /* (the notes they play: gb_clock.h) */
+    else if (type == PD_COMP) comp_block(st, k, x, n);
+    else if (type == PD_ROTARY) rotary_block(st, pbuf[t][e], k, x, n);
+    else if (type == PD_BLOOM) bloom_block(t, st, k, x, n);
     else if (type <= PD_UNI) mod_block(type, st, pbuf[t][e], k, x, n);
     else other_block(t, type, st, pbuf[t][e], k, x, n);
 }
@@ -1013,9 +1126,11 @@ static void fx_flush(void)                      /* the music stopped: every line
 
 static void fx_process(int32_t *out, uint32_t n)
 {
-    uint32_t i, t, e, b, used = 0, flush = fx_flush_req;
+    uint32_t i, t, e, b, used = 0, flush = fx_flush_req, pstep = pf_step(n);
     int32_t *wet = &tb[0][0];                   /* (the shared pedals' sound, stereo: tb is free once mixed) */
+    static uint32_t pf_ready;
     n &= ~1u;                                   /* (the reverb takes pairs; the block is 256) */
+    if (!pf_ready) { pf_ready = 1; flush = 1; } /* (switched on: the pedals as they are, no fade) */
     for (t = 0; t < NTRK; t++) {                /* 1. each track through its own pedals, slot by slot, in place */
         uint32_t on = set.fx[t].on;
         if (TTYPE(t) == T_LEAD || TTYPE(t) == T_PAD) {   /* a lead, a pad: their lows cut (one pole: the lead ~120 Hz, the
@@ -1029,8 +1144,22 @@ static void fx_process(int32_t *out, uint32_t n)
         int32_t gv = (int32_t)set.vol[t] * 4096 / 100;   /* the mixer: 100 = as is (Q12), 127 = x1.27, after the pedals */
         for (e = 0; e < NFX; e++) {
             uint32_t p = set.ped[t][e] % NPD;
-            if (e < NPED_SLOTS && on >> e & 1u && !PD_SPACE(p) && !(fx_quiet && (p == PD_GHOST || p == PD_GLITCH || p == PD_LOOSE))) ped_insert(t, e, p, set.pk[t][e], tb[t], n);
-            else pst[t][e].live = 0;
+            int32_t want, g0 = pfg[t][e], g1;
+            if (e >= NPED_SLOTS) { pst[t][e].live = 0; continue; }
+            want = on >> e & 1u && !(fx_quiet && (p == PD_GHOST || p == PD_GLITCH || p == PD_LOOSE)) ? PF_ONE : 0;
+            if (flush) g0 = want;               /* (stopped, or just switched on: at once) */
+            g1 = g0 < want ? (g0 + (int32_t)pstep > want ? want : g0 + (int32_t)pstep)
+               : g0 > want ? (g0 - (int32_t)pstep < want ? want : g0 - (int32_t)pstep) : want;
+            pfg[t][e] = g1;
+            if (PD_SPACE(p)) continue;          /* (a shared pedal: its send, below) */
+            if (!g0 && !g1) { pst[t][e].live = 0; continue; }
+            if (g0 == PF_ONE && g1 == PF_ONE) { ped_insert(t, e, p, set.pk[t][e], tb[t], n); continue; }
+            {                                   /* fading: the sound before it and after it, blended */
+                int32_t *x = tb[t], acc = g0, dg = (g1 - g0) / (int32_t)n;
+                for (i = 0; i < n; i++) fx_dry[i] = x[i];
+                ped_insert(t, e, p, set.pk[t][e], x, n);
+                for (i = 0; i < n; i++, acc += dg) x[i] = fx_dry[i] + (((x[i] - fx_dry[i]) * (acc >> 8)) >> 12);
+            }
         }
         if (gv != 4096) {
             int32_t *x = tb[t];
@@ -1042,9 +1171,9 @@ static void fx_process(int32_t *out, uint32_t n)
         uint32_t first = 1;
         for (t = 0; t < NTRK; t++)
             for (e = 0; e < NPED_SLOTS; e++) {
-                int32_t sv = set.pk[t][e][0];
+                int32_t sv = (set.pk[t][e][0] * pfg[t][e]) >> 20;   /* (127 x 2^20: fits) */   /* (the send, as far as it has faded in) */
                 const int32_t *x = tb[t];
-                if (!(set.fx[t].on >> e & 1u) || sp_of(set.ped[t][e] % NPD) != (int32_t)b || !sv || fx_quiet) continue;
+                if (sp_of(set.ped[t][e] % NPD) != (int32_t)b || !sv || fx_quiet) continue;
                 if (first) { for (i = 0; i < n; i++) bus[i] = x[i] * sv; first = 0; }
                 else for (i = 0; i < n; i++) bus[i] += x[i] * sv;
             }

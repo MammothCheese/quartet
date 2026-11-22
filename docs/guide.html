@@ -136,7 +136,7 @@ footer a { color: var(--sub); }
     <a class="btn ghost" href="https://github.com/MammothCheese/quartet#install">How to install</a>
     <a class="btn ghost" href="emu/">Play it in your browser</a>
     <a class="btn ghost" href="#start">Quick start</a>
-    <p class="note">37 pedals &middot; 72 sounds &middot; 23 drum kits &middot; ten patterns per instrument &middot; ten songs. Press <kbd>PLAY</kbd> to hear the demo.</p>
+    <p class="note">40 pedals &middot; 72 sounds &middot; 23 drum kits &middot; ten patterns per instrument &middot; ten songs. Press <kbd>PLAY</kbd> to hear the demo.</p>
   </div>
   <div class="screen">
     <img src="guide/home.png" alt="QUARTET's home screen: a colour pill per instrument, the chosen one open with its steps, its pedals along the bottom">
@@ -178,7 +178,7 @@ footer a { color: var(--sub); }
         <ol>
           <li>With the lead chosen, <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are its four pedals. <b>Tap</b> <kbd>ENV</kbd> to switch on Distortion.</li>
           <li><b>Hold</b> <kbd>ENV</kbd> to open it. Turn <kbd>KNOB 4</kbd> for more dirt.</li>
-          <li>Turn <kbd>ALGORITHM</kbd> for a different pedal (<a href="#meet">37 in all</a>).</li>
+          <li>Turn <kbd>ALGORITHM</kbd> for a different pedal (<a href="#meet">40 in all</a>).</li>
         </ol>
       </div>
       <img src="guide/pedal.png" alt="A distortion pedal page">
@@ -227,7 +227,7 @@ footer a { color: var(--sub); }
   <h2>Instruments and sounds</h2>
   <p class="sub">Four instruments, each in its own colour. <kbd>SELECT</kbd> picks one, <kbd>ALGORITHM</kbd> changes its sound.</p>
   <h3 style="margin-top:0">The home screen</h3>
-  <p>A row per instrument shows its sound and pattern; the chosen one opens to show its steps. <b>A&gt;C</b> means C plays next. A muted instrument turns red. The top line shows tempo, swing (<b>SW</b>) and octave; the bottom shows the chosen instrument's pedals, lit when on.</p>
+  <p>A row per instrument shows its sound and pattern; the chosen one opens to show its steps. <b>A&gt;C</b> means C plays next. A muted instrument turns red. The line under the title shows the four knobs: the tempo, the chosen instrument's mix level (a speaker) and brightness (a sun), and the pedal fade (a ramp). <b>OCT+1</b> shows in the top bar when the keys are shifted. The bottom shows the chosen instrument's pedals, lit when on.</p>
   <div class="split">
     <div>
       <table class="t">
@@ -301,7 +301,8 @@ footer a { color: var(--sub); }
         <tr><td><b>On / off</b></td><td>Tap <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> or <kbd>LFO</kbd>. The button lights when it's on.</td></tr>
         <tr><td><b>Open</b></td><td>Hold the button.</td></tr>
         <tr><td><b>Adjust</b></td><td><kbd>KNOB 2</kbd> <kbd>3</kbd> <kbd>4</kbd> are its three knobs. <kbd>KNOB 1</kbd> switches it on or off.</td></tr>
-        <tr><td><b>Change</b></td><td><kbd>ALGORITHM</kbd> picks a pedal; <kbd>PRESETS</kbd> jumps to another kind (drive, filter, modulation, space, pitch, other).</td></tr>
+        <tr><td><b>Change</b></td><td><kbd>ALGORITHM</kbd> picks a pedal; <kbd>PRESETS</kbd> jumps to another kind (drive, filter, modulation, space, pitch, texture, behaviour).</td></tr>
+        <tr><td><b>Fade</b></td><td>On the home screen, <kbd>KNOB 4</kbd> makes pedals fade in and out over 1&ndash;4 bars when you tap them (<b>-</b>: at once). Reverb and delays fade their send, so tails ring out.</td></tr>
       </table>
       <p>Pedals follow the instrument chosen with <kbd>SELECT</kbd>. Each starts with Reverb, Delay, Distortion and Chorus.</p>
     </div>
@@ -328,61 +329,67 @@ footer a { color: var(--sub); }
   </div>
 
   <h3 id="meet">Meet the pedals</h3>
-  <p>All 37, by kind. Knobs are listed as <kbd>KNOB 2</kbd>, <kbd>3</kbd>, <kbd>4</kbd>.</p>
-  <div class="kind" style="--c: var(--mute)"><h4>DRIVE</h4><p>Grit and growl, from warm crunch to all-out fuzz.</p></div>
+  <p>All 40, by kind. Knobs are listed as <kbd>KNOB 2</kbd>, <kbd>3</kbd>, <kbd>4</kbd>.</p>
+  <div class="kind" style="--c: var(--mute)"><h4>DRIVE</h4><p>Grit and growl, from warm crunch to all-out fuzz, and a compressor to even it all out.</p></div>
   <div class="pk-grid" style="--c: var(--mute)">
-    <div class="pk"><img src="guide/pedals/distortion.png" alt="The Distortion pedal" loading="lazy"><h5>Distortion</h5><p>Classic rock crunch: a hot, saturated edge that gets heavier as you turn it up.</p><p class="kn">LEVEL · TONE · DIST</p><p class="on">Try it on a piano or Hammond for a gritty keyboard.</p></div>
     <div class="pk"><img src="guide/pedals/overdrive.png" alt="The Overdrive pedal" loading="lazy"><h5>Overdrive</h5><p>Softer, tube-amp warmth that starts clean and breaks up as you push it.</p><p class="kn">LEVEL · TONE · DRIVE</p><p class="on">Try it on electric piano or bass.</p></div>
+    <div class="pk"><img src="guide/pedals/distortion.png" alt="The Distortion pedal" loading="lazy"><h5>Distortion</h5><p>Classic rock crunch: a hot, saturated edge that gets heavier as you turn it up.</p><p class="kn">LEVEL · TONE · DIST</p><p class="on">Try it on a piano or Hammond for a gritty keyboard.</p></div>
     <div class="pk"><img src="guide/pedals/fuzz.png" alt="The Fuzz pedal" loading="lazy"><h5>Fuzz</h5><p>A thick, buzzy sixties fuzz box.</p><p class="kn">LEVEL · TONE · FUZZ</p><p class="on">Try it on a synth lead or a bassline.</p></div>
     <div class="pk"><img src="guide/pedals/octave-fuzz.png" alt="The Octave Fuzz pedal" loading="lazy"><h5>Octave Fuzz</h5><p>Fuzz with an extra note an octave up: ringing and nasal.</p><p class="kn">LEVEL · TONE · FUZZ</p><p class="on">Try it on lead solos.</p></div>
     <div class="pk"><img src="guide/pedals/wavefolder.png" alt="The Wavefolder pedal" loading="lazy"><h5>Wavefolder</h5><p>Folds the sound back on itself for a bright, metallic, buzzing edge.</p><p class="kn">LEVEL · TONE · FOLD</p><p class="on">Try it on bass or pads.</p></div>
     <div class="pk"><img src="guide/pedals/bitcrusher.png" alt="The Bitcrusher pedal" loading="lazy"><h5>Bitcrusher</h5><p>Crunchy low-resolution digital, from old game console to broken radio.</p><p class="kn">BITS · RATE · MIX</p><p class="on">Try it on drums.</p></div>
+    <div class="pk"><img src="guide/pedals/compressor.png" alt="The Compressor pedal" loading="lazy"><h5>Compressor</h5><p>Evens out the loud and the quiet: a slow attack lets the start of each note punch through, then it holds the rest steady.</p><p class="kn">SQUASH · ATTACK · LEVEL</p><p class="on">Try it on drums, or a plucky bass.</p></div>
   </div>
   <div class="kind" style="--c: var(--gold)"><h4>FILTER</h4><p>Make a sound talk.</p></div>
   <div class="pk-grid" style="--c: var(--gold)">
-    <div class="pk"><img src="guide/pedals/filter-seq.png" alt="The Filter Seq pedal" loading="lazy"><h5>Filter Seq</h5><p>A filter that steps open and shut in time with the beat, turning held chords into a rhythm.</p><p class="kn">RATE · DEPTH · RES</p><p class="on">Try it on long pad chords.</p></div>
     <div class="pk"><img src="guide/pedals/wah.png" alt="The Wah pedal" loading="lazy"><h5>Wah</h5><p>Opens up the harder you play, like a wah pedal following your touch.</p><p class="kn">SENS · RANGE · RES</p><p class="on">Try it on a funky Clavinet or guitar.</p></div>
     <div class="pk"><img src="guide/pedals/dj-filter.png" alt="The DJ Filter pedal" loading="lazy"><h5>DJ Filter</h5><p>One knob from muffled to thin, like a DJ mixer: sweep the drums down for a breakdown and back up for the drop.</p><p class="kn">FILTER · RES · LEVEL</p><p class="on">Try it on drums, for a breakdown.</p></div>
     <div class="pk"><img src="guide/pedals/acid.png" alt="The Acid pedal" loading="lazy"><h5>Acid</h5><p>A squelchy filter that snaps open on every note: the sound of an acid bass line, on any instrument.</p><p class="kn">CUTOFF · RES · DECAY</p><p class="on">Try it on bass, pads, even piano.</p></div>
+    <div class="pk"><img src="guide/pedals/filter-seq.png" alt="The Filter Seq pedal" loading="lazy"><h5>Filter Seq</h5><p>A filter that steps open and shut in time with the beat, turning held chords into a rhythm.</p><p class="kn">RATE · DEPTH · RES</p><p class="on">Try it on long pad chords.</p></div>
   </div>
   <div class="kind" style="--c: var(--pad)"><h4>MODULATION</h4><p>Movement, width and wobble.</p></div>
   <div class="pk-grid" style="--c: var(--pad)">
     <div class="pk"><img src="guide/pedals/chorus.png" alt="The Chorus pedal" loading="lazy"><h5>Chorus</h5><p>A gently drifting copy that makes the sound wide and lush.</p><p class="kn">RATE · DEPTH · LEVEL</p><p class="on">Try it on pads and electric piano.</p></div>
-    <div class="pk"><img src="guide/pedals/phaser.png" alt="The Phaser pedal" loading="lazy"><h5>Phaser</h5><p>A swirling, whooshing sweep.</p><p class="kn">RATE · DEPTH · FEEDBACK</p><p class="on">Try it on organ or strings.</p></div>
     <div class="pk"><img src="guide/pedals/flanger.png" alt="The Flanger pedal" loading="lazy"><h5>Flanger</h5><p>A jet-plane swoosh from a tiny, sweeping echo.</p><p class="kn">RATE · DEPTH · FEEDBACK</p><p class="on">Try it on drums or guitar.</p></div>
+    <div class="pk"><img src="guide/pedals/phaser.png" alt="The Phaser pedal" loading="lazy"><h5>Phaser</h5><p>A swirling, whooshing sweep.</p><p class="kn">RATE · DEPTH · FEEDBACK</p><p class="on">Try it on organ or strings.</p></div>
     <div class="pk"><img src="guide/pedals/tremolo.png" alt="The Tremolo pedal" loading="lazy"><h5>Tremolo</h5><p>Pulses the volume, from a gentle throb to a hard on-off chop.</p><p class="kn">RATE · DEPTH · SHAPE</p><p class="on">Try it on electric piano or guitar.</p></div>
-    <div class="pk"><img src="guide/pedals/slicer.png" alt="The Slicer pedal" loading="lazy"><h5>Slicer</h5><p>Chops the sound into rhythms locked to the tempo, with eight patterns to choose from.</p><p class="kn">RATE · DEPTH · PATTERN</p><p class="on">Try it on pads, for a pulsing gate.</p></div>
     <div class="pk"><img src="guide/pedals/vibrato.png" alt="The Vibrato pedal" loading="lazy"><h5>Vibrato</h5><p>Wobbles the pitch, like a singer's vibrato or a warped tape.</p><p class="kn">RATE · DEPTH · MIX</p><p class="on">Try it on flute or strings.</p></div>
+    <div class="pk"><img src="guide/pedals/slicer.png" alt="The Slicer pedal" loading="lazy"><h5>Slicer</h5><p>Chops the sound into rhythms locked to the tempo, with eight patterns to choose from.</p><p class="kn">RATE · DEPTH · PATTERN</p><p class="on">Try it on pads, for a pulsing gate.</p></div>
     <div class="pk"><img src="guide/pedals/pump.png" alt="The Pump pedal" loading="lazy"><h5>Pump</h5><p>Ducks the sound on every kick drum (or every beat), so the part breathes with the groove.</p><p class="kn">DEPTH · RELEASE · SOURCE</p><p class="on">Try it on pads and bass.</p></div>
+    <div class="pk"><img src="guide/pedals/rotary.png" alt="The Rotary pedal" loading="lazy"><h5>Rotary</h5><p>A spinning-speaker cabinet: the sound swirls and sways as the horn goes round. Turn SPEED and it spins up or slows down gradually, like the real thing.</p><p class="kn">SPEED · DEPTH · MIX</p><p class="on">Try it on Hammond or electric piano.</p></div>
   </div>
   <div class="kind" style="--c: var(--bass)"><h4>SPACE</h4><p>Rooms and echoes. Shared by the whole band: the first knob is how much this instrument sends.</p></div>
   <div class="pk-grid" style="--c: var(--bass)">
     <div class="pk"><img src="guide/pedals/reverb.png" alt="The Reverb pedal" loading="lazy"><h5>Reverb</h5><p>Puts the band in a room or a hall.</p><p class="kn">LEVEL · TONE · TIME</p><p class="on">Try it on everything, a little.</p></div>
+    <div class="pk"><img src="guide/pedals/spring-reverb.png" alt="The Spring Reverb pedal" loading="lazy"><h5>Spring Reverb</h5><p>The splashy, boingy reverb from a guitar amp.</p><p class="kn">LEVEL · TONE · TIME</p><p class="on">Try it on drums and guitar.</p></div>
+    <div class="pk"><img src="guide/pedals/shimmer.png" alt="The Shimmer pedal" loading="lazy"><h5>Shimmer</h5><p>A reverb whose tail rises an octave with each repeat: glowing and angelic.</p><p class="kn">LEVEL · TIME · SHIMMER</p><p class="on">Try it on pads and slow chords.</p></div>
     <div class="pk"><img src="guide/pedals/delay.png" alt="The Delay pedal" loading="lazy"><h5>Delay</h5><p>Echoes in time with the tempo.</p><p class="kn">REPEAT · ECHO · INTENSITY</p><p class="on">Try it on a lead melody.</p></div>
     <div class="pk"><img src="guide/pedals/tape-echo.png" alt="The Tape Echo pedal" loading="lazy"><h5>Tape Echo</h5><p>Warmer, darker echoes, like an old tape machine.</p><p class="kn">ECHO · TIME · REPEATS</p><p class="on">Try it on vocal-like leads, dub drums.</p></div>
-    <div class="pk"><img src="guide/pedals/shimmer.png" alt="The Shimmer pedal" loading="lazy"><h5>Shimmer</h5><p>A reverb whose tail rises an octave with each repeat: glowing and angelic.</p><p class="kn">LEVEL · TIME · SHIMMER</p><p class="on">Try it on pads and slow chords.</p></div>
     <div class="pk"><img src="guide/pedals/reverse-delay.png" alt="The Reverse Delay pedal" loading="lazy"><h5>Reverse Delay</h5><p>Echoes played backwards, swelling into each note.</p><p class="kn">ECHO · TIME · REPEATS</p><p class="on">Try it on a lead or guitar.</p></div>
-    <div class="pk"><img src="guide/pedals/spring-reverb.png" alt="The Spring Reverb pedal" loading="lazy"><h5>Spring Reverb</h5><p>The splashy, boingy reverb from a guitar amp.</p><p class="kn">LEVEL · TONE · TIME</p><p class="on">Try it on drums and guitar.</p></div>
   </div>
-  <div class="kind" style="--c: var(--drums)"><h4>PITCH</h4><p>Change the notes themselves.</p></div>
+  <div class="kind" style="--c: var(--drums)"><h4>PITCH</h4><p>New notes from the ones you play.</p></div>
   <div class="pk-grid" style="--c: var(--drums)">
     <div class="pk"><img src="guide/pedals/shifter.png" alt="The Shifter pedal" loading="lazy"><h5>Shifter</h5><p>Moves the sound up or down by semitones or octaves, blended with the original.</p><p class="kn">SEMI · OCTAVE · MIX</p><p class="on">Try it on drums an octave down.</p></div>
     <div class="pk"><img src="guide/pedals/harmonizer.png" alt="The Harmonizer pedal" loading="lazy"><h5>Harmonizer</h5><p>Adds a second voice at an interval, like a third or a fifth.</p><p class="kn">INTERVAL · LEVEL · TONE</p><p class="on">Try it on lead melodies.</p></div>
+    <div class="pk"><img src="guide/pedals/synth.png" alt="The Synth pedal" loading="lazy"><h5>Synth</h5><p>Adds a square-wave synth an octave or two under the lowest note.</p><p class="kn">OCTAVE · TONE · MIX</p><p class="on">Try it on pads, for a built-in bass.</p></div>
+    <div class="pk"><img src="guide/pedals/music-box.png" alt="The Music Box pedal" loading="lazy"><h5>Music Box</h5><p>A little plucked bell an octave up on every note.</p><p class="kn">DECAY · TONE · MIX</p><p class="on">Try it on pads or piano.</p></div>
     <div class="pk"><img src="guide/pedals/ring-mod.png" alt="The Ring Mod pedal" loading="lazy"><h5>Ring Mod</h5><p>Metallic, bell-like and robotic: the sound multiplied by a tone.</p><p class="kn">FREQ · MIX · WOBBLE</p><p class="on">Try it on drums or a lead.</p></div>
   </div>
-  <div class="kind" style="--c: #B23FCF"><h4>OTHER</h4><p>Strange and wonderful.</p></div>
-  <div class="pk-grid" style="--c: #B23FCF">
+  <div class="kind" style="--c: #A0672E"><h4>TEXTURE</h4><p>Wear, grain and weather on the sound.</p></div>
+  <div class="pk-grid" style="--c: #A0672E">
     <div class="pk"><img src="guide/pedals/old-media.png" alt="The Old Media pedal" loading="lazy"><h5>Old Media</h5><p>A worn tape or record: wobble, hiss and crackle.</p><p class="kn">WEAR · NOISE · TONE</p><p class="on">Try it on strings or piano.</p></div>
-    <div class="pk"><img src="guide/pedals/glitch.png" alt="The Glitch pedal" loading="lazy"><h5>Glitch</h5><p>Now and then a step stutters and repeats, locked to the beat.</p><p class="kn">CHANCE · LENGTH · MIX</p><p class="on">Try it on drums or a lead.</p></div>
-    <div class="pk"><img src="guide/pedals/underwater.png" alt="The Underwater pedal" loading="lazy"><h5>Underwater</h5><p>Muffled and drifting, like hearing the band from the bottom of a pool.</p><p class="kn">DEPTH · WOBBLE · LEVEL</p><p class="on">Try it on a guitar or pad.</p></div>
-    <div class="pk"><img src="guide/pedals/synth.png" alt="The Synth pedal" loading="lazy"><h5>Synth</h5><p>Adds a square-wave synth an octave or two under the lowest note.</p><p class="kn">OCTAVE · TONE · MIX</p><p class="on">Try it on pads, for a built-in bass.</p></div>
     <div class="pk"><img src="guide/pedals/lo-fi.png" alt="The Lo-Fi pedal" loading="lazy"><h5>Lo-Fi</h5><p>Grainy and dull, like a cheap sampler or an old radio.</p><p class="kn">RATE · NOISE · DIRT</p><p class="on">Try it on drums or keys.</p></div>
-    <div class="pk"><img src="guide/pedals/loose.png" alt="The Loose pedal" loading="lazy"><h5>Loose</h5><p>Plays a part late and human, with a second player a step behind.</p><p class="kn">LATE · DOUBLE · DRIFT</p><p class="on">Try it on drums, to loosen a stiff beat.</p></div>
-    <div class="pk"><img src="guide/pedals/music-box.png" alt="The Music Box pedal" loading="lazy"><h5>Music Box</h5><p>A little plucked bell an octave up on every note.</p><p class="kn">DECAY · TONE · MIX</p><p class="on">Try it on pads or piano.</p></div>
+    <div class="pk"><img src="guide/pedals/underwater.png" alt="The Underwater pedal" loading="lazy"><h5>Underwater</h5><p>Muffled and drifting, like hearing the band from the bottom of a pool.</p><p class="kn">DEPTH · WOBBLE · LEVEL</p><p class="on">Try it on a guitar or pad.</p></div>
     <div class="pk"><img src="guide/pedals/wrong-station.png" alt="The Wrong Station pedal" loading="lazy"><h5>Wrong Station</h5><p>Now and then tunes the instrument to a neighbouring sound, with a burst of static, then back, as if turning a radio dial.</p><p class="kn">CHANCE · DRIFT · HOLD</p><p class="on">Try it on the lead, or the drums (it changes kit).</p></div>
+  </div>
+  <div class="kind" style="--c: #B23FCF"><h4>BEHAVIOUR</h4><p>Pedals that change how a part plays as it goes.</p></div>
+  <div class="pk-grid" style="--c: #B23FCF">
+    <div class="pk"><img src="guide/pedals/glitch.png" alt="The Glitch pedal" loading="lazy"><h5>Glitch</h5><p>Now and then a step stutters and repeats, locked to the beat.</p><p class="kn">CHANCE · LENGTH · MIX</p><p class="on">Try it on drums or a lead.</p></div>
+    <div class="pk"><img src="guide/pedals/loose.png" alt="The Loose pedal" loading="lazy"><h5>Loose</h5><p>Plays a part late and human, with a second player a step behind.</p><p class="kn">LATE · DOUBLE · DRIFT</p><p class="on">Try it on drums, to loosen a stiff beat.</p></div>
     <div class="pk"><img src="guide/pedals/mech-failure.png" alt="The Mech Failure pedal" loading="lazy"><h5>Mech Failure</h5><p>The instrument wears out as it plays: missed notes, stuck notes, notes out of tune, until it suddenly works again.</p><p class="kn">WEAR · STICK · RECOVERY</p><p class="on">Try it on a piano or a drum machine.</p></div>
     <div class="pk"><img src="guide/pedals/memory-loss.png" alt="The Memory Loss pedal" loading="lazy"><h5>Memory Loss</h5><p>Each time the pattern comes round, a few more notes are forgotten until only fragments remain. RECALL brings them back in waves.</p><p class="kn">SPEED · FLOOR · RECALL</p><p class="on">Try it on a busy part, to strip it back.</p></div>
     <div class="pk"><img src="guide/pedals/tape-worm.png" alt="The Tape Worm pedal" loading="lazy"><h5>Tape Worm</h5><p>Keeps the last few steps played and now and then loops a fragment of them.</p><p class="kn">CHANCE · LENGTH · REPEATS</p><p class="on">Try it on drums or a bassline.</p></div>
+    <div class="pk"><img src="guide/pedals/bloom.png" alt="The Bloom pedal" loading="lazy"><h5>Bloom</h5><p>Each note starts clean, then grows richer the longer you hold it as higher harmonics bloom in.</p><p class="kn">TIME · DEPTH · TONE</p><p class="on">Try it on long pad chords.</p></div>
   </div>
 
   <details class="more">
@@ -402,8 +409,8 @@ footer a { color: var(--sub); }
     <div class="try" style="--c: var(--pad)"><b class="h">Try this</b><p>Write a bassline in B while A plays, then turn <kbd>PRESETS</kbd> to B.</p></div>
   </div>
 
-  <h3 style="margin-top:0">Tempo and swing</h3>
-  <p>On the home screen, <kbd>KNOB 1</kbd> is the tempo and <kbd>KNOB 2</kbd> the swing, from straight (50 %) to a heavy shuffle (66 %).</p>
+  <h3 style="margin-top:0">Tempo, mix, brightness, swing</h3>
+  <p>On the home screen, <kbd>KNOB 1</kbd> is the tempo, <kbd>KNOB 2</kbd> the chosen instrument's mix level and <kbd>KNOB 3</kbd> its brightness (synths). Swing is on the SONG page (<kbd>GLO</kbd> twice), <kbd>KNOB 3</kbd>: from straight (50 %) to a heavy shuffle (66 %).</p>
 
   <div class="split rev" style="margin-top:24px">
     <div class="shot"><img src="guide/drums.png" alt="The drum grid"><p>The drum grid.</p></div>
@@ -469,8 +476,8 @@ footer a { color: var(--sub); }
       <h3>Mixer (<kbd>GLO</kbd>)</h3>
       <p>Tap <kbd>GLO</kbd>. <kbd>KNOB 1&ndash;4</kbd> set the four volumes; <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> mute and unmute each instrument.</p>
 
-      <h3>Key lock and lights</h3>
-      <p>Tap <kbd>GLO</kbd> again for the <b>KEY</b> page. <kbd>ALGORITHM</kbd> picks the key; <kbd>KNOB 1</kbd> <b>LOCK</b> makes the keys play only notes in it; <kbd>KNOB 2</kbd> <b>LIGHTS</b> lights those keys.</p>
+      <h3>The SONG page: key and swing</h3>
+      <p>Tap <kbd>GLO</kbd> again for the <b>SONG</b> page. <kbd>ALGORITHM</kbd> picks the key; <kbd>KNOB 1</kbd> <b>LOCK</b> makes the keys play only notes in it; <kbd>KNOB 2</kbd> <b>LIGHTS</b> lights those keys; <kbd>KNOB 3</kbd> sets the <b>swing</b>.</p>
 
       <h3>Octaves, MIDI and themes</h3>
       <p><kbd>OCT-</kbd> <kbd>OCT+</kbd> change octave. For MIDI, hold <kbd>HOME</kbd> and turn <kbd>ALGORITHM</kbd> to pick a channel (or OMNI). A MIDI keyboard on USB or the TRS jack plays the chosen instrument and records just like the FM-1's own keys, in the step recorder and in live recording; on drums, the General MIDI notes (36 kick, 38 snare, 42 hat ...).</p>
@@ -479,7 +486,7 @@ footer a { color: var(--sub); }
     <div class="shots">
       <div class="shot"><img src="guide/arp.png" alt="The arpeggiator"><p>The arpeggiator.</p></div>
       <div class="shot"><img src="guide/mixer.png" alt="The mixer"><p>The mixer.</p></div>
-      <div class="shot"><img src="guide/key.png" alt="The KEY page"><p>The KEY page.</p></div>
+      <div class="shot"><img src="guide/key.png" alt="The SONG page"><p>The SONG page.</p></div>
     </div>
   </div>
 </section>
@@ -583,7 +590,7 @@ footer a { color: var(--sub); }
   <h3>Home screen</h3>
   <table class="t">
     <tr><td><kbd>ALGORITHM</kbd></td><td>The sound or kit, through every group.</td></tr>
-    <tr><td><kbd>KNOB 1</kbd> / <kbd>2</kbd></td><td>Tempo / swing (50&ndash;66 %).</td></tr>
+    <tr><td><kbd>KNOB 1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> / <kbd>4</kbd></td><td>Tempo / the chosen instrument's mix level / its brightness / pedal fade (0&ndash;4 bars).</td></tr>
     <tr><td><kbd>REC</kbd></td><td>Hold 1 s, then REC again: clear everything.</td></tr>
   </table>
 
@@ -635,7 +642,7 @@ footer a { color: var(--sub); }
   <table class="t">
     <tr><td>SUPER SEQ</td><td><kbd>KNOB 1&ndash;4</kbd>: on-off / box / its pattern / length. <kbd>ALGORITHM</kbd>: the box. <kbd>PRESETS</kbd>: the song.</td></tr>
     <tr><td>Mixer</td><td><kbd>KNOB 1&ndash;4</kbd>: the volumes. <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd>: mute.</td></tr>
-    <tr><td>KEY</td><td><kbd>ALGORITHM</kbd>: the key. <kbd>KNOB 1</kbd>: lock. <kbd>KNOB 2</kbd>: lights.</td></tr>
+    <tr><td>SONG</td><td><kbd>ALGORITHM</kbd>: the key. <kbd>KNOB 1</kbd>: lock. <kbd>KNOB 2</kbd>: lights. <kbd>KNOB 3</kbd>: swing.</td></tr>
     <tr><td>Save page</td><td><kbd>ALGORITHM</kbd> or <kbd>KNOB 1</kbd>: the slot. <kbd>REC</kbd> twice: save. <kbd>PLAY</kbd> twice: load.</td></tr>
   </table>
 
