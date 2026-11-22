@@ -287,7 +287,7 @@ static uint8_t *step_len(uint32_t t, uint32_t p, uint32_t s) { return &step_at(t
 #define NDYN_UI 7u
 static const uint8_t DYN_UI[NDYN_UI] = {0, 2, 5, 6, 4, 7, 8};   /* NORMAL SOFT LOUD SHORT PUNCH SMOOTH PLUCKED */
 static const uint8_t DYN_POS[NDYN] = {0, 1, 1, 1, 4, 2, 3, 5, 6};
-static const char *const DYN_NAME[NDYN] = {"NORMAL", "SOFT", "SOFT", "SOFT", "PUNCH", "LOUD", "SHORT", "SMOOTH", "PLUCKED"};
+static const char *const DYN_NAME[NDYN] __attribute__((unused)) = {"NORMAL", "SOFT", "SOFT", "SOFT", "PUNCH", "LOUD", "SHORT", "SMOOTH", "PLUCKED"};
 static const char *const DYN_SHORT[NDYN] = {"NORMAL", "SOFT", "SOFT", "SOFT", "PUNCH", "LOUD", "SHORT", "SMOOTH", "PLUCK"};   /* (the info line) */
 #define DYN_LONG DYN_NAME
 static uint32_t sdyn_get(uint32_t t, uint32_t p, uint32_t s)
@@ -410,7 +410,7 @@ static void set_swap(void)                      /* the current work <-> proj_buf
         ((uint8_t *)&set)[k] = proj_buf[k]; proj_buf[k] = y;
     }
 }
-static uint32_t sx_hold, sx_used;               /* the step recorder's STEP FX deck is the one the knobs turn (EDIT
+static uint32_t sx_hold;               /* the step recorder's STEP FX deck is the one the knobs turn (EDIT
                                                    switches); (sx_used: unused now) */
 static uint32_t sx_ds = 0xFFFFu;                /* drums: the hit last tapped (its step), the extras' target */
 static uint32_t sx_ui = 0x100u, sx_note;        /* (the info line, EDIT held: the target's extras, 0x100 none; its note) */
@@ -1194,10 +1194,12 @@ static const char *const TG = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%+-/.:<> #";
 static const char *const TF[] = {"010 101 111 101 101","110 101 110 101 110","011 100 100 100 011","110 101 101 101 110","111 100 110 100 111","111 100 110 100 100","0111 1000 1011 1001 0111","101 101 111 101 101","111 010 010 010 111","001 001 001 101 010","101 101 110 101 101","100 100 100 100 111","10001 11011 10101 10001 10001","10001 11001 10101 10011 10001","0110 1001 1001 1001 0110","110 101 110 100 100","0110 1001 1001 1010 0101","110 101 110 101 101","011 100 010 001 110","111 010 010 010 010","101 101 101 101 111","101 101 101 101 010","10001 10001 10101 11011 10001","101 101 010 101 101","101 101 010 010 010","111 001 010 100 111","111 101 101 101 111","010 110 010 010 111","110 001 010 100 111","110 001 010 001 110","101 101 111 001 001","111 100 110 001 110","011 100 111 101 111","111 001 010 010 010","111 101 111 101 111","111 101 111 001 110","101 001 010 100 101","000 010 111 010 000","000 000 111 000 000","001 001 010 100 100","0 0 0 0 1","0 1 0 1 0","001 010 100 010 001","100 010 001 010 100","00 00 00 00 00","10100 11111 01010 11111 00101"};
 static int32_t tiny_glyph(char ch, const char **r)   /* -> its width in dots (0: none) */
 {
-    const char *g = strchr(TG, ch >= 'a' && ch <= 'z' ? ch - 32 : ch), *q;
-    int32_t k = 0, w = 0;
-    if (!g) return 0;
-    *r = TF[g - TG];
+    const char *q;
+    int32_t k = 0, w = 0, i;
+    if (ch >= 'a' && ch <= 'z') ch = (char)(ch - 32);
+    for (i = 0; TG[i] && TG[i] != ch; i++) {}   /* (no C library on the chip: found by hand) */
+    if (!TG[i]) return 0;
+    *r = TF[i];
     for (q = *r; *q; q++) { if (*q == ' ') { k = 0; continue; } if (++k > w) w = k; }
     return w;
 }
@@ -4487,7 +4489,6 @@ static void app_main(void)
                                                    (3 ticks early .. late), KNOB4 the note to the next one in the key */
             int32_t e1 = fm1_enc_take(ENC_KNOB1), e2 = fm1_enc_take(ENC_KNOB2), e3 = fm1_enc_take(ENC_KNOB3), e4 = fm1_enc_take(ENC_KNOB4);
             uint8_t *xp = 0;
-            if (e1 | e2 | e3 | e4) sx_used = 1;
             if (trk < NSYN) { if (*step_note(trk, pt, cur[trk])) xp = &sx.s[trk][pt][cur[trk]]; }
             else {
                 uint32_t s2 = dheld < 27u ? dpage * PAGE + slot[dheld] : sx_ds;
