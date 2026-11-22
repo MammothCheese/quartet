@@ -67,7 +67,7 @@ static void clock_set_bpm(uint32_t bpm)         /* main loop */
 static uint32_t pat_len(uint32_t t, uint32_t p)  /* a pattern's length in steps (16, 32, 48 or 64) */
 {
     uint32_t n = set.plen[t][p % NPAT];
-    return n >= 16u && n <= NSTEP ? n : 16u;
+    return n >= 12u && n <= NSTEP ? n : bar_len();   /* (whole bars of the time signature: 12 .. 64) */
 }
 
 /* SUPER SEQ: each track plays its 8 boxes of the song in a row, one time through the box's pattern each, then from
@@ -239,12 +239,177 @@ static uint8_t tw_hist[NTRK][32], tw_n[NTRK], tw_from[NTRK], tw_len[NTRK], tw_at
 #ifdef NOTE_LOG
 static void note_log(uint32_t t, uint32_t pos);  /* (a test build: which step each track played) */
 #endif
+/* THE STEPS' EXTRAS (sx, quartet.c; hold EDIT in the step recorder): a step's CHANCE of playing, its RATCHET (2-4
+ * quick hits in the step) and its NUDGE (up to 3 ticks of 4 early or late). Lanes: each synth track, then each drum.
+ * A lane's hits to come are bits of lane_q (bit i: in i ticks); a step nudged early is looked for the ticks before it
+ * (lane_ahead), played then, and skipped at its own time (lane_early) */
+#define NLANE (NSYN + NDR)
+static uint32_t lane_q[NLANE], sx_rnd = 0x2545F491u;
+static uint8_t lane_pos[NLANE], lane_pat[NLANE], lane_early[NLANE];
+static const uint8_t RAT_AT[4][4] = {{0, 0, 0, 0}, {0, 2, 0, 0}, {0, 1, 3, 0}, {0, 1, 2, 3}};   /* (each hit's tick) */
+static uint32_t sx_get(uint32_t l, uint32_t p, uint32_t s) { return l < NSYN ? sx.s[l][p % NPAT][s % NSTEP] : sx.d[p % NPAT][(l - NSYN) % NDR][s % NSTEP]; }
+static int sx_roll(uint32_t x)                  /* does the step play this time? (chance 8/8 .. 1/8) */
+{
+    sx_rnd = sx_rnd * 1664525u + 1013904223u;
+    return (sx_rnd >> 29) < 8u - SX_PROB(x);
+}
+static void lane_fire(uint32_t l, uint32_t p, uint32_t s, uint32_t gap)   /* a hit; gap: ticks to the ratchet's next */
+{
+    if (l < NSYN) {
+        uint32_t op = trk_pos[l], opp = play_pat[l];
+        trk_pos[l] = (uint8_t)s; play_pat[l] = (uint8_t)p;
+        synth_step_t(l);
+        trk_pos[l] = (uint8_t)op; play_pat[l] = (uint8_t)opp;
+        if (gap && syn_left[l] > gap) syn_left[l] = gap;   /* (a ratchet's hit: short, the next one starts it again) */
+    } else drum_hit(p, l - NSYN, s);
+}
+static uint32_t lane_gap(uint32_t q)            /* the ticks to a lane's next hit (0: none) */
+{
+    uint32_t i;
+    for (i = 1; i < 32u; i++) if (q >> i & 1u) return i;
+    return 0;
+}
+static void lane_sched(uint32_t l, uint32_t p, uint32_t s, uint32_t x, uint32_t delay)   /* step s's hits, from delay ticks */
+{
+    uint32_t n = SX_RAT(x), i;
+    lane_pos[l] = (uint8_t)s; lane_pat[l] = (uint8_t)p;
+    for (i = 1; i <= n; i++) lane_q[l] |= 1u << (delay + RAT_AT[n][i]);
+    if (!delay) lane_fire(l, p, s, lane_gap(lane_q[l]));
+    else lane_q[l] |= 1u << delay;
+}
+static void lane_play(uint32_t l, uint32_t p, uint32_t s)   /* a lane's step at its time: its chance, ratchet, nudge */
+{
+    uint32_t x = sx_get(l, p, s), e = lane_early[l];
+    lane_early[l] = 0;
+    if (e == s + 1u) return;                    /* (played already: nudged early) */
+    if (!x) { lane_fire(l, p, s, 0); return; }
+    if (!sx_roll(x)) return;
+    lane_sched(l, p, s, x, SX_NUD(x) > 0 ? (uint32_t)SX_NUD(x) : 0u);   /* (early, not found ahead: now) */
+}
+static void lane_tick(void)                     /* every tick: the lanes' hits due now */
+{
+    uint32_t l;
+    for (l = 0; l < NLANE; l++) {
+        if (!lane_q[l]) continue;
+        lane_q[l] >>= 1;
+        if (lane_q[l] & 1u) { lane_q[l] &= ~1u; lane_fire(l, lane_pat[l], lane_pos[l], lane_gap(lane_q[l])); }
+    }
+}
+static void lane_ahead(uint32_t sub)            /* the ticks between steps (sub 1-3): the next step's early hits, due now */
+{
+    uint32_t t, l, need = TPS - sub;
+    if (rep_len) return;                        /* (a beat repeat: the next step not known) */
+    for (t = 0; t < NTRK; t++) {
+        uint32_t p = play_pat[t] % NPAT, np = trk_pos[t] + 1u, l0 = t < NSYN ? t : NSYN, l1 = t < NSYN ? t + 1u : NLANE;
+        if (np >= pat_len(t, p)) {              /* (round to step 1: the pattern chosen, if known now) */
+            if (set.sseq_on || set.sel[t] >= NPAT) continue;
+            np = 0; p = set.sel[t];
+        }
+        for (l = l0; l < l1; l++) {
+            uint32_t x = sx_get(l, p, np);
+            if (!x || SX_NUD(x) != -(int32_t)need) continue;
+            if (l < NSYN ? !step_note(t, p, np)[0] : !dbit(p, l - NSYN, np)) continue;
+            lane_early[l] = (uint8_t)(np + 1u);
+            if (sx_roll(x)) lane_sched(l, p, np, x, 0);
+        }
+    }
+}
+static void lane_reset(void) { uint32_t l; for (l = 0; l < NLANE; l++) { lane_q[l] = 0; lane_early[l] = 0; } }
+
+/* THE BRIDGE (quartet.c brg_*): four bars from the work playing into the project staged in proj_buf. Bar 1 the groove
+ * as it is; bar 2 its lead and pad only on the beat; bar 3 the new song's opening drums (our kit) and, in the same key,
+ * its bass on our bass (else the drums alone); bar 4 the same, a snare fill on its last beat. The tempo moves step by
+ * step to the new song's; then on beat one the new song starts as PLAY starts it (brg_handoff) */
+#define NX ((__typeof__(set) *)(void *)proj_buf)   /* the staged project */
+static chord_t *nx_step(uint32_t slot, uint32_t p, uint32_t s)
+{
+    p %= NPAT; s %= NSTEP;
+    return slot == T_BASS ? &NX->chord_b[p][s] : &NX->chord[slot == T_PAD][p][s];
+}
+static void brg_bar(uint32_t bar)               /* a bridge bar starts (after seq_advance: this step is its first) */
+{
+    uint32_t p, d, s;
+    if (bar != 2u) return;
+    if (brg_dpat < NPAT) {                      /* the new song's opening drums, in place of ours */
+        p = play_pat[T_DRUMS] % NPAT;
+        for (d = 0; d < NDR; d++) {
+            for (s = 0; s < NSTEP / PAGE; s++) set.dpat[p][d][s] = NX->dpat[brg_dpat][d][s];
+            for (s = 0; s < NSTEP / 2u; s++) set.ddyn[p][d][s] = NX->ddyn[brg_dpat][d][s];
+            for (s = 0; s < NSTEP; s++) sx.d[p][d][s] = sx_next.d[brg_dpat][d][s];
+        }
+        set.plen[T_DRUMS][p] = NX->plen[T_DRUMS][brg_dpat];
+        trk_pos[T_DRUMS] = 0;
+    }
+    if (brg_hint) {                             /* the same key: its bass, on ours */
+        uint32_t t = brg_bdst;
+        p = play_pat[t] % NPAT;
+        for (s = 0; s < NSTEP; s++) {
+            *step_at(t, p, s) = *nx_step(brg_bsrc, brg_bpat, s);
+            set.sdyn[t][p][s] = NX->sdyn[brg_bsrc][brg_bpat][s];
+            sx.s[t][p][s] = 0;
+        }
+        set.plen[t][p] = NX->plen[brg_bsrc][brg_bpat];
+        trk_pos[t] = 0;
+    }
+}
+static void brg_on_step(uint32_t tick)          /* each step: the bridge's part of it (before the tracks play it) */
+{
+    uint32_t bar, in, t, m = 0, last;
+    int32_t b16;
+    if (brg_state == 1u && (tick / TPS) % bar_len() == 0u) { brg_state = 2; brg_step = 0; }   /* (a bar line: it starts) */
+    else if (brg_state == 2u) brg_step++;
+    if (brg_state != 2u) return;
+    bar = brg_step / brg_bl; in = brg_step % brg_bl;
+    last = bar == 3u && in + 4u >= brg_bl;      /* (the fill: the last beat's four steps) */
+    if (in == 0u) brg_bar(bar);
+    for (t = 0; t < NSYN; t++) {
+        uint32_t bass = TTYPE(t) == T_BASS;
+        if (bar == 1u && !bass && in % brg_spb) m |= 1u << t;   /* thinning: the lead and pad on the beat only */
+        if (bar >= 2u && !(brg_hint && t == brg_bdst)) m |= 1u << t;   /* then quiet (the bass hint apart) */
+        if (last) m |= 1u << t;                 /* (the fill: the drums alone) */
+    }
+    brg_mute = m;
+    b16 = brg_b16a + (brg_b16b - brg_b16a) * (int32_t)(brg_step + 1u) / (int32_t)(4u * brg_bl);   /* the tempo, on its way */
+    if (b16 < 16 * (int32_t)BPM_MIN) b16 = 16 * (int32_t)BPM_MIN;
+    clk_tick_q8 = 677376000u / (uint32_t)b16;  /* (TICK_Q8 at BPM x 16) */
+    set.bpm = (uint8_t)((b16 + 8) / 16);
+    if (last) {                                 /* the fill: a snare every step, louder and louder */
+        static const uint8_t FD[4] = {2, 0, 5, 4};   /* SOFT NORMAL LOUD PUNCH */
+        uint32_t k = in + 4u - brg_bl;
+        if (!((trk_mute | chain_rest) >> T_DRUMS & 1u)) {
+            dvel[DR_SNARE] = DYN_G7[FD[k & 3u]]; dart[DR_SNARE] = 0; drum_trigger(DR_SNARE);
+            if (k == 3u) { dvel[DR_CLAP] = DYN_G7[4]; dart[DR_CLAP] = 0; drum_trigger(DR_CLAP); }
+        }
+    }
+}
+static void brg_handoff(void)                   /* beat one: the new song in (the work out, not kept); main tidies up */
+{
+    uint32_t th = set.mu.ub.theme, t, v, redeal = 0, k;
+    synth_stop();                               /* (the notes still held let go: their release rings) */
+    set_swap();
+    set.mu.ub.theme = (uint8_t)th;              /* (the instrument's theme stays) */
+    { const uint32_t *a = (const uint32_t *)(const void *)&sx_next; uint32_t *b = (uint32_t *)(void *)&sx;
+      for (k = 0; k < sizeof sx / 4u; k++) b[k] = a[k];
+      for (k = sizeof sx & ~3u; k < sizeof sx; k++) ((uint8_t *)&sx)[k] = ((const uint8_t *)&sx_next)[k]; }
+    for (t = 0; t < NSYN; t++) if (set.styp[t] != NX->styp[t]) redeal = 1;
+    if (redeal) {                               /* (another slot type: the voices dealt again now, before beat one) */
+        trk_req++; trk_done = trk_req;
+        for (v = 0; v < NVOX; v++) { vx[v].gate = 0; vx[v].amp = 0; vx[v].env = 0; vx[v].dstep = 0; vx[v].stage = 2; }
+        for (t = 0; t < NSYN; t++) trk_last[t] = 0;
+        trk_setup();
+    }
+    trk_mute = set.mute; brg_mute = 0;
+    clk_tick_q8 = TICK_Q8(set.bpm);             /* (its own tempo, exactly) */
+    lane_reset();
+    brg_state = 3;
+}
+
 static void track_play(uint32_t t)
 {
 #ifdef NOTE_LOG
     note_log(t, trk_pos[t]);
 #endif
-    if (t == T_DRUMS) drums_step(); else synth_step_t(t);
+    if (t == T_DRUMS) drums_step(); else lane_play(t, play_pat[t] % NPAT, trk_pos[t]);
 }
 static void track_step(uint32_t t)              /* one track's step, through its note pedals */
 {
@@ -343,8 +508,11 @@ static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
     clk_sub = tick % TPS;
     drums_tick();
     synth_tick();
+    if (tick == 0u) lane_reset();
+    lane_tick();                                /* (the steps' ratchets and late nudges) */
     if (tick % TPS == 0u) {
         seq_advance(tick == 0u);
+        if (brg_state == 1u || brg_state == 2u) brg_on_step(tick);   /* (the bridge) */
         repeat_step(tick / TPS, tick == 0u);
         clk_step = tick / TPS;
         if (clk_click && (tick / TPS) % 4u == 0u) click_start((int32_t)blk_pos, (tick / TPS) % 16u == 0u);   /* (the beat) */
@@ -352,6 +520,7 @@ static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
     } else {
         broken_tick();
         if (tick % TPS == TPS / 2u && rep_len == REP_HALF) { drums_step(); synth_step(); }   /* (a 1/32 repeat) */
+        lane_ahead(tick % TPS);                 /* (the next step's early nudges) */
     }
     arp_tick(tick);                             /* (playing: on the patterns' own ticks; after the step, so it arpeggiates
                                                    the step's notes from their first tick) */
@@ -399,7 +568,7 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
     if (go_done != clk_go) {                    /* PLAY: step 1 now (or a count-in bar first: silent, counted on the screen) */
         go_done = clk_go; pos_q8 = 0; tick = 0;
         pre_left = clk_pre * TPS; clk_pre = 0;
-        if (pre_left) clk_count = pre_left / (TPS * 4u);
+        if (pre_left) clk_count = pre_left / (TPS * ts_spb());   /* (the bar's beats) */
         else clock_fire(0);
         clk_ack = go_done;
     }
@@ -408,6 +577,9 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
         drums_stop(); synth_stop(); fx_flush_req = 1; fx_quiet = 1;
         ws_home_all();                          /* (WRONG STATION: the real sounds back) */
         for (t = 0; t < NTRK; t++) brk_wait[t] = brk_again[t] = 0;
+        lane_reset();
+        if (brg_state == 1u) brg_state = 0;     /* (a bridge queued: off) */
+        else if (brg_state == 2u) brg_handoff();   /* (under way: the new song now, stopped) */
     }
     was_run = run;
     if (ws_hold) ws_home_all();                /* (the sound editor open: the real sound) */
@@ -426,9 +598,14 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
             uint32_t cur = tick_len(len_q8, tick);   /* (this tick's length: swing stretches and shrinks them) */
             if (pos_q8 >= cur) {
                 pos_q8 -= cur; blk_pos = i;
-                if (!pre_left) clock_fire(++tick);
+                if (!pre_left) {
+                    if (brg_state == 2u && brg_step + 1u >= 4u * brg_bl && (tick + 1u) % TPS == 0u) {   /* the bridge's
+                                                   end: the new song from its step 1, the clock going on */
+                        brg_handoff(); tick = 0; clock_fire(0);
+                    } else clock_fire(++tick);
+                }
                 else if (--pre_left == 0u) { tick = 0; clk_count = 0; clock_fire(0); }   /* (the count-in done: step 1) */
-                else if (++tick % (TPS * 4u) == 0u) clk_count = pre_left / (TPS * 4u);
+                else if (++tick % (TPS * ts_spb()) == 0u) clk_count = pre_left / (TPS * ts_spb());
                 continue;
             }
             todo = (cur - pos_q8 + 255u) >> 8;  /* whole samples to the next tick */

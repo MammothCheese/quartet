@@ -5,7 +5,7 @@
 
 Quartet is a four-track groovebox with **lead, pads/chords, bass and drums**, 72 sounds and 23 drum kits in groups, ten patterns per instrument, four pedal slots each with a library of 40 pedals, live recording and a song arranger.
 
-> **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, **hold REC** on the home screen for the **RECORD** page, turn **ALGORITHM** to **CLEAR EVERYTHING**, then press **REC** twice (within three seconds). This erases the demo groove for good, but not your four saved projects.
+> **On a fresh install, a short demo groove is loaded** in pattern A of each instrument. Press **PLAY** to hear it and explore. To start from empty, **hold REC** on the home screen for the **RECORD** page, turn **ALGORITHM** to **CLEAR EVERYTHING**, then press **REC** twice (within three seconds). This erases the demo groove for good, but not your saved projects.
 
 ## Instruments and home screen
 
@@ -39,7 +39,7 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 | Control | Step recorder (synths) | Step recorder (drums) |
 |---|---|---|
 | **ALGORITHM** | The cursor, through every bar | — |
-| **KNOB1** | **BARS**: pattern length, 1–4 bars (an empty pattern takes the length of the one you came from) | Same |
+| **KNOB1** | **BARS**: pattern length, 1–4 bars in 4/4 (up to 5 in 3/4 and 6/8, 3 in 5/4: whatever fits in 64 steps; an empty pattern takes the length of the one you came from) | Same |
 | **KNOB2** | **LEN**: note length, **1/16, 1/8, dotted 1/8, 1/4, dotted 1/4, 1/2, dotted 1/2, whole**: the note at the cursor, and the notes you write next | — |
 | **KNOB3** | **EXP**: the expression, how the note is played, **NORMAL / SOFT / LOUD / SHORT / PUNCH / SMOOTH / PLUCKED** (see below) | Same, for new hits (or a held hit) |
 | **KNOB4** | **NOTE**: the cursor's note or chord up / down a semitone (heard when stopped) | The bar shown |
@@ -47,7 +47,18 @@ Press **SEQ** to open the **step recorder** (SEQ lights up). Melodic instruments
 | **REC tap / hold** | Switch to **LIVE** recording / the **RECORD** page (clear the pattern or everything) |
 | **ARP tap / hold 0.5 s** | Tie the previous note into this step / a **rest** (the step cleared) |
 | **SEQ tap / hold 0.5 s** | SUPER SEQ / the **copy page** (below) |
+| **EDIT** | Switches the knobs to the **STEP FX** deck (below): **KNOB1** chance, **KNOB2** ratchet, **KNOB3** nudge, **KNOB4** the note to the next note in the key; EDIT again: back to the NOTE deck | Same (no KNOB4); on the STEP FX deck a white key chooses the hit (an empty step gets one) |
 | **HOME** | Home |
+
+**The two decks.** Above the roll the step recorder shows all eight knob settings as two rows of four boxes, each box over its knob with its name above its value: the **NOTE** deck (**BARS**, **LENGTH**, **EXPRESS**, **NOTE**; drums **BARS**, –, **EXPRESS**, **PAGE**) and the **STEP FX** deck (**CHANCE**, **RATCHET**, **NUDGE**, **IN KEY**). The deck the knobs turn is lit, with a line under each box; the other is dimmed. **Tap EDIT** to switch decks; the pill at the bottom right says where EDIT goes next (**EDIT: STEP FX**, or **EDIT: NOTE** lit in the track's colour). A value that isn't plain (75 %, X3, +1, a SOFT note) shows in the track's colour. In the step recorder EDIT no longer opens the sound editor: go home first (HOME), then EDIT.
+
+**Step extras (the STEP FX deck).** For a synth the step is the one at the cursor; for drums it is the hit you are holding, or the one you tapped last (on the STEP FX deck, tapping a white key chooses that hit without switching it off; an empty step gets a hit). The roll and the drum grid show the extras: a ratchet splits the note or hit into its 2–4 hits, a chance makes it hollow (filled as far as it is likely), a nudge moves it a little left or right.
+- **KNOB1, CHANCE:** how likely the step is to play each time round: 100 % (always) down to 88, 75, 63, 50, 38, 25 and 13 %. Turn left to make it less likely.
+- **KNOB2, RATCHET:** the step plays 1, 2, 3 or 4 quick hits within its 16th: rolls and stutters.
+- **KNOB3, NUDGE:** the hit lands up to 3 ticks (of 4 in a step) **early** (−) or **late** (+), slightly ahead of or behind the grid: a lazy snare, a pushed bass note.
+- **KNOB4, KEY (synths):** moves the note (or chord) to the next note in the song's key, up or down, skipping the notes outside it.
+
+Switching a hit off and on, or clearing a step, puts its extras back to plain. They are saved with your work and with each project.
 
 **Expression (EXP).** Every note (and drum hit) has an expression, how it is played, on **KNOB3** in the step recorder:
 
@@ -219,15 +230,23 @@ When SUPER SEQ is on, it chooses the playing patterns instead of PRESETS. **PLAY
 
 **GLO** opens the mixer: a channel per track, each with a knurled knob in its colour. **KNOB1–4** set the volumes of lead, pads, bass and drums, shown under the knob and as a column of LEDs. On the mixer, **FX / SEL / ENV / LFO** mute lead, pads, bass and drums: the LED by the button's name glows while the track plays and goes dark when muted. Tap **GLO** again for the **SONG page**, and once more to go home (**HOME** also goes straight home). If audio crackles, try switching a pedal off.
 
-**The SONG page** (the key page, from Conductor) shows the key, then one line with **LOCK** and **LIGHTS** (lit when on) and the key's relative minor (e.g. **A MINOR**), then the **SWING**, and one octave of keyboard with the key's notes lit and named (the notes you play light gold). **ALGORITHM** chooses the key, a sharp or a flat at a time (C, G, D … or F, B-flat, E-flat …; QUARTET's demo groove is in C minor, the key of E-flat). **KNOB1** switches **LOCK** on: the keys then play only the key's notes, a note outside it sounding the one below. **KNOB2** switches **LIGHTS** on: the key's notes glow on the FM-1's keys (lead, pads and bass, outside the step recorder). **KNOB3** sets the **swing** for the whole song, 50 % (straight) to 66 % (a heavy shuffle), a click a step: every second 16th comes a little later, while the beat itself stays exactly in time.
+**The SONG page** (the key page, from Conductor) shows the key, then one line with **LOCK** and **LIGHTS** (lit when on) and the key's relative minor (e.g. **A MINOR**), then the **SWING**, and one octave of keyboard with the key's notes lit and named (the notes you play light gold). **ALGORITHM** chooses the key, a sharp or a flat at a time (C, G, D … or F, B-flat, E-flat …; QUARTET's demo groove is in C minor, the key of E-flat). **KNOB1** switches **LOCK** on: the keys then play only the key's notes, a note outside it sounding the one below. **KNOB2** switches **LIGHTS** on: the key's notes glow on the FM-1's keys (lead, pads and bass, outside the step recorder). **KNOB3** sets the **swing** for the whole song, 50 % (straight) to 66 % (a heavy shuffle), a click a step: every second 16th comes a little later, while the beat itself stays exactly in time. **KNOB4** sets the **time signature**, shown in a pill at the end of the swing line: **4/4** (16 steps a bar), **3/4** (12), **5/4** (20), **6/8** (12, counted in six eighths) or **7/8** (14). Changing it keeps each pattern's number of bars (as many as fit in 64 steps); the count-in counts the bar's beats (**3 · 2 · 1** in 3/4, **6 … 1** in 6/8), a first take grows a bar at a time, and the pedal fade counts in these bars. The step pages still show 16 steps, so a bar can cross a page and the last page may be part full.
 
-Quartet **automatically remembers current work** after playback stops and the sound has been quiet for two seconds. Four separate save slots let you keep projects.
+Quartet **automatically remembers current work** after playback stops and the sound has been quiet for two seconds. **Twelve save slots** let you keep projects (four on the SMK-37).
 
 ![Save screen](guide/save.png)
 
-Press **SAVE**; **KNOB1** chooses slot 1–4. Press **REC twice** (second press within three seconds) to **save**, or **PLAY twice** to **load**. Loading replaces current work; an empty slot says **EMPTY**. Saving or loading stops playback. Press **SAVE** to leave the page.
+Press **SAVE**; **PRESETS** (or ALGORITHM) chooses slot 1–12, four shown at a time (the dots on the right show which four). Each full slot shows the pattern each track starts on, a tile per track in its colour (LEAD, PAD, BASS, DRUMS); for the chosen slot **KNOB1–4** change them (A–J). Press **REC twice** (second press within three seconds) to **save**, or **PLAY twice** to **load** (starting on the patterns shown). Loading replaces current work; an empty slot says **EMPTY**. Saving or loading stops playback. Press **SAVE** to leave the page.
 
-To clear the current project, **hold REC** for the RECORD page, choose **CLEAR EVERYTHING** with ALGORITHM, then press **REC** twice. This resets patterns, sounds, effects, mixer, swing, arpeggiators and SUPER SEQ, **not** the four saved slots or your USER sounds. MIDI channel and octave are retained.
+**The bridge (live transitions).** Tap **SEL** on the save page (or turn SELECT right) to switch **BRIDGE** on: a green pill shows and SEL lights. Now, while the music plays, **one PLAY** queues a bridge into the chosen save (**TO 2: QUEUED**, SEL blinking); **PLAY again** cancels it while it is still queued. The save is read and checked first, without a break in the sound, and from the next bar line the band plays a **four-bar bridge** (**TO 2: BAR 1/4 … 4/4**):
+1. the groove goes on as it is;
+2. its lead and pad thin out to the beats while the drums keep time;
+3. the new song's opening drum rhythm comes in (still on the old kit), and if both songs are in the same key and both have a bass, a hint of its opening bass line on the old bass; in different keys the pitched parts drop out and the drums carry the handoff alone;
+4. the same, with a snare fill on the last beat (the drums alone).
+
+Over the four bars the tempo glides step by step to the new song's, and on beat one the new song starts exactly as PLAY would start it: its patterns (or its SUPER SEQ song), mix, sounds, kit and pedals, at its exact saved tempo, with no stop. Notes still held let go cleanly; delay and reverb tails ring out. **NOW ON 2** shows when it lands. Neither save is changed (the work becomes the new song, as with a load). If the save can't be read, **LOAD FAILED** shows and the music plays on. Stopping during the bridge lands it at once; stopping while it is queued cancels it. With BRIDGE off, or the music stopped, PLAY loads as usual.
+
+To clear the current project, **hold REC** for the RECORD page, choose **CLEAR EVERYTHING** with ALGORITHM, then press **REC** twice. This resets patterns, sounds, effects, mixer, swing, time signature (back to 4/4), arpeggiators and SUPER SEQ, **not** the saved slots or your USER sounds. MIDI channel and octave are retained.
 
 ## Complete control reference
 
@@ -236,7 +255,7 @@ To clear the current project, **hold REC** for the RECORD page, choose **CLEAR E
 | **SELECT** | Select instrument | Select instrument | SUPER SEQ: select row; SOUND, chain: another instrument; copy page: the track to copy from |
 | **PRESETS** | Select pattern A–J | Select pattern | SUPER SEQ: select song; pedal: the type (category); chain: another pedal; copy page: the pattern to copy from |
 | **ALGORITHM** | Select sound/kit (no test note) | Melodic step cursor | Pedal: the pedal within its type; SOUND: the page; chain: the slot; copy page: the pattern; SUPER SEQ: the box; save: the slot; KEY: the key; arpeggiator, mixer: nothing |
-| **KNOB1–4** | Tempo / the chosen track's mix level / its brightness (drums: kit decay) / pedal fade (0–4 bars) | Bars / note length / expression / note (drums: bars / — / expression / bar) | LIVE: bars / cursor / bar / —; SONG: lock / lights / swing; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
+| **KNOB1–4** | Tempo / the chosen track's mix level / its brightness (drums: kit decay) / pedal fade (0–4 bars) | Bars / note length / expression / note (drums: bars / — / expression / bar) | LIVE: bars / cursor / bar / —; SONG: lock / lights / swing / time signature; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
 | **Keys** | Play notes; drums: first six white keys | Melodic notes; drums: black keys choose voice, white keys toggle hits | LIVE: play and record |
 | **OCT− / OCT+** | Tap: octave; hold: the pattern an octave | Tap: drum step page; hold: the pattern an octave (synths) | Octave where applicable |
 | **PLAY** | Start/stop from step one | Start/stop | LIVE: start/stop (stopping ends recording); save: load |
@@ -245,7 +264,7 @@ To clear the current project, **hold REC** for the RECORD page, choose **CLEAR E
 | **REC** | Tap: record into the chosen track (count-in first); hold: the RECORD page | Tap: LIVE; hold: the RECORD page | LIVE: a take on/off, hold: the RECORD page; RECORD page: twice clears; save: twice saves; INSTR / KIT: twice saves to the USER slot; copy page: twice copies; elsewhere holding it does nothing |
 | **ARP** | Tap: on/off; hold: arpeggiator page | Tap: tie; hold: rest (LIVE: tap undoes the last take) | Arpeggiator page: tap on/off |
 | **FX / SEL / ENV / LFO** | Tap: pedal on/off (its name shows); hold: the pedal page | Same | Mixer: mute lead / pads / bass / drums; pedal page: PRESETS type, ALGORITHM pedal, KNOB1 on/off, KNOB2–4 adjust it |
-| **EDIT** | The SOUND page (the sound editor, from INSTR) | Same | SOUND page: the signal chain; chain: home |
+| **EDIT** | The SOUND page (the sound editor, from INSTR) | Switches the knobs between the NOTE and STEP FX decks | SOUND page: the signal chain; chain: home |
 | **GLO** | Tap: mixer, then KEY, then home. Hold: beat repeat (white keys 1–5 choose 1/2–1/32) | Same | Same |
 | **SAVE** | Open save screen | Open save screen | Save screen: close |
 | **MASTER** | Overall volume | Overall volume | Overall volume |

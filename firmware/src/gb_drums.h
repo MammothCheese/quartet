@@ -152,17 +152,22 @@ static void drum_trigger(uint32_t d)
                                                    (ph: the place, Q16; 64 = as recorded) */
 }
 
+static void drum_hit(uint32_t p, uint32_t d, uint32_t s)   /* a drum's hit of step s, pattern p, at its dynamic */
+{
+    uint32_t dy;
+    if ((trk_mute | chain_rest | brg_mute) >> T_DRUMS & 1u) return;   /* muted, or a SUPER SEQ rest */
+    dy = ddyn_get(p, d, s);
+    dvel[d] = DYN_G7[dy % NDYN];
+    dart[d] = (uint8_t)(dy == 6u || dy == 8u ? 1u : dy == 7u ? 2u : 0u);
+    drum_trigger(d);
+}
+static void lane_play(uint32_t l, uint32_t p, uint32_t s);   /* (gb_clock.h: a step through its extras) */
 static void drums_step(void)
 {
     uint32_t d, s = trk_pos[T_DRUMS], p = play_pat[T_DRUMS] % NPAT;
-    if ((trk_mute | chain_rest) >> T_DRUMS & 1u) return;   /* muted, or a SUPER SEQ rest */
+    if ((trk_mute | chain_rest | brg_mute) >> T_DRUMS & 1u) return;   /* muted, or a SUPER SEQ rest */
     for (d = 0; d < NDR; d++)
-        if (dbit(p, d, s)) {
-            uint32_t dy = ddyn_get(p, d, s);
-            dvel[d] = DYN_G7[dy % NDYN];
-            dart[d] = (uint8_t)(dy == 6u || dy == 8u ? 1u : dy == 7u ? 2u : 0u);
-            drum_trigger(d);
-        }
+        if (dbit(p, d, s)) lane_play(NSYN + d, p, s);   /* (each drum its own chance, ratchet, nudge) */
 }
 static void drums_tick(void) {}                 /* (drums have no note lengths) */
 static void drums_stop(void) {}                 /* (they ring out) */

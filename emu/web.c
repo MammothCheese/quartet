@@ -69,7 +69,9 @@ static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint1
 /* storage: in one block the page keeps in the browser (localStorage), store.h's sizes; a[0] used, a[1..3] the length */
 #include "store.h"
 static struct {
-    uint8_t set[SECTOR_MAX + 4], blob[NBLOB][SECTOR_MAX + 4], slot[NSLOT][SLOT_MAX + 4];
+    uint8_t set[SECTOR_MAX + 4], blob[NBLOB][SECTOR_MAX + 4], slot[NSLOT_ALL][SLOT_MAX + 4];   /* (the older block: up to
+                                                   slot 8; slots 9-12 and the extras after it, so an older one loads as the start) */
+    uint8_t ext[NEXT][EXT_MAX + 4];
 } store;
 EM_JS(void, js_store_saved, (void), { if (Module.onStoreSaved) Module.onStoreSaved(); });
 static int host_load(uint8_t *a, uint32_t max, void *p, uint32_t n)
@@ -90,8 +92,10 @@ static int settings_load(void *p, uint32_t n) { return host_load(store.set, SECT
 static int settings_save(const void *p, uint32_t n) { return host_save(store.set, SECTOR_MAX, p, n); }
 static int blob_load(uint32_t i, void *p, uint32_t n) { return i < NBLOB ? host_load(store.blob[i], SECTOR_MAX, p, n) : -1; }
 static int blob_save(uint32_t i, const void *p, uint32_t n) { return i < NBLOB ? host_save(store.blob[i], SECTOR_MAX, p, n) : -1; }
-static int slot_load(uint32_t i, void *p, uint32_t n) { return i < NSLOT ? host_load(store.slot[i], SLOT_MAX, p, n) : -1; }
-static int slot_save(uint32_t i, const void *p, uint32_t n) { return i < NSLOT ? host_save(store.slot[i], SLOT_MAX, p, n) : -1; }
+static int slot_load(uint32_t i, void *p, uint32_t n) { return i < NSLOT_ALL ? host_load(store.slot[i], SLOT_MAX, p, n) : -1; }
+static int slot_save(uint32_t i, const void *p, uint32_t n) { return i < NSLOT_ALL ? host_save(store.slot[i], SLOT_MAX, p, n) : -1; }
+static int ext_load(uint32_t i, void *p, uint32_t n) { return i < NEXT ? host_load(store.ext[i], EXT_MAX, p, n) : -1; }
+static int ext_save(uint32_t i, const void *p, uint32_t n) { return i < NEXT ? host_save(store.ext[i], EXT_MAX, p, n) : -1; }
 
 /* MIDI: in from the page (Web MIDI, as the TRS jack), out to nowhere */
 static uint8_t mq[64][3];

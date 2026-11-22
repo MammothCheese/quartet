@@ -458,7 +458,7 @@ static void synth_step_t(uint32_t t)            /* one track's step (BROKEN CLOC
     {
         const uint8_t *nt = step_note(t, play_pat[t], trk_pos[t]);
         uint32_t ln = *step_len(t, play_pat[t], trk_pos[t]), dy = sdyn_get(t, play_pat[t], trk_pos[t]);
-        if ((trk_mute | chain_rest) >> t & 1u || !nt[0]) return;   /* (muted, or a SUPER SEQ rest) */
+        if ((trk_mute | chain_rest | brg_mute) >> t & 1u || !nt[0]) return;   /* (muted, or a SUPER SEQ rest) */
         if (leg_on[t] && !(set.arp_on >> t & 1u)) {   /* after a legato note: these glide on from the notes still
                                                    sounding, without a new attack; any left over end */
             uint32_t v, used = 0;
@@ -500,7 +500,7 @@ static void synth_tick(void)
 {
     uint32_t t;
     for (t = 0; t < NSYN; t++) {
-        if ((trk_mute | chain_rest) >> t & 1u && syn_left[t]) syn_left[t] = 1;   /* muted (or resting): its notes end now */
+        if ((trk_mute | chain_rest | brg_mute) >> t & 1u && syn_left[t]) syn_left[t] = 1;   /* muted (or resting): its notes end now */
         if (syn_left[t] && --syn_left[t] == 0u) { voice_off(t, 0, 1); seq_arp_drop(t); leg_on[t] = 0; }
     }
 }

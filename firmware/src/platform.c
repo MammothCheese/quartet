@@ -250,8 +250,13 @@ static int blob_save(uint32_t i, const void *p, uint32_t n) { return i < NBLOB ?
 /* slot i: SLOT_SECT sectors, up to SLOT_MAX bytes. slot_load reads straight into p (no buffer that big): on -1 p holds
  * rubbish, start afresh */
 #define SLOT_MAGIC 0x544F4C53u                  /* "SLOT" */
-static int slot_load(uint32_t i, void *p, uint32_t n) { return i < NSLOT ? area_load(SLOTS_AT + i * SLOT_SECT * 0x1000u, SLOT_MAX, SLOT_MAGIC ^ STORE_MAGIC, p, n) : -1; }
-static int slot_save(uint32_t i, const void *p, uint32_t n) { return i < NSLOT ? area_save(SLOTS_AT + i * SLOT_SECT * 0x1000u, SLOT_SECT, SLOT_MAGIC ^ STORE_MAGIC, p, n) : -1; }
+static uint32_t slot_at(uint32_t i) { return i < NSLOT ? SLOTS_AT + i * SLOT_SECT * 0x1000u : SLOTX_AT + (i - NSLOT) * SLOT_SECT * 0x1000u; }
+static int slot_load(uint32_t i, void *p, uint32_t n) { return i < NSLOT_ALL ? area_load(slot_at(i), SLOT_MAX, SLOT_MAGIC ^ STORE_MAGIC, p, n) : -1; }
+static int slot_save(uint32_t i, const void *p, uint32_t n) { return i < NSLOT_ALL ? area_save(slot_at(i), SLOT_SECT, SLOT_MAGIC ^ STORE_MAGIC, p, n) : -1; }
+/* a project's step extras (beside its slot; an older project has none: -1, they start plain) */
+#define EXT_MAGIC 0x54584553u                   /* "SEXT" */
+static int ext_load(uint32_t i, void *p, uint32_t n) { return i < NEXT ? area_load(EXT_AT + i * EXT_SECT * 0x1000u, EXT_MAX, EXT_MAGIC ^ STORE_MAGIC, p, n) : -1; }
+static int ext_save(uint32_t i, const void *p, uint32_t n) { return i < NEXT ? area_save(EXT_AT + i * EXT_SECT * 0x1000u, EXT_SECT, EXT_MAGIC ^ STORE_MAGIC, p, n) : -1; }
 #if BOARD_SMK37
 /* the store's owner (the kit's convention, store.h): our tag, load as ever; anything else (the stock settings,
  * another port's data) is cleared once and the tag written, before the audio starts */

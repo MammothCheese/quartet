@@ -65,7 +65,7 @@ static uint32_t pf_step(uint32_t n)             /* the gain's step a block of n 
 {
     uint32_t bars = set.mu.ub.pfade, spb;
     if (!bars || bars > 4u) return PF_ONE;
-    spb = 10584000u / (set.bpm ? set.bpm : 120u) * bars;   /* (samples in a bar: 4 beats at 44.1 kHz) */
+    spb = 661500u / (set.bpm ? set.bpm : 120u) * bar_len() * bars;   /* (samples in a bar: its 16ths at 44.1 kHz) */
     n = (uint32_t)PF_ONE * n / spb;
     return n ? n : 1u;
 }

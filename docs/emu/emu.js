@@ -264,7 +264,8 @@
   function storeLoad() {
     try {
       const s = localStorage.getItem(STORE_KEY); if (!s) return;
-      const b = atob(s), n = M._web_store_size(); if (b.length !== n) return;   // (another build's sizes: start fresh)
+      const b = atob(s), n = M._web_store_size(); if (b.length > n) return;   // (a bigger, other build's: start fresh; a smaller,
+                                                                              //  older one: its block is the start of this one's)
       const a = new Uint8Array(M.HEAPU8.buffer, M._web_store(), n);
       for (let i = 0; i < n; i++) a[i] = b.charCodeAt(i);
     } catch (e) { console.warn('QUARTET: could not read the save kept in this browser', e); }
