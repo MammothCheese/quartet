@@ -1281,8 +1281,8 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
         p = put(p, "ALG:CHOOSE  REC REC:CLEAR");
     } else if (page == PG_KEY) {                /* the key page */
         p = put(p, "K1:LOCK K2:LIGHT K3:SW K4:TIME");
-    } else if (page == PG_PROJ) {               /* the save page: how to work it */
-        p = put(p, "PRE:SLOT K1-4:PAT SEL:BRIDGE");
+    } else if (page == PG_PROJ) {               /* the save page: its own legend (draw_save) */
+        return;
     } else if (page == PG_ARP) {                /* the arpeggiator: how to work it */
         p = put(p, trk < NSYN ? "TAP ARP OR K1: ON/OFF" : "HOME:BACK");
     } else if (page == PG_MIX) {                /* the mixer */
@@ -2953,20 +2953,20 @@ static void draw_save(uint32_t slot, uint32_t confirm, const char *msg, uint32_t
         cv_oy = -(int32_t)half * (H_PEDAL / 2);
         uint32_t first = slot / 4u * 4u;        /* (four at a time: the four around the chosen one) */
         for (i = first; i < first + 4u && i < NPROJ; i++) {
-            int32_t y = (int32_t)(i - first) * 41;
+            int32_t y = (int32_t)(i - first) * 36;
             uint32_t me = i == slot, full = proj_bpm[i] != 0u;
             uint16_t card = me ? C_PANEL2 : C_PANEL;
             int32_t cw = NPROJ > 4u ? 224 : 240;   /* (room at the right for the page dots) */
-            if (me) { cv_rrect(0, y + 1, cw, 38, 6, C_WHITE); cv_rrect(2, y + 3, cw - 4, 34, 5, card); }
-            else cv_rrect(0, y + 1, cw, 38, 6, card);
-            cv_rrect(8, y + 6, i >= 9u ? 34 : 28, 28, 5, me ? C_TXT : C_KEYCAP);
+            if (me) { cv_rrect(0, y + 1, cw, 34, 6, C_WHITE); cv_rrect(2, y + 3, cw - 4, 30, 5, card); }
+            else cv_rrect(0, y + 1, cw, 34, 6, card);
+            cv_rrect(8, y + 4, i >= 9u ? 34 : 28, 28, 5, me ? C_TXT : C_KEYCAP);
             *put_num(s, i + 1u, 1) = 0;
-            cv_text_bg(i >= 9u ? 11 : 14, y + 4, &FONT_L, s, me ? C_BG : C_TXT, me ? C_TXT : C_KEYCAP);
+            cv_text_bg(i >= 9u ? 11 : 14, y + 2, &FONT_L, s, me ? C_BG : C_TXT, me ? C_TXT : C_KEYCAP);
             p = put(s, "SAVE "); p = put_num(p, i + 1u, 1); *p = 0;
-            cv_text_bg(46, y + 4, &FONT_S, s, me ? C_TXT : C_SUB, card);
+            cv_text_bg(46, y + 2, &FONT_S, s, me ? C_TXT : C_SUB, card);
             if (full) { p = put_num(s, proj_bpm[i], 1); p = put(p, " BPM"); *p = 0; }
             else *put(s, "EMPTY") = 0;
-            cv_text_bg(46, y + 20, &FONT_S, s, full ? (me ? C_TXT : C_SUB) : C_DIMC, card);
+            cv_text_bg(46, y + 17, &FONT_S, s, full ? (me ? C_TXT : C_SUB) : C_DIMC, card);
             if (full) {                         /* a full slot: its patterns, a tile a track in its colour (the chosen
                                                    save: the ones KNOB1-4 set) */
                 uint32_t k;
@@ -2974,15 +2974,15 @@ static void draw_save(uint32_t slot, uint32_t confirm, const char *msg, uint32_t
                     uint32_t t = SEQ_ORDER[k], pt = (me ? pats[t] : proj_sel[i][t]) % NPAT;
                     uint16_t tc = rgbk(TRK_RGB[t], me ? 100 : 55);
                     char lt[2] = {(char)('A' + pt), 0};
-                    cv_rrect(130 + (int32_t)k * 22, y + 9, 19, 22, 5, tc);
-                    cv_text_bg(139 + (int32_t)k * 22 - text_w(&FONT_S, lt) / 2, y + 11, &FONT_S, lt, C_WHITE, tc);
+                    cv_rrect(130 + (int32_t)k * 22, y + 7, 19, 22, 5, tc);
+                    cv_text_bg(139 + (int32_t)k * 22 - text_w(&FONT_S, lt) / 2, y + 9, &FONT_S, lt, C_WHITE, tc);
                 }
             }
         }
         if (NPROJ > 4u) {                       /* (which four: a dot a page, at the right) */
             uint32_t pg;
             for (pg = 0; pg < (NPROJ + 3u) / 4u; pg++)
-                disc(232, 62 + (int32_t)pg * 14 - (int32_t)((NPROJ + 3u) / 4u) * 7, 3, pg == first / 4u ? C_TXT : C_DIMC);
+                disc(232, 72 + (int32_t)pg * 14 - (int32_t)((NPROJ + 3u) / 4u) * 7, 3, pg == first / 4u ? C_TXT : C_DIMC);
         }
         if (confirm) {                          /* "sure?" */
             const char *q = confirm == 1u ? "SAVE " : "LOAD ";
@@ -2997,6 +2997,20 @@ static void draw_save(uint32_t slot, uint32_t confirm, const char *msg, uint32_t
         }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
+    }
+    {                                           /* under the cards, what each control does: a key cap, then its job */
+        static const char *const KC[5][2] = {{"PLAY", "LOAD"}, {"PRESETS", "SLOT"}, {"REC", "SAVE"}, {"SELECT", "BRIDGE"},
+                                             {"K1-K4", "PATTERNS"}};
+        cv_begin(240, 240 - 188, C_BG);
+        cv_rrect(0, 0, 240, 240 - 188, 6, C_PANEL);
+        for (i = 0; i < 5u; i++) {
+            int32_t x = i % 2u ? 124 : 6, y = 3 + (int32_t)(i / 2u) * 16, w = tiny_w(KC[i][0]) + 10;
+            uint16_t on = i == 3u && brg;       /* (the bridge on: its cap lit) */
+            cv_rrect(x, y, w, 14, 4, on ? C_PLAYG : C_KEYCAP);
+            tiny_text(x + 5, y + 2, KC[i][0], on ? C_WHITE : C_TXT);
+            tiny_text(x + w + 5, y + 2, KC[i][1], C_SUB);
+        }
+        cv_blit(0, 188);
     }
 }
 
@@ -4240,10 +4254,8 @@ static void app_main(void)
          * it: each asks "sure?" first; the same button again within 3 s does it, any other button cancels */
         if (b & (1u << BTN_SAVE)) { spage = spage == PG_PROJ ? PG_MAIN : PG_PROJ; confirm = 0; b &= ~(1u << BTN_SAVE); }
         if (spage == PG_PROJ) {
-            uint32_t mask = 1u << BTN_PLAY | 1u << BTN_REC | 1u << BTN_SEL, op = b >> BTN_REC & 1u ? 1u : b >> BTN_PLAY & 1u ? 2u : 0u;
+            uint32_t mask = 1u << BTN_PLAY | 1u << BTN_REC, op = b >> BTN_REC & 1u ? 1u : b >> BTN_PLAY & 1u ? 2u : 0u;
             if (b & ~mask) confirm = 0;         /* another button: cancelled */
-            if (b >> BTN_SEL & 1u) { brg_on ^= 1u; fxb_long |= 2u; confirm = 0; }   /* SEL: the bridge on / off (not the
-                                                   pedal's, here) */
             if (op == 2u && brg_on && clk_run && !proj_go) {   /* the bridge: PLAY queues it, PLAY again (queued) cancels */
                 if (brg_state == 1u) { brg_cancel(); msg = "BRIDGE CANCELLED"; msg_ok = 0; msg_t = fm1_ms ? fm1_ms : 1u; }
                 else if (brg_state) {}          /* (under way: it lands by itself) */
@@ -4359,7 +4371,7 @@ static void app_main(void)
             for (i = 0; i < 4 && ALG_TRK[i] != cp_trk; i++) {}
             while (n2--) for (tr = 0; tr < 4; tr++) { i = ((i % 4) + d + 4) % 4; if ((ALG_TRK[i] < NSYN) == (trk < NSYN)) break; }
             cp_trk = ALG_TRK[i % 4]; cp_ask = 0;
-        } else if (e != 0 && spage == PG_PROJ) brg_on = e > 0;   /* the save page: the bridge on (right) / off (left) */
+        } else if (e != 0 && spage == PG_PROJ) brg_on ^= 1u;   /* the save page: a turn, the bridge on / off */
         else if (e != 0) {                      /* the track: a click to the next (or the one before) */
             int32_t i;
             for (i = 0; i < 4 && ALG_TRK[i] != sel_trk; i++) {}
@@ -4890,11 +4902,11 @@ static void app_main(void)
             fm1_led_key(FX_BTN[k], on);
             fm1_led_key_glow(FX_BTN[k], !on && spage == PG_FX + k);
         }
-        if (spage == PG_PROJ) { fm1_led_key(BTN_SEL, brg_on && (brg_state != 1u || (fm1_ms / 250u) % 2u)); fm1_led_key_glow(BTN_SEL, 0); }   /* the
-                                                   save page: SEL lit while the bridge is on (blinking: one queued) */
         if (spage == PG_PROJ && confirm)        /* the save page's "sure?": the button to press again blinks */
             fm1_led_key(BTN_PLAY, confirm == 2u && (fm1_ms / 150u) % 2u);
         else fm1_led_key(BTN_PLAY, run || mclk_run || (mclk_bpm && fm1_ms - mclk_beat_ms < 80u));   /* lit: running; a blink a beat */
+        if (spage == PG_PROJ && brg_state == 1u) fm1_led_key(BTN_PLAY, (fm1_ms / 250u) % 2u);   /* (a bridge queued:
+                                                   PLAY blinks: again cancels it) */
         fm1_led_key(BTN_REC, ((spage == PG_PROJ && confirm == 1u) || wipe_ask || cp_ask || usr_ask ? (fm1_ms / 150u) % 2u : 0u)
                              || (live_mode && live_rec && (!rec_wait || (fm1_ms / 150u) % 2u)) || (spage == PG_REC && rq_ask && (fm1_ms / 150u) % 2u));   /* (live: lit while
                                                    recording, blinking in the count-in; "sure?": blinking) */
