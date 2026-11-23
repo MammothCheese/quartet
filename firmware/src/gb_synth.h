@@ -294,19 +294,28 @@ static const char *sound_name(uint32_t ty, uint32_t id)
 /* the sounds that stood out, loud or quiet, against the rest of their type (measured on the same chords at their own
  * pitch): each one's level a few dB up or down, its character as it was. By the sound's id, so a sound tweaked in EDIT
  * keeps it. Q15 (32768: as is) */
-static const struct { uint8_t ty, id; uint16_t g; } SND_TRIM[] = {
-    {T_LEAD, 67, 65383},                        /* LASER +6 dB */
-    {T_LEAD, 1, 51935},                         /* XYLOPHONE +4 */
-    {T_LEAD, 9, 18427},                         /* CHIPTUNE -5 */
-    {T_LEAD, 6, 23197},                         /* THEREMIN -3 */
-    {T_BASS, 3, 58270},                         /* PLUCKED +5 */
-    {T_BASS, 64, 16423},                        /* GROWL -6 */
-    {T_BASS, 34, 18427},                        /* DX BASS -5 */
-    {T_PAD, 39, 18427},                         /* DIGITAL CHOIR -5 */
-    {T_LEAD, 46, 16423},                        /* CLAVIOLINE -6 (its formant peak) */
-    {T_LEAD, 49, 51935},                        /* NIGHT PULSE +4 */
-    {T_LEAD, 50, 51935},                        /* UNDERPASS +4 (deep: little up top) */
-    {T_LEAD, 51, 26029},                        /* SIGNAL LEAD -2 */
+static const struct { uint8_t ty, id; uint32_t g; } SND_TRIM[] = {   /* g: Q15 (32768 as is) */
+    {T_LEAD, 67, 65383},    /* LASER +6 dB */
+    {T_LEAD, 69, 26029},    /* STEPPER -2 */
+    {T_LEAD, 1, 51935},     /* XYLOPHONE +4 */
+    {T_LEAD, 9, 18427},     /* CHIPTUNE -5 */
+    {T_LEAD, 6, 23197},     /* THEREMIN -3 */
+    {T_BASS, 3, 118135},    /* PLUCKED +11 */
+    {T_BASS, 64, 16423},    /* GROWL -6 */
+    {T_BASS, 34, 29736},    /* DX BASS -1 */
+    {T_PAD, 39, 18427},     /* DIGITAL CHOIR -5 */
+    {T_LEAD, 46, 16423},    /* CLAVIOLINE -6 (its formant peak) */
+    {T_LEAD, 51, 26029},    /* SIGNAL LEAD -2 */
+    {T_LEAD, 43, 21077},    /* HARMONICA -4 */
+    {T_LEAD, 34, 19178},    /* PWM LEAD -5 */
+    {T_PAD, 36, 20207},     /* PWM PAD -4 */
+    {T_PAD, 38, 49473},     /* WARM ANALOG +4 */
+    {T_PAD, 6, 65943},      /* WARM SYNTH +6 */
+    {T_PAD, 8, 120921},     /* DRONE +11 */
+    {T_PAD, 67, 77495},     /* CATHEDRAL +7 */
+    {T_PAD, 65, 50460},     /* TIDAL +4 */
+    {T_BASS, 38, 20805},    /* RUBBER BASS -4 */
+    {T_BASS, 4, 20985},     /* FUZZ -4 */
 };
 static uint32_t snd_trim(uint32_t ty, uint32_t id)
 {
