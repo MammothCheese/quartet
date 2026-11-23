@@ -28,7 +28,7 @@ The same rules hold on every page:
 - **KNOB1–4** are the four settings shown, left to right. Where a page has an on/off switch (pedals, the arpeggiator, SUPER SEQ), it is **KNOB1**.
 - **Tap or hold:** a tap switches something or opens it, a half-second hold does the other. Pedal buttons and **ARP**: tap on/off, hold for the page. **GLO**: tap the mixer, hold beat repeat. **SEQ** in the step recorder: tap SUPER SEQ, hold the copy page.
 - **REC twice** confirms anything that keeps or replaces work: saving a sound or a project, copying a pattern, clearing everything. Holding **REC** (on home, the step recorder or the LIVE page) opens the **RECORD** page, where clearing a pattern or everything is chosen and confirmed.
-- A page's own button again moves on or closes it (**EDIT**: instrument → sound editor → chain → home; **SEQ**: recorder ↔ SUPER SEQ; **GLO**: mixer → KEY → home; **SAVE**: closes). **HOME** always goes home.
+- A page's own button again moves on or closes it (**EDIT**: instrument → sound editor → chain → home; **SEQ**: recorder ↔ SUPER SEQ; **GLO**: mixer → SONG → BRIDGE → home; **SAVE**: closes). **HOME** always goes home.
 
 ## Patterns and step recording
 
@@ -243,13 +243,25 @@ Quartet **automatically remembers current work** after playback stops and the so
 
 Press **SAVE**; **PRESETS** (or ALGORITHM) chooses slot 1–12, four shown at a time (the dots on the right show which four). Each full slot shows the pattern each track starts on, a tile per track in its colour (LEAD, PAD, BASS, DRUMS); for the chosen slot **KNOB1–4** change them (A–J). Press **REC twice** (second press within three seconds) to **save**, or **PLAY twice** to **load** (starting on the patterns shown). Loading replaces current work; an empty slot says **EMPTY**. Saving or loading stops playback. Press **SAVE** to leave the page.
 
-**The bridge (live transitions).** Turn **SELECT** on the save page to switch **BRIDGE** on or off: a green pill shows in the top bar and SELECT's key cap lights in the legend. (The legend under the slots lists every control of the page: PLAY load, REC save, PRESETS slot, SELECT bridge, KNOB1–4 patterns.) Now, while the music plays, **one PLAY** queues a bridge into the chosen save (**TO 2: QUEUED**, PLAY blinking); **PLAY again** cancels it while it is still queued. The save is read and checked first, without a break in the sound, and from the next bar line the band plays a **four-bar bridge** (**TO 2: BAR 1/4 … 4/4**):
+**The bridge (live transitions).** Turn **SELECT** on the save page to switch **BRIDGE** on or off: a green pill shows in the top bar and SELECT's key cap lights in the legend. (The legend under the slots lists every control of the page: PLAY load, REC save, PRESETS slot, SELECT bridge, KNOB1–4 patterns.) Now, while the music plays, **one PLAY** queues a bridge into the chosen save (**TO 2: QUEUED**, PLAY blinking); **PLAY again** cancels it while it is still queued. The save is read and checked first, without a break in the sound, and from the start point the band plays the bridge (**TO 2: BAR 1/4 …**), set on the **BRIDGE page** (below). As it starts out (4 bars, SMOOTH):
 1. the groove goes on as it is;
 2. its lead and pad thin out to the beats while the drums keep time;
 3. the new song's opening drum rhythm comes in (still on the old kit), and if both songs are in the same key and both have a bass, a hint of its opening bass line on the old bass; in different keys the pitched parts drop out and the drums carry the handoff alone;
 4. the same, with a snare fill on the last beat (the drums alone).
 
-Over the four bars the tempo glides step by step to the new song's, and on beat one the new song starts exactly as PLAY would start it: its patterns (or its SUPER SEQ song), mix, sounds, kit and pedals, at its exact saved tempo, with no stop. Notes still held let go cleanly; delay and reverb tails ring out. **NOW ON 2** shows when it lands. Neither save is changed (the work becomes the new song, as with a load). If the save can't be read, **LOAD FAILED** shows and the music plays on. Stopping during the bridge lands it at once; stopping while it is queued cancels it. With BRIDGE off, or the music stopped, PLAY loads as usual.
+On beat one the new song starts exactly as PLAY would start it: its patterns (or its SUPER SEQ song), mix, sounds, kit and pedals, at its exact saved tempo, with no stop. Notes still held let go cleanly; delay and reverb tails ring out. **NOW ON 2** shows when it lands. Neither save is changed (the work becomes the new song, as with a load). If the save can't be read, **LOAD FAILED** shows and the music plays on. Stopping during the bridge lands it at once; stopping while it is queued cancels it. With BRIDGE off, or the music stopped, PLAY loads as usual.
+
+**The BRIDGE page** (GLO from the SONG page: mixer → SONG → BRIDGE → home) sets how a bridge goes. Its settings belong to the instrument, like the theme: loading a save or bridging doesn't change them.
+
+| Control | Setting | Choices |
+|---|---|---|
+| **KNOB1** | **LENGTH** | 1, 2, **4** or 8 bars |
+| **KNOB2** | **STYLE** | **SMOOTH** (above); **BREAKDOWN**: the drums alone for the first half, then the new song's drums, then its bass (same key); **FILL ONLY**: the song plays on untouched, then the fill into the new one; **CUT**: the new song at once, on the start point (no bars, no fill) |
+| **KNOB3** | **TEMPO** | **GLIDE** to the new tempo over the bridge; **JUMP AT START** (the bridge already at the new tempo); **JUMP AT END** (the old tempo until beat one) |
+| **KNOB4** | **FILL** | NONE; **SNARE** (louder and louder, a clap on the last); **TOMS** (down the kit's toms: its PERC, then the CP and OH toms in kits that have them); **ROLL** (a snare in 32nds) |
+| **ALGORITHM** | **START** | **NEXT BAR**; **NEXT 4 BARS** (the next four-bar phrase); **PATTERN END** (when the drums' pattern comes round) |
+
+(Bold: how a bridge starts out.) The fill is the last four steps, with the drums alone. The page explains the chosen style under the settings.
 
 To clear the current project, **hold REC** for the RECORD page, choose **CLEAR EVERYTHING** with ALGORITHM, then press **REC** twice. This resets patterns, sounds, effects, mixer, swing, time signature (back to 4/4), arpeggiators and SUPER SEQ, **not** the saved slots or your USER sounds. MIDI channel and octave are retained.
 

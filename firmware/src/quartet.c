@@ -217,6 +217,8 @@ typedef struct {                                /* the USER bank: sounds you sav
     uint8_t pfade;                              /* (later still) the pedals' fade in / out: 0 at once, 1-4 bars (home, KNOB4) */
     uint8_t recopt;                             /* (unused now: the count-in is always on, there is no click) */
     uint8_t tsig;                               /* (later) the time signature (SONG page, KNOB4): TS_* below; 0 4/4 */
+    struct { uint8_t magic, len, style, tempo, fill, start; } br;   /* (later) the BRIDGE page: how a bridge goes (BR_* below;
+                                                   magic BR_MAGIC: set; anything else: an older save's bytes, the defaults) */
 } ubank_t;
 typedef char ubank_fits[sizeof(ubank_t) <= sizeof(mono_t) * 10u * 64u ? 1 : -1];
 static struct {
@@ -401,6 +403,24 @@ static volatile uint32_t brg_state;             /* 0 none, 1 staged (waits for a
 static volatile uint32_t brg_mute;              /* the bridge: tracks kept quiet now (bit t) */
 static uint32_t brg_step, brg_bl, brg_spb, brg_dst;   /* the bridge's step (0 .. 4 bars), its bar, beat; the save */
 static int32_t brg_b16a, brg_b16b;              /* the tempo from, to (BPM x 16) */
+static uint32_t brg_n, brg_style, brg_tmode, brg_fill, brg_start, brg_q, brg_roll;   /* the bridge's steps (0: CUT), STYLE,
+                                                   TEMPO, FILL, START (the BRIDGE page, when queued); its quarter now; the
+                                                   ROLL's hit (+1) */
+#define BR_MAGIC 0xB7u
+enum { BS_SMOOTH, BS_BREAK, BS_FILLONLY, BS_CUT, NBSTYLE };
+enum { BT_GLIDE, BT_START, BT_END, NBTEMPO };
+enum { BF_NONE, BF_SNARE, BF_TOMS, BF_ROLL, NBFILL };
+enum { BW_BAR, BW_PHRASE, BW_PATTERN, NBSTART };
+static const uint8_t BR_BARS[4] = {1, 2, 4, 8};
+static void br_check(void)                      /* the BRIDGE page's settings: an older save's bytes there -> the defaults */
+{
+    if (set.mu.ub.br.magic != BR_MAGIC || set.mu.ub.br.len > 3u || set.mu.ub.br.style >= NBSTYLE || set.mu.ub.br.tempo >= NBTEMPO
+        || set.mu.ub.br.fill >= NBFILL || set.mu.ub.br.start >= NBSTART) {
+        set.mu.ub.br.magic = BR_MAGIC; set.mu.ub.br.len = 2; set.mu.ub.br.style = BS_SMOOTH;   /* (4 bars, SMOOTH, GLIDE, SNARE,
+                                                   NEXT BAR: the bridge as it began) */
+        set.mu.ub.br.tempo = BT_GLIDE; set.mu.ub.br.fill = BF_SNARE; set.mu.ub.br.start = BW_BAR;
+    }
+}
 static uint8_t brg_dpat, brg_bsrc, brg_bpat, brg_bdst, brg_hint;   /* the new song's opening drum pattern (0xFF none);
                                                    its bass slot and pattern, ours, and whether the hint plays */
 static void set_swap(void)                      /* the current work <-> proj_buf (a load is checked in place; no copy kept) */
@@ -730,7 +750,8 @@ enum { PG_MAIN, PG_OSC, PG_ENV, PG_LFO, NPAGE,  /* the sound pages (the SOUND pa
        PG_KEY,                                  /* the key (GLO from the mixer) */
        PG_SOUND,                                /* (then) the signal chain (EDIT twice), the copy page (SEQ held) */
        PG_CHAIN, PG_COPY,                       /* the sound editor (EDIT) */
-       PG_REC };                                /* the RECORD page (REC held): the count-in, the click; clear */
+       PG_REC,                                  /* the RECORD page (REC held) */
+       PG_BRIDGE };                             /* the BRIDGE page (GLO from the SONG page): how a bridge goes */                                /* the RECORD page (REC held): the count-in, the click; clear */
 #define IS_FX_PAGE(p) ((p) >= PG_FX && (p) < PG_PROJ)
 /* the top buttons: the four pedal slots (FX SEL ENV LFO); EDIT, the fifth, is the sound editor */
 static const uint8_t FX_BTN[NFX] = {BTN_FX, BTN_SEL, BTN_ENV, BTN_LFO, BTN_EDIT};   /* (GLO: the mixer) */
@@ -1300,6 +1321,8 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
         } else p = put(p, LEG[(proj >> 6) % 6u]);
     } else if (page == PG_REC) {                /* the RECORD page */
         p = put(p, "ALG:CHOOSE  REC REC:CLEAR");
+    } else if (page == PG_BRIDGE) {             /* the BRIDGE page */
+        p = put(p, "ALG:START  GLO:HOME");
     } else if (page == PG_KEY) {                /* the key page */
         p = put(p, "K1:LOCK K2:LIGHT K3:SW K4:TIME");
     } else if (page == PG_PROJ) {               /* the save page: its own legend (draw_save) */
@@ -3123,6 +3146,49 @@ static void head_key(void)                      /* SONG, the stripe in the four 
     cv_text_bg(18, 3, &FONT_L, "SONG", C_TXT, C_PANEL);
     cv_blit(0, Y_BIG);
 }
+static void menu_row(int32_t y, const char *k, const char *lab, const char *val, uint16_t vc, int line);
+static void head_bridge(void)                   /* BRIDGE, the stripe in the four track colours */
+{
+    uint32_t r;
+    cv_begin(240, H_BIG, C_BG);
+    cv_rrect(0, 0, 240, H_BIG, 6, C_PANEL);
+    for (r = 0; r < NTRK; r++) cv_rrect(6, 5 + (int32_t)r * 7, 4, 6, 2, rgbk(TRK_RGB[SEQ_ORDER[r]], 100));
+    cv_text_bg(18, 3, &FONT_L, "BRIDGE", C_TXT, C_PANEL);
+    cv_blit(0, Y_BIG);
+}
+/* the BRIDGE page: how a bridge between saves goes (the save page: SELECT on, PLAY while playing). A row a setting,
+ * its knob on the left; under them what the chosen style does */
+static void draw_bridge(void)
+{
+    static const char *const LEN[4] = {"1 BAR", "2 BARS", "4 BARS", "8 BARS"};
+    static const char *const STY[NBSTYLE] = {"SMOOTH", "BREAKDOWN", "FILL ONLY", "CUT"};
+    static const char *const TMP[NBTEMPO] = {"GLIDE", "JUMP AT START", "JUMP AT END"};
+    static const char *const FIL[NBFILL] = {"NONE", "SNARE", "TOMS", "ROLL"};
+    static const char *const STA[NBSTART] = {"NEXT BAR", "NEXT 4 BARS", "PATTERN END"};
+    static const char *const SAY[NBSTYLE][2] = {
+        {"THE GROOVE THINS - THEN", "NEW DRUMS AND BASS - FILL"},
+        {"DRUMS ALONE - THEN THE", "NEW DRUMS - THEN ITS BASS"},
+        {"THE SONG PLAYS ON - THEN", "A FILL INTO THE NEW ONE"},
+        {"THE NEW SONG AT ONCE", "ON THE START POINT"}};
+    uint32_t half, cut = set.mu.ub.br.style == BS_CUT;
+    uint16_t g = C_PLAYG;
+    for (half = 0; half < 2u; half++) {
+        cv_begin(240, H_PEDAL / 2, C_BG);
+        cv_oy = -(int32_t)half * (H_PEDAL / 2);
+        cv_rrect(0, 0, 240, H_PEDAL, 8, C_PANEL);
+        menu_row(4, "K1", "LENGTH", cut ? "--" : LEN[set.mu.ub.br.len & 3u], cut ? C_DIMC : C_TXT, 1);
+        menu_row(28, "K2", "STYLE", STY[set.mu.ub.br.style % NBSTYLE], g, 1);
+        menu_row(52, "K3", "TEMPO", cut ? "JUMP" : TMP[set.mu.ub.br.tempo % NBTEMPO], cut ? C_DIMC : C_TXT, 1);
+        menu_row(76, "K4", "FILL", cut ? "--" : FIL[set.mu.ub.br.fill % NBFILL], cut ? C_DIMC : C_TXT, 1);
+        menu_row(100, "", "START", STA[set.mu.ub.br.start % NBSTART], C_TXT, 0);
+        tiny_text(8, 104, "ALG", C_DIMC);   /* (the small font: ALG fits before the name) */
+        cv_rrect(6, 126, 228, 34, 6, C_BG);     /* what the style does */
+        tiny_text(14, 131, SAY[set.mu.ub.br.style % NBSTYLE][0], C_SUB);
+        tiny_text(14, 145, SAY[set.mu.ub.br.style % NBSTYLE][1], C_SUB);
+        cv_oy = 0;
+        cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
+    }
+}
 static void sc_sharp(int32_t x, int32_t y, uint16_t c)   /* a sharp, about 7 x 15, its middle at y */
 {
     cv_rect(x + 2, y - 7, 1, 14, c); cv_rect(x + 5, y - 8, 1, 14, c);
@@ -3923,9 +3989,12 @@ static int proj_load(uint32_t i)                /* 0 = loaded; -1 = empty or bro
 {
     uint8_t th = set.mu.ub.theme;                /* (the theme stays as it is: it is the instrument's) */
     uint32_t n = proj_read(i);
+    uint8_t brk[sizeof set.mu.ub.br];           /* (so do the BRIDGE page's settings: how you perform) */
+    bytes_copy(brk, &set.mu.ub.br, sizeof brk);
     if (!n) return -1;
     set_swap();                                 /* (the work now in proj_buf; what the project lacks: as it was) */
     if (proj_fix(n, th)) { set_swap(); return -1; }   /* (broken: the work back, untouched) */
+    bytes_copy(&set.mu.ub.br, brk, sizeof brk);
     if (ext_load(i, &sx, sizeof sx)) { uint8_t *z = (uint8_t *)&sx; uint32_t k; for (k = 0; k < sizeof sx; k++) z[k] = 0; }   /* (an
                                                    older project: no extras, its steps plain) */
     trk_req++;                                  /* (the slots' instruments: the voices dealt again) */
@@ -3959,6 +4028,10 @@ static int proj_stage(uint32_t i, const uint8_t *pats)   /* the bridge: project 
     if (ext_load(i, &sx_next, sizeof sx_next)) { uint8_t *z = (uint8_t *)&sx_next; uint32_t k; for (k = 0; k < sizeof sx_next; k++) z[k] = 0; }
     brg_dst = i;
     brg_bl = bar_len(); brg_spb = ts_spb();
+    br_check();
+    brg_style = set.mu.ub.br.style; brg_tmode = set.mu.ub.br.tempo; brg_fill = set.mu.ub.br.fill; brg_start = set.mu.ub.br.start;
+    brg_n = brg_style == BS_CUT ? 0u : BR_BARS[set.mu.ub.br.len & 3u] * brg_bl;   /* (CUT: none, the switch on the boundary) */
+    brg_roll = 0;
     brg_b16a = (int32_t)set.bpm * 16; brg_b16b = (int32_t)NX->bpm * 16;
     brg_dpat = (uint8_t)nx_open(T_DRUMS);
     brg_bsrc = brg_bdst = brg_bpat = 0xFFu; brg_hint = 0;
@@ -4205,6 +4278,7 @@ static void app_main(void)
         if (!settings_ok()) set_defaults();
         else sx_load();                         /* (the steps' extras: none from an older save, all plain) */
     }
+    br_check();                                 /* (the BRIDGE page's: an older save's bytes there, the defaults) */
 #ifdef HOST_THEME
     set.mu.ub.theme = HOST_THEME;               /* (a test build: start in this theme) */
 #endif
@@ -4582,6 +4656,11 @@ static void app_main(void)
                 if (set.fx[trk].on >> sl & 1u && !ped_fits()) { set.fx[trk].on &= (uint8_t)~(1u << sl); CPU_FULL(); }
                 CHANGED();
             }
+            else if (spage == PG_BRIDGE) {      /* the BRIDGE page: when it starts */
+                br_check();
+                set.mu.ub.br.start = (uint8_t)(((int32_t)set.mu.ub.br.start + e % (int32_t)NBSTART + (int32_t)NBSTART) % (int32_t)NBSTART);
+                CHANGED();
+            }
             else if (spage == PG_KEY) {         /* the key: a sharp or flat a click */
                 int32_t v = (int32_t)set.key + e;
                 set.key = (int8_t)(v < -7 ? -7 : v > 7 ? 7 : v);
@@ -4843,6 +4922,11 @@ static void app_main(void)
                 uint8_t ts = (uint8_t)ts_i();
                 if (knob(ENC_KNOB4, &ts, 0, NTSIG - 1u)) { ts_set(ts); CHANGED(); }
             }
+        } else if (spage == PG_BRIDGE) {        /* the BRIDGE page: KNOB1 the length, KNOB2 the style, KNOB3 the tempo,
+                                                   KNOB4 the fill */
+            br_check();
+            if (knob(ENC_KNOB1, &set.mu.ub.br.len, 0, 3) | knob(ENC_KNOB2, &set.mu.ub.br.style, 0, NBSTYLE - 1)
+                | knob(ENC_KNOB3, &set.mu.ub.br.tempo, 0, NBTEMPO - 1) | knob(ENC_KNOB4, &set.mu.ub.br.fill, 0, NBFILL - 1)) CHANGED();
         } else if (spage == PG_COPY) {          /* the copy page: no knobs */
             fm1_enc_take(ENC_KNOB1); fm1_enc_take(ENC_KNOB2); fm1_enc_take(ENC_KNOB3); fm1_enc_take(ENC_KNOB4);
         } else if (spage == PG_MAIN) {          /* home: KNOB1 the tempo, KNOB2 the chosen track's mix level (the mixer's),
@@ -4992,7 +5076,7 @@ static void app_main(void)
             msg = REP_MSG[rep_sel % 5u]; msg_ok = 1; msg_t = fm1_ms ? fm1_ms : 1u;
         }
         if (rel & (1u << BTN_GLO)) {
-            if (glo_dn && !glo_used) spage = spage == PG_MIX ? PG_KEY : spage == PG_KEY ? PG_MAIN : PG_MIX;
+            if (glo_dn && !glo_used) spage = spage == PG_MIX ? PG_KEY : spage == PG_KEY ? PG_BRIDGE : spage == PG_BRIDGE ? PG_MAIN : PG_MIX;
             if (glo_used) msg = 0;
             glo_dn = 0; glo_used = 0; rep_len = 0;
         }
@@ -5045,7 +5129,7 @@ static void app_main(void)
         fm1_led_key(BTN_HOME, 0);
         fm1_led_key(BTN_EDIT, spage == PG_SOUND || spage == PG_CHAIN);   /* the sound editor up */
         fm1_led_key(BTN_SAVE, spage == PG_PROJ);   /* the save page up */
-        fm1_led_key(BTN_GLO, ((spage == PG_MIX || spage == PG_KEY) && !rep_len) || (rep_len && (fm1_ms / 120u) % 2u));   /* the mixer
+        fm1_led_key(BTN_GLO, ((spage == PG_MIX || spage == PG_KEY || spage == PG_BRIDGE) && !rep_len) || (rep_len && (fm1_ms / 120u) % 2u));   /* the mixer
                                                    or the key open; blinking: a beat repeat */
         fm1_led_key(BTN_ARP, trk < NSYN && set.arp_on >> trk & 1u);   /* the chosen track arpeggiates */
         for (k = 0; k < NPED_SLOTS; k++) {      /* top buttons: lit = that effect is on for the chosen track; its page open: a glow */
@@ -5090,14 +5174,19 @@ static void app_main(void)
         {
             uint32_t scr = IS_FX_PAGE(spage) ? 1u : spage == PG_ARP ? 2u : spage == PG_MIX ? 3u : spage == PG_SSEQ ? 4u : spage == PG_PROJ ? 5u
                          : spage == PG_KEY ? 7u : spage == PG_SOUND ? 8u : spage == PG_CHAIN ? 9u : spage == PG_COPY ? 10u
-                         : spage == PG_REC ? 11u : 0u;
+                         : spage == PG_REC ? 11u : spage == PG_BRIDGE ? 12u : 0u;
             if (scr != pedal_mode) {
                 pedal_mode = scr;
                 lcd_fill(0, 0, 240, 240, C_BG);  /* (all of it: the screens differ in their parts) */
                 view_drawn = big_drawn = info_drawn = head_drawn = pedal_drawn = status_drawn = ~0u;
             }
         }
-        if (pedal_mode == 11u) {                /* the RECORD page */
+        if (pedal_mode == 12u) {                /* the BRIDGE page */
+            if (head_drawn) { head_drawn = 0; head_bridge(); }
+            br_check();
+            st = mix(mix(mix(mix(mix(mix(set.mu.ub.br.len, set.mu.ub.br.style), set.mu.ub.br.tempo), set.mu.ub.br.fill), set.mu.ub.br.start), 121u), bar_len());
+            if (st != pedal_drawn) { pedal_drawn = st; draw_bridge(); }
+        } else if (pedal_mode == 11u) {         /* the RECORD page */
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
             if (rq_ask && fm1_ms - rq_t > 3000u) rq_ask = 0;
             st = mix(mix(mix(mix(mix(mix(trk, rq_cur), rq_ask), set.sel[trk]), show_msg ? msg_t : 0u), wipe_ask), 111u);
@@ -5153,12 +5242,12 @@ static void app_main(void)
             uint32_t show_msg = msg && fm1_ms - msg_t < 1500u;
             static char bmsg[24];
             const char *m2 = show_msg ? msg : 0;
-            uint32_t bs = brg_state, bb = bs == 2u ? brg_step / (brg_bl ? brg_bl : 16u) : 0u;
+            uint32_t bs = brg_state, bb = bs == 2u ? brg_step / (brg_bl ? brg_bl : 16u) : 0u, nbar = brg_bl ? brg_n / brg_bl : 4u;
             if (!m2 && (bs == 1u || bs == 2u)) {   /* the bridge: queued, or which of its bars */
                 char *bp = put(bmsg, "TO ");     /* (TO 2: QUEUED, TO 2: BAR 3/4) */
                 bp = put_num(bp, brg_dst + 1u, 1);
                 if (bs == 1u) bp = put(bp, ": QUEUED");
-                else { bp = put(bp, ": BAR "); *bp++ = (char)('1' + bb % 4u); bp = put(bp, "/4"); }
+                else { bp = put(bp, ": BAR "); bp = put_num(bp, bb + 1u, 1); *bp++ = '/'; bp = put_num(bp, nbar, 1); }
                 *bp = 0;
                 m2 = bmsg;
             }

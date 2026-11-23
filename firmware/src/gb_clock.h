@@ -326,11 +326,11 @@ static chord_t *nx_step(uint32_t slot, uint32_t p, uint32_t s)
     p %= NPAT; s %= NSTEP;
     return slot == T_BASS ? &NX->chord_b[p][s] : &NX->chord[slot == T_PAD][p][s];
 }
-static void brg_bar(uint32_t bar)               /* a bridge bar starts (after seq_advance: this step is its first) */
+static void brg_inject(uint32_t drums, uint32_t bass)   /* the new song's opening drums (and, in the same key, its bass)
+                                                   into the patterns playing, from their step 1 now */
 {
     uint32_t p, d, s;
-    if (bar != 2u) return;
-    if (brg_dpat < NPAT) {                      /* the new song's opening drums, in place of ours */
+    if (drums && brg_dpat < NPAT) {             /* its opening drums, in place of ours (our kit) */
         p = play_pat[T_DRUMS] % NPAT;
         for (d = 0; d < NDR; d++) {
             for (s = 0; s < NSTEP / PAGE; s++) set.dpat[p][d][s] = NX->dpat[brg_dpat][d][s];
@@ -340,7 +340,7 @@ static void brg_bar(uint32_t bar)               /* a bridge bar starts (after se
         set.plen[T_DRUMS][p] = NX->plen[T_DRUMS][brg_dpat];
         trk_pos[T_DRUMS] = 0;
     }
-    if (brg_hint) {                             /* the same key: its bass, on ours */
+    if (bass && brg_hint) {                     /* the same key: its bass, on ours */
         uint32_t t = brg_bdst;
         p = play_pat[t] % NPAT;
         for (s = 0; s < NSTEP; s++) {
@@ -352,33 +352,61 @@ static void brg_bar(uint32_t bar)               /* a bridge bar starts (after se
         trk_pos[t] = 0;
     }
 }
+static int brg_cut_due(uint32_t nt)             /* CUT: is the step starting at tick nt the START point? */
+{
+    if (brg_start == BW_PATTERN) return trk_pos[T_DRUMS] + 1u >= pat_len(T_DRUMS, play_pat[T_DRUMS]);
+    return nt / TPS % (brg_start == BW_PHRASE ? 4u * bar_len() : bar_len()) == 0u;
+}
+/* THE BRIDGE, step by step, by its STYLE (the BRIDGE page), in quarters of its length:
+ *   SMOOTH     1: the groove;  2: the lead and pad on the beat only;  3-4: the new drums (and its bass, same key)
+ *   BREAKDOWN  1-2: our drums alone;  3: the new song's drums;  4: and its bass (same key)
+ *   FILL ONLY  the song as it is
+ * then the FILL on the last four steps (the drums alone): SNARE louder and louder, TOMS down the kit's toms, ROLL a
+ * snare in 32nds; the TEMPO gliding over the bridge, or jumping at its start, or at the switch */
 static void brg_on_step(uint32_t tick)          /* each step: the bridge's part of it (before the tracks play it) */
 {
-    uint32_t bar, in, t, m = 0, last;
+    uint32_t q, in, t, m = 0, last;
     int32_t b16;
-    if (brg_state == 1u && (tick / TPS) % bar_len() == 0u) { brg_state = 2; brg_step = 0; }   /* (a bar line: it starts) */
-    else if (brg_state == 2u) brg_step++;
+    if (brg_state == 1u && brg_n) {             /* queued: from the START point */
+        uint32_t go = brg_start == BW_PATTERN ? trk_pos[T_DRUMS] == 0u
+                    : tick / TPS % (brg_start == BW_PHRASE ? 4u * bar_len() : bar_len()) == 0u;
+        if (go) { brg_state = 2; brg_step = 0; brg_q = 9; }
+    } else if (brg_state == 2u) brg_step++;
     if (brg_state != 2u) return;
-    bar = brg_step / brg_bl; in = brg_step % brg_bl;
-    last = bar == 3u && in + 4u >= brg_bl;      /* (the fill: the last beat's four steps) */
-    if (in == 0u) brg_bar(bar);
+    q = brg_step * 4u / brg_n; in = brg_step % brg_bl;
+    last = brg_fill != BF_NONE && brg_step + 4u >= brg_n;   /* (the fill: the last four steps) */
+    if (q != brg_q) {
+        brg_q = q;
+        if (brg_style == BS_SMOOTH && q == 2u) brg_inject(1, 1);
+        if (brg_style == BS_BREAK && q == 2u) brg_inject(1, 0);
+        if (brg_style == BS_BREAK && q == 3u) brg_inject(0, 1);
+    }
     for (t = 0; t < NSYN; t++) {
-        uint32_t bass = TTYPE(t) == T_BASS;
-        if (bar == 1u && !bass && in % brg_spb) m |= 1u << t;   /* thinning: the lead and pad on the beat only */
-        if (bar >= 2u && !(brg_hint && t == brg_bdst)) m |= 1u << t;   /* then quiet (the bass hint apart) */
+        uint32_t bass = TTYPE(t) == T_BASS, hint = brg_hint && t == brg_bdst;
+        if (brg_style == BS_SMOOTH) {
+            if (q == 1u && !bass && in % brg_spb) m |= 1u << t;   /* thinning: the lead and pad on the beat only */
+            if (q >= 2u && !hint) m |= 1u << t;   /* then quiet (the bass hint apart) */
+        } else if (brg_style == BS_BREAK && !(q == 3u && hint)) m |= 1u << t;   /* (the drums alone; its bass last) */
         if (last) m |= 1u << t;                 /* (the fill: the drums alone) */
     }
     brg_mute = m;
-    b16 = brg_b16a + (brg_b16b - brg_b16a) * (int32_t)(brg_step + 1u) / (int32_t)(4u * brg_bl);   /* the tempo, on its way */
+    b16 = brg_tmode == BT_START ? brg_b16b : brg_tmode == BT_END ? brg_b16a
+        : brg_b16a + (brg_b16b - brg_b16a) * (int32_t)(brg_step + 1u) / (int32_t)brg_n;   /* the tempo */
     if (b16 < 16 * (int32_t)BPM_MIN) b16 = 16 * (int32_t)BPM_MIN;
     clk_tick_q8 = 677376000u / (uint32_t)b16;  /* (TICK_Q8 at BPM x 16) */
     set.bpm = (uint8_t)((b16 + 8) / 16);
-    if (last) {                                 /* the fill: a snare every step, louder and louder */
+    brg_roll = 0;
+    if (last && !((trk_mute | chain_rest) >> T_DRUMS & 1u)) {   /* the fill */
         static const uint8_t FD[4] = {2, 0, 5, 4};   /* SOFT NORMAL LOUD PUNCH */
-        uint32_t k = in + 4u - brg_bl;
-        if (!((trk_mute | chain_rest) >> T_DRUMS & 1u)) {
-            dvel[DR_SNARE] = DYN_G7[FD[k & 3u]]; dart[DR_SNARE] = 0; drum_trigger(DR_SNARE);
-            if (k == 3u) { dvel[DR_CLAP] = DYN_G7[4]; dart[DR_CLAP] = 0; drum_trigger(DR_CLAP); }
+        uint32_t k = (brg_step + 4u - brg_n) & 3u, tm = KIT_TONE[kit_now()].toms, d;
+        if (brg_fill == BF_TOMS) {              /* down the toms: the high one (PERC), then CLAP's and OPEN HAT's if the kit
+                                                   makes toms of them */
+            d = k < 2u ? DR_PERC : k == 2u ? (tm & 2u ? DR_CLAP : DR_PERC) : (tm & 1u ? DR_OPEN : tm & 2u ? DR_CLAP : DR_PERC);
+            dvel[d] = DYN_G7[FD[k]]; dart[d] = 0; drum_trigger(d);
+        } else {                                /* SNARE (ROLL: and again half-way, below) */
+            dvel[DR_SNARE] = DYN_G7[FD[k]]; dart[DR_SNARE] = 0; drum_trigger(DR_SNARE);
+            if (brg_fill == BF_SNARE && k == 3u) { dvel[DR_CLAP] = DYN_G7[4]; dart[DR_CLAP] = 0; drum_trigger(DR_CLAP); }
+            if (brg_fill == BF_ROLL) brg_roll = 1u + k;
         }
     }
 }
@@ -386,8 +414,14 @@ static void brg_handoff(void)                   /* beat one: the new song in (th
 {
     uint32_t th = set.mu.ub.theme, t, v, redeal = 0, k;
     synth_stop();                               /* (the notes still held let go: their release rings) */
-    set_swap();
+    {
+        uint8_t brk[sizeof set.mu.ub.br];       /* (the BRIDGE page's settings stay too) */
+        for (k = 0; k < sizeof brk; k++) brk[k] = ((uint8_t *)&set.mu.ub.br)[k];
+        set_swap();
+        for (k = 0; k < sizeof brk; k++) ((uint8_t *)&set.mu.ub.br)[k] = brk[k];
+    }
     set.mu.ub.theme = (uint8_t)th;              /* (the instrument's theme stays) */
+    brg_roll = 0;
     { const uint32_t *a = (const uint32_t *)(const void *)&sx_next; uint32_t *b = (uint32_t *)(void *)&sx;
       for (k = 0; k < sizeof sx / 4u; k++) b[k] = a[k];
       for (k = sizeof sx & ~3u; k < sizeof sx; k++) ((uint8_t *)&sx)[k] = ((const uint8_t *)&sx_next)[k]; }
@@ -521,6 +555,11 @@ static void clock_fire(uint32_t tick)           /* audio interrupt: one tick */
         broken_tick();
         if (tick % TPS == TPS / 2u && rep_len == REP_HALF) { drums_step(); synth_step(); }   /* (a 1/32 repeat) */
         lane_ahead(tick % TPS);                 /* (the next step's early nudges) */
+        if (brg_roll && tick % TPS == TPS / 2u && !((trk_mute | chain_rest) >> T_DRUMS & 1u)) {   /* (the ROLL: a snare
+                                                   half-way through each fill step, 32nds) */
+            static const uint8_t FR[4] = {2, 0, 5, 4};
+            dvel[DR_SNARE] = DYN_G7[FR[(brg_roll - 1u) & 3u]]; dart[DR_SNARE] = 0; drum_trigger(DR_SNARE);
+        }
     }
     arp_tick(tick);                             /* (playing: on the patterns' own ticks; after the step, so it arpeggiates
                                                    the step's notes from their first tick) */
@@ -599,8 +638,9 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
             if (pos_q8 >= cur) {
                 pos_q8 -= cur; blk_pos = i;
                 if (!pre_left) {
-                    if (brg_state == 2u && brg_step + 1u >= 4u * brg_bl && (tick + 1u) % TPS == 0u) {   /* the bridge's
-                                                   end: the new song from its step 1, the clock going on */
+                    if ((tick + 1u) % TPS == 0u && ((brg_state == 2u && brg_step + 1u >= brg_n)
+                        || (brg_state == 1u && !brg_n && brg_cut_due(tick + 1u)))) {   /* the bridge's end (CUT: its START
+                                                   point): the new song from its step 1, the clock going on */
                         brg_handoff(); tick = 0; clock_fire(0);
                     } else clock_fire(++tick);
                 }
