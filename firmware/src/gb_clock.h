@@ -598,7 +598,7 @@ static void master_limit(int32_t *out, uint32_t n)
 static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN frames */
 {
     static uint32_t go_done, was_run, pos_q8, tick, free_q8, free_tick, pre_left;
-    uint32_t len_q8 = clk_tick_q8, run = clk_run, t, i = 0, k;
+    uint32_t len_q8 = clk_tick_q8, run = clk_run, t, i = 0, k, fresh = 0;
     for (t = 0; t < NTRK; t++) for (k = 0; k < n; k++) tb[t][k] = 0;   /* each track's own buffer (gb_fx.h) */
     if (!run) {                                 /* stopped: a pattern chosen starts at once (SUPER SEQ: the first box) */
         if (set.sseq_on) for (t = 0; t < NTRK; t++) chain_go(t, 0);
@@ -606,13 +606,14 @@ static void clock_part(int32_t *out, uint32_t n)   /* audio interrupt: up to FXN
     }
     blk_pos = 0;
     if (go_done != clk_go) {                    /* PLAY: step 1 now (or a count-in bar first: silent, counted on the screen) */
-        go_done = clk_go; pos_q8 = 0; tick = 0;
+        go_done = clk_go; pos_q8 = 0; tick = 0; fresh = 1;
         pre_left = clk_pre * TPS; clk_pre = 0;
         if (pre_left) clk_count = pre_left / (TPS * ts_spb());   /* (the bar's beats) */
         else clock_fire(0);
         clk_ack = go_done;
     }
-    if (!run) { pre_left = 0; clk_count = 0; }
+    if (!run && !fresh) { pre_left = 0; clk_count = 0; }   /* (a PLAY just taken: its count-in stays, though clk_run
+                                                   may not read 1 until the next block) */
     if (was_run && !run) {                      /* STOP: the notes let go; the pedals fall silent (gb_fx.h); no late step */
         drums_stop(); synth_stop(); fx_flush_req = 1; fx_quiet = 1;
         ws_home_all();                          /* (WRONG STATION: the real sounds back) */

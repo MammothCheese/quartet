@@ -4250,8 +4250,27 @@ static uint32_t vel_dyn(uint32_t v)             /* a MIDI note's velocity -> the
  * the next bar), REC again ends it. Each take keeps a copy of the pattern first (ARP on the LIVE page puts it back).
  * An empty pattern is the first take's: it starts a bar long and grows a bar each time the take reaches its end (up
  * to 4); REC ends it at the bar it is in */
-static uint32_t rec_wait;                       /* 1: the count-in (stopped), 2: to the next bar (playing) */
+static uint32_t rec_wait;                       /* 1: the count-in (stopped); playing: 2 to the next bar line, then 4 a
+                                                   bar's count-in; 3: waiting for the chosen pattern */
 static uint32_t rec_wpos, rec_grow, rec_t, rec_p;
+static uint32_t rec_spos, rec_sok;              /* where the track was when REC was pressed to end the take (it ends as
+                                                   REC is let go: the press is when it was meant) */
+static uint32_t rec_crossed(void)               /* playing: has a bar line passed since the last look? (by the bar the
+                                                   step is in, so a step missed while the screen was drawn still counts) */
+{
+    uint32_t pos = trk_pos[rec_t], bl = bar_len(), c = pos != rec_wpos && (pos / bl != rec_wpos / bl || pos < rec_wpos);
+    rec_wpos = pos;
+    return c;
+}
+static uint32_t bars_used(uint32_t t, uint32_t p, uint32_t s0, uint32_t s1)   /* anything in steps s0 .. s1-1? */
+{
+    uint32_t s, d;
+    for (s = s0; s < s1 && s < NSTEP; s++) {
+        if (t < NSYN) { if (*step_note(t, p, s)) return 1; }
+        else for (d = 0; d < NDR; d++) if (set.dpat[p % NPAT][d][s / PAGE] >> (s % PAGE) & 1u) return 1;
+    }
+    return 0;
+}
 static struct {
     uint8_t ok, t, p, len;
     chord_t ch[NSTEP];
@@ -4294,31 +4313,54 @@ static void rec_start(uint32_t t)               /* REC: a take on track t, in th
     rec_t = t; rec_p = p;
     rec_grow = !set.sseq_on && !pat_used(t, p);   /* (empty: the first take sets its length) */
     if (rec_grow) set.plen[t][p] = (uint8_t)bar_len();
-    live_rec = 1;
+    live_rec = 1; rec_sok = 0;
     if (!clk_run) {                             /* stopped: a bar's count-in (silent, on the screen), then step 1 */
         rec_wait = 1;
         clk_pre = bar_len();
         clk_go++; clk_run = 1;
     } else if (play_pat[t] % NPAT != p) rec_wait = 3;   /* playing another: from when the chosen one starts */
-    else { rec_wait = 2; rec_wpos = trk_pos[t]; }   /* playing it: from the next bar */
+    else {                                      /* playing it: a whole bar's count-in, from the next bar line (pressed
+                                                   on a bar's first 8th: that bar is the count-in) */
+        rec_wpos = trk_pos[t];
+        rec_wait = rec_wpos % bar_len() < ts_spb() / 2u ? 4u : 2u;
+    }
 }
 static void rec_stop(void)                      /* REC again (or STOP): the take ends; the first take's length set */
 {
     if (live_rec && rec_grow) {
         if (rec_wait) set.plen[rec_t][rec_p] = undo.len;   /* (not begun: as it was) */
         else {
-            uint32_t bl = bar_len(), pos = trk_pos[rec_t], bars = pos / bl + 1u;
-            if (pos % bl < ts_spb() && bars > 1u) bars--;   /* (just over a bar line, under a beat: the bar before was meant) */
+            uint32_t bl = bar_len(), pos = rec_sok ? rec_spos : trk_pos[rec_t], bars = pos / bl + 1u, in = pos % bl;
+            if (bars > 1u && (in < ts_spb() || (in < bl / 2u && !bars_used(rec_t, rec_p, (bars - 1u) * bl, bars * bl))))
+                bars--;                         /* (just over a bar line: under a beat, or under half a bar with nothing
+                                                   played in it: the bar before was meant) */
             if (bars * bl < set.plen[rec_t][rec_p]) set.plen[rec_t][rec_p] = (uint8_t)(bars * bl);
         }
     }
-    live_rec = 0; rec_wait = 0; rec_grow = 0;
+    live_rec = 0; rec_wait = 0; rec_grow = 0; rec_sok = 0;
+}
+static void rec_poll(void)                      /* main loop, often: the take's count-in ending, its pattern growing */
+{
+    if (!live_rec) return;
+    if (rec_wait == 1u && clk_ack == clk_go && !clk_count) rec_wait = 0;   /* (the count-in over: step 1) */
+    if (rec_wait == 3u && play_pat[rec_t] % NPAT == rec_p) rec_wait = 0;   /* (the chosen pattern has come round: from
+                                                   its step 1) */
+    if ((rec_wait == 2u || rec_wait == 4u) && rec_crossed()) rec_wait = rec_wait == 2u ? 4u : 0u;   /* (playing: the bar
+                                                   line, then a bar's count-in, then the take) */
+    if (!rec_wait && rec_grow && clk_run && play_pat[rec_t] == rec_p) {   /* the first take: a bar longer at its end, while
+                                                   it goes on (4 bars: as long as it gets) */
+        uint32_t L = set.plen[rec_t][rec_p];
+        if (L + bar_len() > NSTEP) rec_grow = 0;
+        else if (trk_pos[rec_t] + 2u >= L) set.plen[rec_t][rec_p] = (uint8_t)(L + bar_len());   /* (from its last two
+                                                   steps: a step missed while the screen was drawn, still in time) */
+    }
 }
 static uint32_t rec_beats(void)                 /* the count-in's beats still to come (a bar's: 4 .. 1 in 4/4); 0: none */
 {
     uint32_t bl = bar_len(), spb = ts_spb();
     if (rec_wait == 1u) return clk_ack == clk_go && clk_count ? clk_count : clk_ack == clk_go ? 0u : ts_beats();
-    if (rec_wait == 2u) return (bl - trk_pos[rec_t] % bl + spb - 1u) / spb;
+    if (rec_wait == 2u) return ts_beats() + 1u;   /* (waiting for the bar line: the count shown, none lit yet) */
+    if (rec_wait == 4u) return (bl - trk_pos[rec_t] % bl + spb - 1u) / spb;
     if (rec_wait == 3u) {                       /* (to the end of the pattern playing: the last bar's beats counted) */
         uint32_t L = pat_len(rec_t, play_pat[rec_t]), b = (L - trk_pos[rec_t] % L + spb - 1u) / spb;
         return b > ts_beats() ? ts_beats() : b;
@@ -4461,6 +4503,7 @@ static void app_main(void)
         syn_edit = edit && trk < NSYN;
         drum_edit = edit && trk == T_DRUMS;
 
+        rec_poll();                             /* (the take begun on time: a note on its downbeat goes in) */
         keys = fm1_in.notes;                    /* bit k: key k (0 = F3 .. 26 = G5) */
         down = keys & ~prev;
         up = prev & ~keys;
@@ -4684,19 +4727,7 @@ static void app_main(void)
             else { clk_go++; clk_run = 1; }     /* (clk_go first: the interrupt restarts at step 1, then counts on) */
         }
         if (!clk_run && live_rec) rec_stop();   /* stopped: the recording ends */
-        if (live_rec && rec_wait == 1u && clk_ack == clk_go && !clk_count) rec_wait = 0;   /* (the count-in over: step 1) */
-        if (live_rec && rec_wait == 3u && play_pat[rec_t] % NPAT == rec_p) rec_wait = 0;   /* (the chosen pattern has
-                                                   come round: from its step 1) */
-        if (live_rec && rec_wait == 2u && trk_pos[rec_t] != rec_wpos) {   /* (playing: from the next bar) */
-            if (trk_pos[rec_t] % bar_len() == 0u) rec_wait = 0;
-            rec_wpos = trk_pos[rec_t];
-        }
-        if (live_rec && !rec_wait && rec_grow && clk_run && play_pat[rec_t] == rec_p) {   /* the first take: a bar longer at
-                                                   its end, while it goes on (4 bars: as long as it gets) */
-            uint32_t L = set.plen[rec_t][rec_p];
-            if (L + bar_len() > NSTEP) rec_grow = 0;
-            else if (trk_pos[rec_t] == L - 1u) set.plen[rec_t][rec_p] = (uint8_t)(L + bar_len());
-        }
+        rec_poll();
         clk_click = 0;                          /* (no click: the count-in is counted on the screen) */
         /* SEQ: the sequencer (the step recorder; REC there: live recording); SEQ again: SUPER SEQ; again: the step recorder */
         if (b & (1u << BTN_SEQ)) {
@@ -5121,7 +5152,10 @@ static void app_main(void)
                     msg = "ALL CLEARED"; msg_ok = 1; msg_t = fm1_ms ? fm1_ms : 1u;
                     CHANGED();
             }
-            if (b & (1u << BTN_REC)) { rec_t0 = fm1_ms; rec_long = 0; }
+            if (b & (1u << BTN_REC)) {
+                rec_t0 = fm1_ms; rec_long = 0;
+                if (live_rec && !rec_wait) { rec_spos = trk_pos[rec_t]; rec_sok = 1; }   /* (where the take is meant to end) */
+            }
             if (!rec_long && fm1_in.buttons >> BTN_REC & 1u && fm1_ms - rec_t0 >= 700u) {
                 rec_long = 1;
                 if (home || edit || live_mode) {   /* held: the RECORD page (the count-in, the click; clear) */
