@@ -107,20 +107,20 @@ static const uint8_t SND_GRP[NSYN][4][NGRP_MAX] = {
      {32, 33, 34, 35, 9, 36, 49, 50, 51, 52, 53, GX}, {6, 64, 67, 68, 66, 69, GX, GX, GX, GX, GX, GX}},
     /* LEAD: KEYS piano, tonewheel (once HAMMOND), church organ, clavioline, elec piano, DX piano, xylophone, marimba,
        music box, FM bell, tine keys, clavinet; BAND brass, horn, E guitar, ac guitar, flute, harmonica; SYNTH mini, Juno
-       lead, PWM, acid lead, chiptune, brass (once SYNTH BRASS), pulse, underpass, signal lead, Fairlight, rubber; ODD
-       theremin, glass harp, laser, bowed metal, sine swarm, stepper. (Not offered any more, loadable: room piano, solo
+       lead, PWM, acid lead, chiptune, brass (once SYNTH BRASS), pulse, under, signal, Fairlight, rubber; ODD
+       theremin, glass harp, laser, bowed, sine swarm, stepper. (Not offered any more, loadable: room piano, solo
        strings, porta lead) */
     {{0, 2, 3, 1, 40, 41, GX, GX, GX, GX, GX, GX}, {32, 33, 36, 5, 38, 68, 42, GX, GX, GX, GX, GX},
      {34, 8, 39, 6, 35, 37, 66, 43, GX, GX, GX, GX}, {4, 9, 64, 69, 67, GX, GX, GX, GX, GX, GX, GX}},
-    /* BASS: ACOUSTIC upright, slap, plucked, tuba, fretless, picked; ANALOG Moog, 303 line, sub, synth bass, rubber,
-       slide sub, blackout; DIGITAL DX bass, Reese, electro bass, FM, deep Reese, synth pluck, Juno bass, lately; WILD
-       fuzz, wobble, growl, womp, dirt bass */
-    {{0, 34, 43, 45, 1, 44, 40, 39, GX, GX, GX, GX}, {3, 5, 41, GX, GX, GX, GX, GX, GX, GX, GX, GX},
+    /* BASS: ACOUSTIC upright, slap, plucked, tuba, fretless, picked; ANALOG Moog, 303 line, sub, synth, rubber,
+       slide sub, blackout; DIGITAL DX, Reese, electro, FM, deep Reese, synth pluck, J bass, lately; WILD
+       fuzz, wobble, growl, womp, dirt */
+    {{0, 34, 43, 45, 1, 40, 39, GX, GX, GX, GX, GX}, {3, 5, 41, GX, GX, GX, GX, GX, GX, GX, GX, GX},
      {32, 35, 36, 33, 38, 6, 46, GX, GX, GX, GX, GX}, {8, 64, 67, 9, 7, 65, GX, GX, GX, GX, GX, GX}}};
-    /* PAD: STRINGS strings, Solina, tremolo, tape strings, choir, tape choir, harp, digital choir; KEYS organ, handpan,
-       vibes; SYNTH Juno strings, poly synth, PWM pad, Prophet brass, warm analog, warm synth, detuned; ATMOS drone,
-       frozen, cathedral, sweep, glass pad, tidal. (Moved to LEAD: ac guitar, elec piano, DX piano, marimba; the pad's
-       own stay loadable) */
+    /* PAD: STRINGS strings, Solina, tremolo, tape, choir, harp, digital; KEYS organ, handpan,
+       vibes; SYNTH J strings, poly, PWM pad, Prophet, warm, warm synth, detuned; ATMOS drone,
+       frozen, church, sweep, glass, tidal. (Moved to LEAD: ac guitar, elec piano, DX piano, marimba; the pad's
+       own stay loadable; not offered any more, loadable: tape choir) */
 #define UID(u) (96u + (u))                      /* a USER sound's id */
 static const sdef_t SND_LEAD[] = {
     /* ORIGINAL */
@@ -152,7 +152,7 @@ static const sdef_t SND_LEAD[] = {
     SD("BROKEN RADIO", 65, 0, 60, 112, 20, W_SQR, W_NOISE, 24, 50, 0, 80, 100, 50, 100, 60, L_FILT, LW_RND),   /* a square and hiss, the filter jumping */
     SD("SINE SWARM", 66, 0, 127, 0, 0, W_SIN, W_SIN, 25, 64, 40, 90, 110, 90, 110, 26, L_PITCH, LW_RND),/* two sines a semitone apart, wandering */
     SD("LASER", 67, 0, 124, 60, 127, W_SAW, W_SYNC, 48, 100, 0, 70, 0, 40, 95, 0, L_PITCH, LW_TRI),    /* sync, swept fast and short: pew */
-    SD("BOWED METAL", 68, 0, 92, 30, 20, W_FM, W_SIN, 31, 50, 82, 100, 100, 95, 60, 10, L_PITCH, LW_TRI),   /* FM at an odd ratio, slowly bowed */
+    SD("BOWED", 68, 0, 92, 30, 20, W_FM, W_SIN, 31, 50, 82, 100, 100, 95, 60, 10, L_PITCH, LW_TRI),   /* FM at an odd ratio, slowly bowed */
     SD("STEPPER", 69, 0, 80, 40, 30, W_SQR, W_SAW, 24, 30, 0, 80, 110, 50, 104, 42, L_PITCH, LW_SQR),  /* a fast trill: the LFO steps the pitch */
     /* (later: more for the groups) */
     SD("TINE KEYS", 40, 0, 112, 0, 30, W_FM, W_SIN, 36, 30, 0, 94, 20, 75, 95, 0, L_PITCH, LW_TRI),   /* FM tines: an electric piano's bell */
@@ -176,7 +176,7 @@ static const sdef_t SND_LEAD[] = {
                                                    a touch of glide joins legato notes */
     SD("PULSE", 49, 0, 34, 46, 72, W_PULSE, W_SQR, 12, 30, 0, 62, 40, 30, 95, 0, L_PITCH, LW_TRI),   /* dark and hollow for repeating 8ths
                                                    and 16ths: a filter tick, a quick drop darker, a tight release */
-    SD("UNDERPASS", 50, 0, 66, 30, 0, W_TRI, W_SAW, 24, 22, 30, 100, 120, 80, 40, 30, L_FILT, LW_TRI),   /* a deep triangle with a faint grainy
+    SD("UNDER", 50, 0, 66, 30, 0, W_TRI, W_SAW, 24, 22, 30, 100, 120, 80, 40, 30, L_FILT, LW_TRI),   /* a deep triangle with a faint grainy
                                                    saw that drifts and brightens as a note is held */
     SD("FAIRLIGHT", 52, 0, 62, 26, 92, W_SAW, W_SAW, 36, 45, 4, 78, 0, 40, 122, 3, L_PITCH, LW_RND),   /* an orchestral stab: an
                                                    ensemble's brassy saws and their octave hitting together, a grainy
@@ -192,7 +192,7 @@ static const sdef_t SND_LEAD[] = {
                                                    short warm knock */
     SD("AC GUITAR", 57, 0, 88, 15, 40, W_SAW, W_TRI, 36, 40, 0, 96, 0, 84, 60, 0, L_PITCH, LW_TRI),   /* (as the pad's) strummed steel
                                                    strings */
-    SD("SIGNAL LEAD", 51, 20, 70, 15, 20, W_PULSE, W_SIN, 36, 30, 34, 90, 115, 74, 100, 9, L_PITCH, LW_TRI),   /* a lonely mono melody: a soft
+    SD("SIGNAL", 51, 20, 70, 15, 20, W_PULSE, W_SIN, 36, 30, 34, 90, 115, 74, 100, 9, L_PITCH, LW_TRI),   /* a lonely mono melody: a soft
                                                    pulse edge, a little air an octave up, vibrato, a short glide */
 };
 #define SND_REESE 8u                            /* the bass a new project starts with */
@@ -203,27 +203,27 @@ static const sdef_t SND_BASS[] = {
     SD("SLAP", 2, 0, 55, 60, 100, W_SAW, W_SQR, 36, 35, 0, 70, 50, 45, 60, 0, L_FILT, LW_TRI),         /* a bright snap and pop */
     SD("PLUCKED", 3, 0, 25, 40, 110, W_SAW, W_SQR, 24, 30, 0, 60, 0, 40, 60, 0, L_FILT, LW_TRI),       /* a short dark pluck */
     SD("FUZZ", 4, 0, 110, 120, 0, W_SQR, W_SAW, 24, 64, 0, 80, 120, 45, 60, 0, L_FILT, LW_TRI),        /* buzzy, the resonance clips */
-    SD("SYNTH BASS", 5, 0, 50, 50, 70, W_SQR, W_SAW, 24, 50, 0, 75, 60, 45, 60, 0, L_FILT, LW_TRI),    /* square + saw, a snappy filter */
+    SD("SYNTH", 5, 0, 50, 50, 70, W_SQR, W_SAW, 24, 50, 0, 75, 60, 45, 60, 0, L_FILT, LW_TRI),    /* square + saw, a snappy filter */
     SD("FM", 6, 0, 127, 0, 70, W_FM, W_SIN, 24, 40, 0, 80, 50, 45, 60, 0, L_FILT, LW_TRI),             /* a sine bent by a sine, brightest at the attack */
     SD("ACID", 7, 0, 30, 100, 95, W_SAW, W_SAW, 24, 0, 0, 66, 30, 40, 60, 0, L_FILT, LW_TRI),          /* squelchy, the filter snaps */
     SD("REESE", 8, 0, 60, 30, 20, W_SAW, W_SAW, 24, 64, 0, 80, 127, 50, 30, 4, L_PITCH, LW_TRI),       /* two saws a little apart, beating */
     SD("WOBBLE", 9, 0, 40, 90, 0, W_SAW, W_SQR, 24, 40, 0, 80, 127, 45, 80, 100, L_FILT, LW_TRI),      /* the LFO opens and closes the filter */
     /* CLASSIC */
-    SD("MOOG BASS", 32, 0, 38, 58, 72, W_SAW, W_SQR, 12, 50, 0, 76, 80, 45, 60, 0, L_FILT, LW_TRI),    /* saw + a square an octave down, the ladder's growl */
+    SD("MOOG", 32, 0, 38, 58, 72, W_SAW, W_SQR, 12, 50, 0, 76, 80, 45, 60, 0, L_FILT, LW_TRI),    /* saw + a square an octave down, the ladder's growl */
     SD("303 LINE", 33, 45, 30, 112, 100, W_SAW, W_SAW, 24, 0, 0, 64, 20, 40, 60, 0, L_FILT, LW_TRI),   /* one saw, a squelching filter, sliding notes */
-    SD("DX BASS", 34, 0, 127, 0, 100, W_FM, W_SIN, 36, 80, 0, 78, 40, 45, 60, 0, L_FILT, LW_TRI),      /* FM 2:1, a hard metallic pluck */
+    SD("DX", 34, 0, 127, 0, 100, W_FM, W_SIN, 36, 80, 0, 78, 40, 45, 60, 0, L_FILT, LW_TRI),      /* FM 2:1, a hard metallic pluck */
     SD("DEEP REESE", 35, 0, 52, 40, 10, W_SAW, W_PULSE, 24, 64, 0, 80, 127, 50, 40, 50, L_PWM, LW_TRI),/* saw against a slowly widening pulse */
-    SD("SUB BASS", 36, 0, 86, 0, 0, W_SIN, W_SAW, 24, 50, 0, 80, 127, 40, 60, 0, L_FILT, LW_TRI),      /* a deep sine, a little saw under it,
+    SD("SUB", 36, 0, 86, 0, 0, W_SIN, W_SAW, 24, 50, 0, 80, 127, 40, 60, 0, L_FILT, LW_TRI),      /* a deep sine, a little saw under it,
                                                    rounded off: felt, and heard on a small speaker too */
     SD("SYNTH PLUCK", 37, 0, 45, 50, 112, W_SQR, W_SAW, 36, 30, 0, 62, 0, 40, 60, 0, L_FILT, LW_TRI),  /* a short bright pluck that closes at once */
-    SD("RUBBER BASS", 38, 20, 34, 72, 90, W_SQR, W_SIN, 24, 50, 0, 78, 60, 45, 60, 0, L_FILT, LW_TRI), /* a bouncy rounded square, slides a little */
-    SD("ELECTRO BASS", 39, 0, 62, 40, 60, W_PULSE, W_SAW, 12, 50, 0, 70, 90, 40, 60, 0, L_FILT, LW_TRI),/* pulse + saw an octave down, tight */
+    SD("RUBBER", 38, 20, 34, 72, 90, W_SQR, W_SIN, 24, 50, 0, 78, 60, 45, 60, 0, L_FILT, LW_TRI), /* a bouncy rounded square, slides a little */
+    SD("ELECTRO", 39, 0, 62, 40, 60, W_PULSE, W_SAW, 12, 50, 0, 70, 90, 40, 60, 0, L_FILT, LW_TRI),/* pulse + saw an octave down, tight */
     /* EXPERIMENTAL */
     SD("GROWL", 64, 0, 70, 92, 30, W_FM, W_SIN, 31, 60, 0, 80, 120, 45, 85, 70, L_FILT, LW_SAW),       /* FM through a filter the LFO saws at */
     SD("SYNC BASS", 65, 0, 72, 40, 92, W_SAW, W_SYNC, 31, 80, 0, 70, 80, 40, 60, 0, L_FILT, LW_TRI),   /* a synced snarl, swept by the envelope */
-    SD("JUNO BASS", 66, 0, 58, 48, 72, W_SAW, W_PULSE, 12, 50, 0, 78, 92, 45, 62, 26, L_PWM, LW_TRI),   /* (once BUBBLE) a Juno bass: a saw
+    SD("J BASS", 66, 0, 58, 48, 72, W_SAW, W_PULSE, 12, 50, 0, 78, 92, 45, 62, 26, L_PWM, LW_TRI),   /* (once BUBBLE) a Juno bass: a saw
                                                    over a sub square an octave down, a snappy filter, a little resonance */
-    SD("DIRT BASS", 67, 0, 55, 120, 50, W_SAW, W_NOISE, 24, 25, 0, 75, 90, 40, 60, 0, L_FILT, LW_TRI), /* a saw with grit, the resonance on edge */
+    SD("DIRT", 67, 0, 55, 120, 50, W_SAW, W_NOISE, 24, 25, 0, 75, 90, 40, 60, 0, L_FILT, LW_TRI), /* a saw with grit, the resonance on edge */
     SD("SLIDE SUB", 68, 92, 86, 0, 0, W_SIN, W_SAW, 24, 50, 0, 80, 127, 50, 60, 0, L_FILT, LW_TRI),    /* a sub that slides long between notes
                                                    (a little saw under it, rounded: heard on a small speaker) */
     SD("WOMP", 69, 0, 40, 92, 0, W_SAW, W_PULSE, 24, 50, 0, 80, 127, 45, 75, 100, L_FILT, LW_SQR),     /* the filter gated open and shut on the beat */
@@ -239,29 +239,29 @@ static const sdef_t SND_BASS[] = {
 static const sdef_t SND_PAD[] = {
     /* ORIGINAL */
     SD("STRINGS", 0, 0, 70, 0, 24, W_SAW, W_SAW, 36, 40, 85, 100, 120, 90, 92, 12, L_PITCH, LW_TRI),    /* brighter, a little vibrato */
-    SD("CHOIR", 1, 0, 72, 80, 0, W_SAW, W_NOISE, 24, 35, 88, 100, 120, 92, 92, 14, L_PITCH, LW_TRI),   /* saw + breath through an "aah" resonance */
+    SD("CHOIR", 1, 0, 72, 80, 0, W_SAW, W_NOISE, 24, 12, 88, 100, 120, 92, 92, 14, L_PITCH, LW_TRI),   /* a saw through an "aah" resonance, a breath of air */
     SD("AC GUITAR", 2, 0, 88, 15, 40, W_SAW, W_TRI, 36, 40, 0, 96, 0, 84, 60, 0, L_PITCH, LW_TRI),     /* strummed steel strings */
     SD("ORGAN", 3, 0, 100, 0, 0, W_TRI, W_SIN, 36, 55, 2, 60, 127, 40, 96, 18, L_AMP, LW_TRI),         /* two drawbars, a slight wobble */
     SD("ELEC PIANO", 4, 0, 100, 0, 50, W_FM, W_SIN, 36, 30, 0, 100, 40, 85, 85, 20, L_AMP, LW_TRI),    /* a bell-like FM tine, tremolo */
     SD("HANDPAN", 5, 0, 90, 0, 40, W_FM, W_SIN, 43, 15, 2, 100, 0, 100, 60, 0, L_PITCH, LW_TRI),       /* a warm metal note, ringing long */
     SD("WARM SYNTH", 6, 0, 42, 10, 30, W_SAW, W_SAW, 24, 64, 92, 100, 115, 95, 60, 0, L_PITCH, LW_TRI),/* soft saws, slow in and out */
-    SD("GLASS PAD", 7, 0, 100, 10, 20, W_FM, W_SIN, 48, 20, 85, 100, 110, 95, 70, 10, L_AMP, LW_TRI),  /* a soft, glassy FM shimmer */
+    SD("GLASS", 7, 0, 100, 10, 20, W_FM, W_SIN, 48, 20, 85, 100, 110, 95, 70, 10, L_AMP, LW_TRI),  /* a soft, glassy FM shimmer */
     SD("DRONE", 8, 0, 40, 50, 0, W_SAW, W_SAW, 12, 50, 100, 100, 127, 110, 40, 40, L_FILT, LW_TRI),    /* dark saws, the filter breathing */
     SD("SWEEP", 9, 0, 50, 70, 0, W_SAW, W_SAW, 24, 50, 80, 100, 120, 95, 50, 80, L_FILT, LW_TRI),      /* a slow LFO sweeps the resonant filter */
     /* CLASSIC */
-    SD("JUNO STRINGS", 32, 0, 58, 10, 36, W_SAW, W_PULSE, 24, 55, 82, 100, 120, 95, 66, 40, L_PWM, LW_TRI),   /* saw + a swaying pulse (add CHORUS) */
-    SD("PROPHET BRASS", 33, 0, 44, 28, 82, W_SAW, W_PULSE, 24, 50, 62, 90, 100, 82, 95, 5, L_PITCH, LW_TRI),  /* poly brass, the filter swelling open */
+    SD("J STRINGS", 32, 0, 58, 10, 36, W_SAW, W_PULSE, 24, 55, 82, 100, 120, 95, 66, 40, L_PWM, LW_TRI),   /* saw + a swaying pulse (add CHORUS) */
+    SD("PROPHET", 33, 0, 44, 28, 82, W_SAW, W_PULSE, 24, 50, 62, 90, 100, 82, 95, 5, L_PITCH, LW_TRI),  /* poly brass, the filter swelling open */
     SD("SOLINA", 34, 0, 86, 0, 0, W_SAW, W_SAW, 36, 50, 90, 100, 127, 98, 100, 22, L_PITCH, LW_TRI),   /* string machine: a saw and its octave, ensemble shimmer */
-    SD("POLY SYNTH", 35, 0, 74, 30, 48, W_SAW, W_SQR, 24, 40, 10, 90, 90, 80, 95, 0, L_PITCH, LW_TRI), /* bright chords that bloom and settle */
+    SD("POLY", 35, 0, 74, 30, 48, W_SAW, W_SQR, 24, 40, 10, 90, 90, 80, 95, 0, L_PITCH, LW_TRI), /* bright chords that bloom and settle */
     SD("PWM PAD", 36, 0, 62, 10, 30, W_PULSE, W_PULSE, 24, 40, 86, 100, 120, 96, 58, 92, L_PWM, LW_TRI),/* two pulses, their widths slowly swirling */
     SD("DX PIANO", 37, 0, 122, 0, 100, W_FM, W_SIN, 48, 25, 0, 96, 30, 82, 80, 16, L_AMP, LW_TRI),     /* FM 4:1: a bright, chiming electric piano */
-    SD("WARM ANALOG", 38, 0, 46, 20, 22, W_SAW, W_TRI, 12, 50, 72, 100, 115, 100, 40, 8, L_FILT, LW_TRI),     /* a saw over a triangle an octave down, slow */
-    SD("DIGITAL CHOIR", 39, 0, 80, 72, 0, W_PULSE, W_NOISE, 24, 25, 86, 100, 120, 95, 92, 12, L_PITCH, LW_TRI),/* a pulse and breath, a vowel's ring */
+    SD("WARM", 38, 0, 46, 20, 22, W_SAW, W_TRI, 12, 50, 72, 100, 115, 100, 40, 8, L_FILT, LW_TRI),     /* a saw over a triangle an octave down, slow */
+    SD("DIGITAL", 39, 0, 80, 72, 0, W_PULSE, W_NOISE, 24, 25, 86, 100, 120, 95, 92, 12, L_PITCH, LW_TRI),/* a pulse and breath, a vowel's ring */
     /* EXPERIMENTAL */
     SD("FROZEN", 64, 0, 100, 10, 0, W_FM, W_SIN, 48, 15, 100, 100, 127, 110, 30, 30, L_AMP, LW_RND),   /* glassy FM that flickers, slow as ice */
     SD("TIDAL", 65, 0, 70, 40, 0, W_SAW, W_SYNC, 36, 80, 90, 100, 120, 100, 20, 50, L_FILT, LW_TRI),     /* synced saws under a filter like a tide */
     SD("DUST", 66, 0, 60, 116, 0, W_NOISE, W_SIN, 24, 40, 90, 100, 120, 100, 30, 40, L_FILT, LW_TRI),  /* air through a singing resonance */
-    SD("CATHEDRAL", 67, 0, 55, 10, 0, W_TRI, W_SAW, 12, 40, 110, 110, 127, 115, 50, 6, L_PITCH, LW_TRI),      /* huge and slow, an octave below */
+    SD("CHURCH", 67, 0, 55, 10, 0, W_TRI, W_SAW, 12, 40, 110, 110, 127, 115, 50, 6, L_PITCH, LW_TRI),      /* huge and slow, an octave below */
     SD("PULSAR", 68, 0, 80, 30, 0, W_PULSE, W_PULSE, 31, 40, 20, 90, 110, 80, 105, 80, L_PWM, LW_SQR), /* the pulse's width flicking on the beat */
     SD("SPECTRAL", 69, 0, 90, 40, 0, W_FM, W_SIN, 29, 40, 95, 100, 120, 100, 25, 60, L_FILT, LW_TRI), /* odd-ratio FM, a slow filter drift */
     /* (later: more for the groups) */
@@ -275,7 +275,7 @@ static const sdef_t SND_PAD[] = {
     SD("DETUNED", 46, 0, 46, 15, 20, W_SAW, W_PULSE, 31, 18, 70, 100, 120, 88, 30, 60, L_PWM, LW_TRI),   /* a dark saw with a quiet pulse
                                                    a fifth above, its width slowly drifting against the steady low voice: one
                                                    key's tension (a two-note chord still clear) */
-    SD("TAPE STRINGS", 45, 0, 78, 12, 10, W_SAW, W_SAW, 36, 45, 20, 96, 118, 74, 88, 6, L_PITCH, LW_RND),   /* an old tape keyboard's strings:
+    SD("TAPE", 45, 0, 78, 12, 10, W_SAW, W_SAW, 36, 45, 20, 96, 118, 74, 88, 6, L_PITCH, LW_RND),   /* an old tape keyboard's strings:
                                                    a grainy middle, a direct attack, a fine flutter */
 };
 static const sdef_t *const SND_LIB[NSYN] = {SND_LEAD, SND_BASS, SND_PAD};   /* by type: T_LEAD, T_BASS, T_PAD */
@@ -327,43 +327,48 @@ static const struct { uint8_t ty, id; uint32_t g; } SND_TRIM[] = {   /* g: Q15 (
     {T_LEAD, 6, 23197},     /* THEREMIN -3 dB */
     {T_BASS, 3, 68522},     /* PLUCKED +6 dB */
     {T_BASS, 64, 22462},    /* GROWL -3 dB */
-    {T_BASS, 34, 29736},    /* DX BASS -1 dB */
-    {T_PAD, 39, 18427},     /* DIGITAL CHOIR -5 dB */
+    {T_BASS, 34, 29736},    /* DX -1 dB */
+    {T_PAD, 39, 18427},     /* DIGITAL -5 dB */
     {T_LEAD, 46, 16423},    /* CLAVIOLINE -6 dB */
-    {T_LEAD, 51, 26029},    /* SIGNAL LEAD -2 dB */
+    {T_LEAD, 51, 27571}, /* SIGNAL -1 dB (unison: by its level, not its peaks) */
     {T_LEAD, 43, 21077},    /* HARMONICA -4 dB */
-    {T_LEAD, 34, 19178},    /* PWM LEAD -5 dB */
-    {T_PAD, 36, 20207},     /* PWM PAD -4 dB */
-    {T_PAD, 38, 49473},     /* WARM ANALOG +4 dB */
-    {T_PAD, 6, 45655},      /* WARM SYNTH +3 dB */
-    {T_PAD, 8, 213001},     /* DRONE +16 dB */
-    {T_PAD, 67, 77495},     /* CATHEDRAL +7 dB */
-    {T_PAD, 65, 50460},     /* TIDAL +4 dB */
-    {T_BASS, 38, 30373},    /* RUBBER BASS -1 dB */
+    {T_LEAD, 34, 17092}, /* PWM LEAD -6 dB (unison: by its level, not its peaks) */
+    {T_PAD, 36, 16051}, /* PWM PAD -6 dB (unison: by its level, not its peaks) */
+    {T_PAD, 38, 50625}, /* WARM +4 dB (unison: by its level, not its peaks) */
+    {T_PAD, 6, 49487},  /* WARM SYNTH +4 dB (unison: by its level, not its peaks) */
+    {T_PAD, 8, 127785},     /* DRONE +12 dB */
+    {T_PAD, 67, 77495},     /* CHURCH +7 dB */
+    {T_PAD, 65, 78640},     /* TIDAL +8 dB */
+    {T_BASS, 38, 30373},    /* RUBBER -1 dB */
     {T_BASS, 4, 20985},     /* FUZZ -4 dB */
     {T_LEAD, 40, 21701},    /* TINE KEYS -4 dB */
     {T_LEAD, 57, 46257},    /* AC GUITAR +3 dB */
     {T_LEAD, 52, 54181},    /* FAIRLIGHT +4 dB */
-    {T_LEAD, 68, 23406},    /* BOWED METAL -3 dB */
-    {T_PAD, 0, 48179},      /* STRINGS +3 dB */
-    {T_PAD, 34, 44709},     /* SOLINA +3 dB */
+    {T_LEAD, 68, 23406},    /* BOWED -3 dB */
+    {T_PAD, 0, 51034},  /* STRINGS +4 dB (unison: by its level, not its peaks) */
+    {T_PAD, 34, 46280}, /* SOLINA +3 dB (unison: by its level, not its peaks) */
     {T_PAD, 43, 48489},     /* TREMOLO +3 dB */
     {T_PAD, 5, 23915},      /* HANDPAN -3 dB */
-    {T_PAD, 35, 23200},     /* POLY SYNTH -3 dB */
-    {T_PAD, 33, 22750},     /* PROPHET BRASS -3 dB */
+    {T_PAD, 35, 26332}, /* POLY -2 dB (unison: by its level, not its peaks) */
+    {T_PAD, 33, 22232}, /* PROPHET -3 dB (unison: by its level, not its peaks) */
     {T_PAD, 46, 55285},     /* DETUNED +5 dB */
     {T_PAD, 64, 23354},     /* FROZEN -3 dB */
-    {T_PAD, 7, 22459},      /* GLASS PAD -3 dB */
+    {T_PAD, 7, 22459},      /* GLASS -3 dB */
     {T_BASS, 40, 54242},    /* FRETLESS +4 dB */
     {T_BASS, 42, 51965},    /* BLACKOUT +4 dB */
-    {T_BASS, 39, 24063},    /* ELECTRO BASS -3 dB */
+    {T_BASS, 39, 24063},    /* ELECTRO -3 dB */
     {T_BASS, 35, 28585},    /* DEEP REESE -1 dB */
-    {T_PAD, 32, 23135},     /* JUNO STRINGS -3 dB */
-    {T_PAD, 9, 27163},      /* SWEEP -2 dB */
+    {T_PAD, 32, 19919}, /* J STRINGS -4 dB (unison: by its level, not its peaks) */
+    {T_PAD, 9, 30129},  /* SWEEP -1 dB (unison: by its level, not its peaks) */
     {T_BASS, 41, 45844},    /* PICKED +3 dB */
     {T_BASS, 6, 23388},     /* FM -3 dB */
     {T_BASS, 9, 21885},     /* WOBBLE -4 dB */
     {T_BASS, 69, 23620},    /* WOMP -3 dB */
+    {T_LEAD, 33, 30581}, /* JUNO LEAD -1 dB (unison: by its level, not its peaks) */
+    {T_PAD, 45, 33531}, /* TAPE +0 dB (unison: by its level, not its peaks) */
+    {T_LEAD, 36, 26943}, /* BRASS -2 dB (unison: by its level, not its peaks) */
+    {T_LEAD, 2, 34312},  /* BRASS +0 dB (unison: by its level, not its peaks) */
+    {T_LEAD, 47, 37192}, /* HORN +1 dB (unison: by its level, not its peaks) */
 };
 static uint32_t snd_trim(uint32_t ty, uint32_t id)
 {
@@ -373,7 +378,8 @@ static uint32_t snd_trim(uint32_t ty, uint32_t id)
 }
 /* a sound's more (sndx_t, quartet.c): the library's (SNDX_LIB, gb_sndx.h), else as it always played (sndx_legacy: the
  * filter following the level's envelope, nothing else) */
-#define SNDX_MAGIC 0x5Au
+#define SNDX_MAGIC 0x5Bu                        /* (0x5A: the more as first kept, 14 bytes each: sndx_check widens them) */
+#define SNDX_MAGIC_V1 0x5Au
 static void sndx_legacy(const snd_t *s, sndx_t *x)
 {
     uint8_t *z = (uint8_t *)x;
@@ -386,13 +392,26 @@ static void sndx_def(uint32_t ty, uint32_t id, const snd_t *s, sndx_t *x)
 {
     uint32_t i;
     for (i = 0; i < sizeof SNDX_LIB / sizeof SNDX_LIB[0]; i++)
-        if (SNDX_LIB[i].ty == ty && SNDX_LIB[i].id == id) { *x = SNDX_LIB[i].x; return; }
-    sndx_legacy(s, x);
+        if (SNDX_LIB[i].ty == ty && SNDX_LIB[i].id == id) { *x = SNDX_LIB[i].x; break; }
+    if (i == sizeof SNDX_LIB / sizeof SNDX_LIB[0]) sndx_legacy(s, x);
+    for (i = 0; i < sizeof SNDX_UNI / sizeof SNDX_UNI[0]; i++)
+        if (SNDX_UNI[i].ty == ty && SNDX_UNI[i].id == id) x->uni = SNDX_UNI[i].uni;
 }
 static void sndx_check(void)                    /* an older save (no more kept): every sound as it was */
 {
     uint32_t t, u;
     if (set.mu.ub.x.magic == SNDX_MAGIC) return;
+    if (set.mu.ub.x.magic == SNDX_MAGIC_V1) {   /* (saved before unison: each 14 bytes, packed; widened in place, last first) */
+        uint8_t *b = (uint8_t *)&set.mu.ub.x.slot[0], tmp[14];
+        int32_t r;
+        uint32_t j;
+        for (r = (int32_t)(NSYN + NSYN * NUSND) - 1; r >= 0; r--) {
+            for (j = 0; j < 14u; j++) tmp[j] = b[r * 14 + (int32_t)j];
+            for (j = 0; j < sizeof(sndx_t); j++) b[r * (int32_t)sizeof(sndx_t) + (int32_t)j] = j < 14u ? tmp[j] : 0;
+        }
+        set.mu.ub.x.magic = SNDX_MAGIC;
+        return;
+    }
     for (t = 0; t < NSYN; t++) sndx_legacy(&set.snd[t], &set.mu.ub.x.slot[t]);
     for (t = 0; t < NSYN; t++) for (u = 0; u < NUSND; u++) sndx_legacy(&set.mu.ub.snd[t][u], &set.mu.ub.x.user[t][u]);
     set.mu.ub.x.magic = SNDX_MAGIC;
@@ -401,7 +420,8 @@ static void sound_load(uint32_t t, uint32_t id) /* slot t takes sound id of its 
 {
     uint32_t ty = set.styp[t] % NSYN;
     const sdef_t *d = sound_def(ty, id);
-    if (d) { set.snd[t] = d->s; set.glide[t] = d->glide; sndx_def(ty, id, &d->s, &set.mu.ub.x.slot[t]); }
+    if (d) { set.snd[t] = d->s; set.glide[t] = d->glide; sndx_def(ty, id, &d->s, &set.mu.ub.x.slot[t]); }   /* (its
+                                                   unison too: SNDX_UNI) */
     else if (sound_ok(ty, id)) {
         set.snd[t] = set.mu.ub.snd[ty][id - UID(0)];
         set.glide[t] = set.mu.ub.glide[ty][id - UID(0)];
@@ -458,7 +478,9 @@ static struct {
     int32_t penv, nenv;                         /* the pitch envelope's and the noise burst's way back to nothing, Q15 */
     int32_t nlp;                                /* the noise layer's colour filter */
     uint16_t vt;                                /* blocks of 16 samples since the note began (the vibrato's delay) */
-    int8_t kcut, kenv, vh;                      /* key tracking: cutoff steps, envelope steps (shorter: more); hardness */
+    int8_t kcut, kenv, vh;
+    uint32_t pu[4];                             /* unison: its copies' phases (osc 1 flat, sharp; osc 2 flat, sharp) */
+    uint8_t hpar;                               /* HARMONIZER: the note this one harmonises (0: a note of its own) */                      /* key tracking: cutoff steps, envelope steps (shorter: more); hardness */
 } vx[NVOX];                                     /* interrupt only */
 static uint32_t syn_left[NSYN];                 /* interrupt: ticks until the sequenced notes of a track end */
 static uint32_t vx_ages;
@@ -487,10 +509,11 @@ static uint32_t inc2_of(uint32_t inc, uint32_t tune)   /* osc 2's pitch: tuned, 
     uint32_t i2 = (uint32_t)(((uint64_t)inc * SEMI[tune > 48u ? 48u : tune]) >> 16);
     return i2 + (i2 >> 8);
 }
-static void voice_on(uint32_t trk, uint32_t note, uint32_t seq, uint32_t dyn)
+static uint32_t harm_of(uint32_t t, uint32_t note, int32_t *lv, int32_t *tn);   /* (quartet.c: the key's scale) */
+static uint32_t voice_on1(uint32_t trk, uint32_t note, uint32_t seq, uint32_t dyn)
 {
     uint32_t v, pick = TRK[trk].first, best = 0xFFFFFFFFu, tune = set.snd[trk].tune;
-    if (!note || note > 127u) return;
+    if (!note || note > 127u) return NVOX;
     for (v = TRK[trk].first; v < TRK[trk].first + TRK[trk].count; v++) {   /* the same note, a free voice, the oldest */
         uint32_t score = vx[v].note == note && vx[v].gate ? 0u
                        : vx[v].gate ? 0x80000000u + (vx_ages - vx[v].age > 0x7FFFFFFFu ? 0u : 0x7FFFFFFFu - (vx_ages - vx[v].age))
@@ -515,15 +538,31 @@ static void voice_on(uint32_t trk, uint32_t note, uint32_t seq, uint32_t dyn)
         vx[pick].kenv = (int8_t)((kn * (int32_t)x->ktime * 106) >> 14);   /* (127: ~10 speed steps an octave: half as long) */
         vx[pick].vh = (int8_t)(h < -100 ? -100 : h > 100 ? 100 : h);
         vx[pick].fstage = 0; vx[pick].penv = 32767; vx[pick].nenv = 32767; vx[pick].vt = 0;
+        vx[pick].pu[0] = vx[pick].ph + 0x4F1BBCDCu; vx[pick].pu[1] = vx[pick].ph + 0xB0E4431Fu;   /* (unison's copies: spread
+                                                   round the cycle, the same each note, so no note starts louder) */
+        vx[pick].pu[2] = vx[pick].ph2 + 0x6A09E667u; vx[pick].pu[3] = vx[pick].ph2 + 0x9F65199Au;
     }
     vx[pick].stage = 0;                         /* attack, from wherever the envelope is (no click) */
     vx[pick].gate = 1;
+    vx[pick].hpar = 0;
+    return pick;
+}
+static void voice_on(uint32_t trk, uint32_t note, uint32_t seq, uint32_t dyn)
+{
+    int32_t lv, tn;
+    uint32_t h, v;
+    voice_on1(trk, note, seq, dyn);
+    if ((h = harm_of(trk, note, &lv, &tn)) != 0u && h != note && (v = voice_on1(trk, h, seq, dyn)) < NVOX) {
+        vx[v].hpar = (uint8_t)note;             /* (it ends with its note) */
+        vx[v].vel = (vx[v].vel * lv) >> 7;      /* LEVEL */
+        vx[v].kcut = (int8_t)((int32_t)vx[v].kcut - (127 - tn) * 30 / 127);   /* TONE: darker, less */
+    }
 }
 static void voice_off(uint32_t trk, uint32_t note, int seq_only)   /* note 0: all of the track's notes */
 {
     uint32_t v;
     for (v = TRK[trk].first; v < TRK[trk].first + TRK[trk].count; v++)
-        if ((!note || vx[v].note == note) && (!seq_only || vx[v].seq) && vx[v].gate) {
+        if ((!note || vx[v].note == note || vx[v].hpar == note) && (!seq_only || vx[v].seq) && vx[v].gate) {
             vx[v].gate = 0;
             vx[v].stage = 2;                    /* release */
             vx[v].fstage = 2;
@@ -692,6 +731,18 @@ static inline int32_t osc_wave(uint32_t w, uint32_t ph, uint32_t inc)   /* one c
 }
 
 static uint32_t nz_syn = 0x1F2E3D4Cu;           /* the noise layers' noise (interrupt only) */
+static volatile uint8_t uni_hot;                /* the audio near its limit: unison's copies rest while this counts down */
+static inline int32_t osc_raw(uint32_t w, uint32_t ph)   /* a unison copy's wave: raw, its jumps not rounded (quieter,
+                                                   under the true one and through the filter: the roughness is not heard) */
+{
+    switch (w) {
+    case W_SAW: return (int32_t)ph >> 16;
+    case W_SQR: return (int32_t)ph < 0 ? -32767 : 32767;
+    case W_PULSE: return ph < osc_pw ? 32767 : -32767;
+    case W_TRI: { int32_t s = (int32_t)ph; return ((s ^ (s >> 31)) >> 15) - 32768; }
+    default: return sine(ph);
+    }
+}
 static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* into each track's mono buffer, from off */
 {
     static uint32_t lfo_ph[NSYN], rnd = 12345u;
@@ -835,6 +886,10 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                     blk = 16;
                 }
                 m = n - i < blk ? n - i : blk;  /* up to the next update, or the end of this piece */
+                {
+                uint32_t ua = vx[v].pu[0], ub = vx[v].pu[1], uc = vx[v].pu[2], ud = vx[v].pu[3];
+                uint32_t ud1 = (uint32_t)(((uint64_t)i1 * xs->uni * 7u) >> 16), ud2 = (uint32_t)(((uint64_t)i2 * xs->uni * 21u) >> 17);
+                uint32_t uon = xs->uni && !uni_hot && w1 != W_FM && w2 != W_SYNC, u2 = uon && mix && set.styp[t] % NSYN == T_PAD;
                 blk -= m;
                 i += m;
                 for (j = 0; j < m; j++) {
@@ -851,6 +906,16 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                     if (w1 == W_FM) {           /* FM: osc 2 (a sine) pushes osc 1's phase back and forth, up to ~half a cycle */
                         ph2 += i2;
                         x = sine(ph + ((uint32_t)(sine(ph2) * (int32_t)fmi) << 9)) >> 1;
+                    } else if (uon) {           /* unison: each oscillator and two copies, a little flat and sharp
+                                                   (osc 2's only on a pad: a lead or bass stays focused) */
+                        int32_t o1, o2 = 0;
+                        ua += i1 - ud1; ub += i1 + ud1;
+                        o1 = osc_wave(w1, ph, i1) + (((osc_raw(w1, ua) + osc_raw(w1, ub)) * 200) >> 8);
+                        if (u2) {
+                            ph2 += i2; uc += i2 - ud2; ud += i2 + ud2;
+                            o2 = osc_wave(w2, ph2, i2) + (((osc_raw(w2, uc) + osc_raw(w2, ud)) * 200) >> 8);
+                        } else if (mix) { ph2 += i2; o2 = osc_wave(w2, ph2, i2) * 2; }   /* (as loud as the three) */
+                        x = (((o1 * (int32_t)(128u - mix) + o2 * (int32_t)mix) >> 8) * 5) >> 3;
                     } else if (mix) {           /* two oscillators, mixed, half scale (room for the resonance) */
                         ph2 += i2;
                         x = (osc_wave(w1, ph, i1) * (int32_t)(128u - mix) + osc_wave(w2, ph2, i2) * (int32_t)mix) >> 8;
@@ -874,6 +939,8 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                     }
                     s = (s * (amp >> 8)) >> 15;
                     *o++ += s;
+                }
+                vx[v].pu[0] = ua; vx[v].pu[1] = ub; vx[v].pu[2] = uc; vx[v].pu[3] = ud;
                 }
             }
             vx[v].amp = amp; vx[v].dstep = dstep; vx[v].ph = ph; vx[v].ph2 = ph2; vx[v].fmi = (uint8_t)fmi;

@@ -201,6 +201,9 @@ typedef struct {                                /* (later) more of a synth sound
     uint8_t vdel;                               /* vibrato delay: the LFO fades in after the attack (0: at once) */
     uint8_t nlvl, ncol, ndec;                   /* the noise layer: level, colour (dark .. bright), decay (0: held with the
                                                    note; more: a burst at the start, as long as that) */
+    uint8_t uni;                                /* unison: two more copies of each oscillator, this far apart (0 off; on
+                                                   a pad both oscillators, on a lead or bass osc 1) */
+    uint8_t spare;                              /* (kept 0: room for one more) */
 } sndx_t;
 typedef struct {                                /* a track's pedals (gb_fx.h); 0..127 unless said */
     uint8_t on;                                 /* bit e: pedal e on (E_REV, E_DLY, E_DST, E_CHO, E_PHS) */
@@ -593,6 +596,8 @@ static void app_audio(int32_t *out, uint32_t n)
     clock_audio(out, n);                        /* the clock and the four tracks on it */
 #ifndef DINGHY_HOST
     dt = fm1_ticks() - t0;
+    if (dt > 118421u) uni_hot = 180;            /* (past ~85 % of the 5.8 ms: unison's copies rest a second) */
+    else if (uni_hot) uni_hot--;
     if (reset_done != cpu_reset) { reset_done = cpu_reset; cpu_peak = 0; }
     if (dt > cpu_peak) cpu_peak = dt;
 #endif
@@ -707,6 +712,20 @@ static int black(uint32_t note) { return (0x54Au >> (note % 12u)) & 1u; }
 static uint32_t key_pc(void) { return (uint32_t)(((int32_t)set.key * 7 % 12 + 12) % 12); }   /* the key's home note (0 C) */
 static uint32_t in_key(uint32_t n) { return 0xAB5u >> ((n + 12u - key_pc()) % 12u) & 1u; }   /* in its major scale */
 static uint32_t key_lock(uint32_t n) { return in_key(n) || n < 1u ? n : n - 1u; }   /* scale lock: off the key, the note below */
+static uint32_t harm_of(uint32_t t, uint32_t note, int32_t *lv, int32_t *tn)   /* HARMONIZER (synth tracks of two voices
+                                                   or more): the note it adds to note, steps of the key's scale away (0 none) */
+{
+    static const int8_t HS[10] = {-7, -5, -4, -3, -2, 2, 3, 4, 5, 7};   /* -OCT -6TH -5TH -4TH -3RD 3RD 4TH 5TH 6TH OCT */
+    const uint8_t *k = note_ped(t, PD_HARM);
+    int32_t s, d, n = (int32_t)note;
+    if (!k || t >= NSYN || TRK[t].count < 2u) return 0;
+    s = HS[k[0] % 10u]; d = s > 0 ? 1 : -1; s = s > 0 ? s : -s;
+    while (s && n + d > 0 && n + d < 128) { n += d; if (in_key((uint32_t)n)) s--; }   /* (from a note off the scale: the
+                                                   scale's notes from there) */
+    if (s) return 0;
+    *lv = k[1]; *tn = k[2];
+    return (uint32_t)n;
+}
 static const char *const TYPE_NAME[NTRK] = {"LEAD", "BASS", "PAD", "DRUMS"};
 static const char *const TYPE_SHORT[NTRK] = {"LD", "BS", "PD", "DR"};
 static char *put(char *p, const char *a);
@@ -810,7 +829,7 @@ static const pdef_t PDEF[NPD] = {
     {"REVERSE DELAY", 3, {100, 40, 140}, 0, {KL("ECHO", 0, 70), {"TIME", 3, NDLY - 1u, 2, KV_DLY}, KL("REPEATS", 4, 50)}},
     {"SPRING REVERB", 3, {170, 160, 140}, 1, {KL("LEVEL", 0, 70), KL("TONE", 3, 70), KL("TIME", 4, 70)}},
     {"SHIFTER", 4, {240, 110, 70}, 1, {{"SEMI", 0, 24, 12, KV_SEMI}, {"OCTAVE", 1, 4, 3, KV_OCT5}, KL("MIX", 2, 127)}},
-    {"HARMONIZER", 4, {60, 150, 110}, 0, {{"INTERVAL", 0, 9, 8, KV_INT}, KL("LEVEL", 1, 90), KL("TONE", 2, 90)}},
+    {"HARMONIZER", 4, {60, 150, 110}, 0, {{"INTERVAL", 0, 9, 5, KV_INT}, KL("LEVEL", 1, 90), KL("TONE", 2, 90)}},
     {"LO-FI", 5, {150, 130, 100}, 0, {KL("RATE", 0, 50), KL("NOISE", 1, 40), KL("DIRT", 2, 60)}},
     {"SLOW", 5, {120, 160, 210}, 1, {KL("RISE", 0, 20), KL("DEPTH", 1, 110), KL("SENS", 2, 80)}},
     {"GHOST", 6, {210, 210, 220}, 1, {KL("DELAY", 0, 60), KL("LEVEL", 1, 50), KL("DRIFT", 2, 50)}},
@@ -829,13 +848,15 @@ static const pdef_t PDEF[NPD] = {
     {"COMPRESSOR", 0, {60, 90, 170}, 0, {KL("SQUASH", 0, 70), KL("ATTACK", 1, 40), KL("LEVEL", 2, 64)}},
     {"ROTARY", 2, {150, 90, 40}, 0, {KL("SPEED", 0, 20), KL("DEPTH", 1, 90), KL("MIX", 2, 110)}},
     {"BLOOM", 6, {210, 80, 150}, 0, {KL("TIME", 0, 50), KL("DEPTH", 1, 80), KL("TONE", 2, 60)}},
+    {"ENSEMBLE", 2, {240, 200, 120}, 1, {KL("SPEED", 0, 40), KL("DEPTH", 1, 70), KL("MIX", 2, 100)}},
 };
-/* pedals no longer offered (an older save that has one keeps it, as it was): SHADOW (SHIFTER / HARMONIZER do it), GATED
- * FUZZ, SLOW (the sound's attack does it), UNI; GHOST and BROKEN CLOCK (now LOOSE), CASSETTE and VINYL (now OLD MEDIA) */
+/* pedals no longer offered (an older save that has one keeps it, as it was): SHADOW, GATED FUZZ, SLOW (the sound's attack
+ * does it), UNI; GHOST and BROKEN CLOCK (now LOOSE), CASSETTE and VINYL (now OLD MEDIA); SHIFTER (its sliced pitch
+ * warbled) */
 static int ped_shown(uint32_t p)
 {
     return p != PD_SHADOW && p != PD_GATEF && p != PD_SLOW && p != PD_UNI && p != PD_GHOST && p != PD_BROKEN
-        && p != PD_CASS && p != PD_VINYL;
+        && p != PD_CASS && p != PD_VINYL && p != PD_SHIFT;
 }
 #define NPCAT 7u
 static const char *const PCAT_NAME[NPCAT] = {"DRIVE", "FILTER", "MODULATION", "SPACE", "PITCH", "TEXTURE", "BEHAVIOUR"};
@@ -843,9 +864,9 @@ static const char *const PCAT_NAME[NPCAT] = {"DRIVE", "FILTER", "MODULATION", "S
 static const uint8_t PORD[] = {
     PD_OD, PD_DIST, PD_FUZZ, PD_OCTF, PD_FOLD, PD_CRUSH, PD_COMP,                  /* DRIVE */
     PD_WAH, PD_DJF, PD_ACID, PD_FSEQ,                                             /* FILTER */
-    PD_CHO, PD_FLG, PD_PHS, PD_TREM, PD_VIB, PD_SLICE, PD_PUMP, PD_ROTARY,        /* MODULATION */
+    PD_CHO, PD_ENS, PD_FLG, PD_PHS, PD_TREM, PD_VIB, PD_SLICE, PD_PUMP, PD_ROTARY,   /* MODULATION */
     PD_REV, PD_SPRING, PD_SHIM, PD_DLY, PD_TAPE, PD_REVD,                         /* SPACE */
-    PD_SHIFT, PD_HARM, PD_SYNTH, PD_MBOX, PD_RING,                                /* PITCH */
+    PD_HARM, PD_SYNTH, PD_MBOX, PD_RING,                                          /* PITCH */
     PD_OLDM, PD_LOFI, PD_WATER, PD_WRONG,                                         /* TEXTURE */
     PD_GLITCH, PD_LOOSE, PD_MECH, PD_MEML, PD_WORM, PD_BLOOM};                    /* BEHAVIOUR */
 #define NPORD (sizeof PORD / sizeof PORD[0])
@@ -932,8 +953,8 @@ static void pedal_knobs(uint32_t trk, uint32_t e, pknob_t k[3])
  * each pedal in 20 slots; a shared pedal once, plus a little per send). The five original pedals on all four tracks
  * come to 156 (on the FM-1 ~40 % of the CPU, on top of the instruments); more than PED_BUDGET is refused */
 static const uint8_t PD_COST[NPD] = {5, 8, 4, 5, 6, 4, 17, 16, 7, 18, 5, 2, 4, 5, 19, 1, 1, 1, 1, 9, 5, 3, 6, 4, 3,
-                                     2, 1, 1, 9, 10, 3, 4, 5, 29, 1, 10, 6, 11,    /* (LOOSE, OLD MEDIA) */
-                                     11, 11, 9, 2, 1, 1, 1, 4, 20, 10};   /* (COMPRESSOR, ROTARY, BLOOM: measured as the rest) */   /* (DJ FILTER, ACID, RING MOD measured as the rest; the note pedals: next to nothing) */   /* (MUSIC BOX: measured with notes and drums playing on every track) */
+                                     2, 1, 1, 9, 1, 3, 4, 5, 29, 1, 10, 6, 11,     /* (LOOSE, OLD MEDIA; HARMONIZER: a note pedal now) */
+                                     11, 11, 9, 2, 1, 1, 1, 4, 20, 10, 12};   /* (ENSEMBLE: measured beside CHORUS, 1.7 of it) */   /* (COMPRESSOR, ROTARY, BLOOM: measured as the rest) */   /* (DJ FILTER, ACID, RING MOD measured as the rest; the note pedals: next to nothing) */   /* (MUSIC BOX: measured with notes and drums playing on every track) */
 static const uint8_t SP_COST[NSPACE_ALL] = {19, 9, 17, 18, 6, 15};   /* reverb, delay, tape echo, shimmer, reverse, spring */
 #define PED_BUDGET 170u
 static int ped_fits(void)
@@ -1972,7 +1993,7 @@ static void mask_corners(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r) 
 enum { LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FOLD, LK_CRUSH, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE,
        LK_VIB, LK_PUMP, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_REVD, LK_SPRING, LK_SHIFT, LK_HARM, LK_OLDM, LK_GLITCH,
        LK_WATER, LK_SYNTH, LK_LOFI, LK_LOOSE, LK_MBOX, LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML,
-       LK_WORM, LK_COMP, LK_ROT, LK_BLOOM, LK_ARP, NLOOK };
+       LK_WORM, LK_COMP, LK_ROT, LK_BLOOM, LK_ENS, LK_ARP, NLOOK };
 enum { L_SANS = 1, L_LOWER = 2, L_PCT = 4, L_SKIRT = 8, L_SIDES = 16, L_CENTRE = 32 };
 typedef struct {
     const char *title;
@@ -2022,13 +2043,14 @@ static const plook_t PLOOK[NLOOK] = {
     {"COMPRESSOR", RGB(40, 66, 140), RGB(240, 242, 250), RGB(200, 214, 244), RGB(255, 255, 255), RGB(24, 24, 26), W_, RGB(255, 60, 50), L_SKIRT, 18, 62, 84, 216, 56, 0, 0, 0},
     {"rotary", RGB(122, 72, 36), RGB(250, 230, 190), RGB(250, 230, 190), RGB(255, 244, 220), RGB(24, 24, 26), W_, RGB(255, 100, 40), L_SKIRT | L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
     {"bloom", RGB(30, 56, 40), RGB(250, 170, 205), RGB(250, 170, 205), RGB(255, 232, 242), RGB(236, 112, 166), W_, RGB(255, 120, 180), L_LOWER, 18, 62, 84, 216, 56, 0, 0, 0},
+    {"ENSEMBLE", RGB(28, 40, 70), RGB(240, 200, 120), RGB(240, 200, 120), RGB(255, 240, 210), RGB(240, 200, 120), RGB(28, 40, 70), RGB(255, 190, 90), L_SANS | L_PCT, 18, 60, 84, 216, 56, 0, 0, 1},
     {"ARPEGGIATOR", RGB(14, 40, 46), RGB(90, 220, 220), RGB(90, 220, 220), RGB(220, 255, 255), RGB(70, 200, 200), W_, RGB(100, 255, 240), L_SANS, 18, 60, 84, 216, 56, 0, 0, 1},
 };
 static const uint8_t PD_LOOK[NPD] = {           /* by PD_ number; those no longer offered borrow a look (and keep their name) */
     LK_DIST, LK_OD, LK_FUZZ, LK_OCTF, LK_FUZZ, LK_FOLD, LK_FSEQ, LK_WAH, LK_CHO, LK_PHS, LK_FLG, LK_TREM, LK_SLICE, LK_VIB,
     LK_VIB, LK_REV, LK_DLY, LK_TAPE, LK_SHIM, LK_OLDM, LK_OLDM, LK_GLITCH, LK_WATER, LK_SYNTH, LK_PUMP, LK_CRUSH, LK_REVD,
     LK_SPRING, LK_SHIFT, LK_HARM, LK_LOFI, LK_TREM, LK_LOOSE, LK_MBOX, LK_LOOSE, LK_REV, LK_LOOSE, LK_OLDM,
-    LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML, LK_WORM, LK_COMP, LK_ROT, LK_BLOOM};
+    LK_DJF, LK_ACID, LK_RING, LK_WRONG, LK_MECH, LK_MEML, LK_WORM, LK_COMP, LK_ROT, LK_BLOOM, LK_ENS};
 
 static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs and the name */
 {
@@ -2519,6 +2541,17 @@ static void pedal_art(uint32_t lk, uint16_t body)   /* the art, under the knobs 
         astars(7, 10, 128, 230, 150, 10, pk);
         break;
     }
+    case LK_ENS:                                /* ENSEMBLE: three voices' waves, a little apart, side by side */
+        for (s = 0; s < 3u; s++)
+            for (k = 0; k < 4; k++) {
+                int32_t x0 = 6, y0 = 150 + (int32_t)s * 20 + k * 4 + asn(k * 23 + (int32_t)s * 40, 5);
+                for (i = 4; i <= 100u; i += 4) {
+                    int32_t x1 = 6 + (int32_t)i * 228 / 100, y1 = 150 + (int32_t)s * 20 + k * 4 + asn((int32_t)i * 6 + k * 23 + (int32_t)s * 40, 5);
+                    aline(x0, y0, x1, y1, mix565(RGB(240, 200, 120), body, 20 + k * 15), 1);
+                    x0 = x1; y0 = y1;
+                }
+            }
+        break;
     case LK_ARP: {
         uint16_t aa = RGB(90, 220, 220);
         adisc(206, 160, 12, mix565(aa, K_WHITE, 50));
@@ -2636,7 +2669,7 @@ static void ped_vals(uint32_t trk, uint32_t e, pknob_t pk[3], char val[3][8])   
     static const char *const GL[3] = {"1/32", "1/16", "1/8"}, *const OC[3] = {"0", "-1", "-2"};
     static const char *const SRC[3] = {"KICK", "1/4", "1/8"};
     static const char *const OC5[5] = {"-2", "-1", "0", "+1", "+2"}, *const OC2[2] = {"-1", "-2"};
-    static const char *const INTV[10] = {"-OCT", "-5TH", "-4TH", "-3RD", "-m3", "+m3", "+3RD", "+4TH", "+5TH", "+OCT"};
+    static const char *const INTV[10] = {"-OCT", "-6TH", "-5TH", "-4TH", "-3RD", "+3RD", "+4TH", "+5TH", "+6TH", "+OCT"};   /* (in the key) */
     static const char *const TWL[4] = {"1/8", "1/4", "1/2", "BAR"}, *const REP[4] = {"1x", "2x", "3x", "4x"};
     static const char *const HLD[4] = {"1/4", "1/2", "1 BAR", "2 BARS"};
     const pdef_t *d = &PDEF[set.ped[trk][e] % NPD];
@@ -3509,6 +3542,13 @@ static void draw_chart(uint32_t trk, uint32_t pg, uint16_t col, uint16_t tint)  
                 y[x] = mid - e - w;
             }
             cv_rect(CH_X, mid, CH_W, 1, C_KEYCAP);
+            if (xs->uni) {                      /* UNISON: its copies, a little flat and sharp of the note */
+                int32_t us = 2 + (int32_t)xs->uni * 6 / 127;
+                for (x = 0; x < CH_W; x++) y2[x] = y[x] - us;
+                chart_line(y2, C_SUB);
+                for (x = 0; x < CH_W; x++) y2[x] = y[x] + us;
+                chart_line(y2, C_SUB);
+            }
             chart_line(y, col);
             if (va && xs->vdel) cv_rect(CH_X + vd, CH_T, 1, h, C_DIMC);   /* (where the vibrato begins) */
             break;
@@ -3590,8 +3630,8 @@ static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
         switch (sel) {
         case SP_FILT: nm[0] = "ATTACK"; v[0] = xs->fa; nm[1] = "DECAY"; v[1] = xs->fd; nm[2] = "SUSTAIN"; v[2] = xs->fs; nm[3] = "RELEASE"; v[3] = xs->fr;
                       mx[0] = mx[1] = mx[2] = mx[3] = 127; break;
-        case SP_PITCH: nm[0] = "AMOUNT"; v[0] = (uint32_t)((int32_t)xs->pamt + 64); nm[1] = "TIME"; v[1] = xs->ptime; nm[2] = "VIB DELAY"; v[2] = xs->vdel;
-                       nm[3] = ""; v[3] = 0; mx[0] = mx[1] = mx[2] = 127; mx[3] = 0; break;
+        case SP_PITCH: nm[0] = "AMOUNT"; v[0] = (uint32_t)((int32_t)xs->pamt + 64); nm[1] = "TIME"; v[1] = xs->ptime; nm[2] = "VIB DLY"; v[2] = xs->vdel;
+                       nm[3] = "UNISON"; v[3] = xs->uni; mx[0] = mx[1] = mx[2] = mx[3] = 127; break;
         case SP_NOISE: nm[0] = "LEVEL"; v[0] = xs->nlvl; nm[1] = "COLOUR"; v[1] = xs->ncol; nm[2] = "DECAY"; v[2] = xs->ndec;
                        nm[3] = ""; v[3] = 0; mx[0] = mx[1] = mx[2] = 127; mx[3] = 0; break;
         case SP_KEYS: nm[0] = "K.TONE"; v[0] = xs->ktone; nm[1] = "K.TIME"; v[1] = xs->ktime; nm[2] = "V.TONE"; v[2] = xs->vtone; nm[3] = "V.ATK"; v[3] = xs->vatk;
@@ -3626,7 +3666,7 @@ static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
             *p++ = q4 < 0 ? '-' : q4 > 0 ? '+' : ' '; p = put_num(p, (uint32_t)(aq / 4), 1);
             if (aq % 4) { static const char *const FR[4] = {"", ".25", ".5", ".75"}; p = put(p, FR[aq % 4]); }
             *p = 0;
-        } else if (trk < NSYN && sel == SP_PITCH && i == 2u && !v[2]) vs[i] = "OFF";
+        } else if (trk < NSYN && sel == SP_PITCH && (i == 2u || i == 3u) && !v[i]) vs[i] = "OFF";
         else if (trk < NSYN && sel == SP_NOISE && i == 2u && !v[2]) vs[i] = "HELD";
         else *put_num(vb[i], v[i], 1) = 0;
     }
@@ -5002,8 +5042,8 @@ static void app_main(void)
                 case SP_PITCH: { sndx_t *xw = &set.mu.ub.x.slot[trk];
                     int32_t pe = fm1_enc_take(ENC_KNOB1);
                     if (pe) { int32_t pv = (int32_t)xw->pamt + pe; xw->pamt = (int8_t)(pv < -64 ? -64 : pv > 63 ? 63 : pv); ch = 1; }
-                    ch |= knob(ENC_KNOB2, &xw->ptime, 0, 127) | knob(ENC_KNOB3, &xw->vdel, 0, 127);
-                    fm1_enc_take(ENC_KNOB4); break; }
+                    ch |= knob(ENC_KNOB2, &xw->ptime, 0, 127) | knob(ENC_KNOB3, &xw->vdel, 0, 127) | knob(ENC_KNOB4, &xw->uni, 0, 127);
+                    break; }
                 case SP_NOISE: { sndx_t *xw = &set.mu.ub.x.slot[trk];
                     ch |= knob(ENC_KNOB1, &xw->nlvl, 0, 127) | knob(ENC_KNOB2, &xw->ncol, 0, 127) | knob(ENC_KNOB3, &xw->ndec, 0, 127);
                     fm1_enc_take(ENC_KNOB4); break; }

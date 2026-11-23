@@ -44,6 +44,7 @@ enum { PD_DIST, PD_OD, PD_FUZZ, PD_OCTF, PD_GATEF, PD_FOLD,              /* DRIV
        PD_DJF, PD_ACID, PD_RING,                /* (later still: FILTER, FILTER, PITCH) */
        PD_WRONG, PD_MECH, PD_MEML, PD_WORM,     /* (the note pedals, gb_clock.h) */
        PD_COMP, PD_ROTARY, PD_BLOOM,            /* (later still: DRIVE, MODULATION, BEHAVIOUR) */
+       PD_ENS,                                  /* (later still: MODULATION) */
        NPD };
 enum { SP_REV, SP_DLY, SP_TAPE, SP_SHIM, SP_REVD, SP_SPRING, NSPACE_ALL };   /* the shared pedals (and their buses); the
                                                    first NSPACE keep their knobs in set.spk, the later ones in set.spk2 */
@@ -791,6 +792,31 @@ static void pitch_block(uint32_t type, pst_t *st, int16_t *b, const uint8_t *k, 
     st->w = w; st->s[0] = lp;
 }
 
+/* ENSEMBLE: SPEED, DEPTH, MIX. Three taps on the slot's line, each swung by a slow LFO and a quick one, a third of a
+ * turn apart: the string machines' chorus, a shimmer rather than CHORUS's sway. Each tap glides block to block */
+static void ens_block(pst_t *st, int16_t *b, const uint8_t *k, int32_t *x, uint32_t n)
+{
+    uint32_t i, j, w = st->w;
+    int32_t d[3], p[3], sd[3], a = (int32_t)k[1] * 120 / 127, mx = k[2];
+    st->ph += (20000u + (uint32_t)k[0] * 900u) * n;   /* the slow one: ~0.2 .. 1.4 Hz */
+    st->ph2 += 560000u * n;                     /* the quick one: ~5.8 Hz */
+    for (j = 0; j < 3u; j++) {                  /* ~6.8 ms, +-2.7 ms slow (DEPTH), +-0.3 ms quick: inside the 11.6 ms line */
+        uint32_t o = j * 0x55555555u;
+        d[j] = (300 << 8) + ((sine(st->ph + o) * a) >> 7) + ((sine(st->ph2 + o) * 12) >> 7);
+        p[j] = st->s[j] ? st->s[j] : d[j];
+        sd[j] = (d[j] - p[j]) / (int32_t)n;
+    }
+    for (i = 0; i < n; i++) {
+        int32_t wet;
+        b[w] = sat16(x[i]);
+        p[0] += sd[0]; p[1] += sd[1]; p[2] += sd[2];
+        wet = tap(b, PB_N - 1u, w, p[0]) + tap(b, PB_N - 1u, w, p[1]) + tap(b, PB_N - 1u, w, p[2]);
+        w = (w + 1u) & (PB_N - 1u);
+        x[i] = ((x[i] * (128 - ((mx * 3) >> 3))) >> 7) + ((wet * mx * 9) >> 12);   /* (full: the dry 0.63, each tap 0.28) */
+    }
+    st->w = w; st->s[0] = p[0]; st->s[1] = p[1]; st->s[2] = p[2];
+}
+
 static void lofi_block(uint32_t type, pst_t *st, const uint8_t *k, int32_t *x, uint32_t n)   /* BITCRUSHER, LO-FI */
 {
     uint32_t i, cnt = st->cnt;
@@ -1088,7 +1114,9 @@ static void ped_insert(uint32_t t, uint32_t e, uint32_t type, const uint8_t *k, 
     else if (type == PD_TREM || type == PD_SLICE) amp_block(type, st, k, x, n);
     else if (type == PD_PUMP) pump_block(st, k, x, n);
     else if (type == PD_CRUSH || type == PD_LOFI) lofi_block(type, st, k, x, n);
-    else if (type == PD_SHIFT || type == PD_HARM || type == PD_SHADOW) pitch_block(type, st, pbuf[t][e], k, x, n);
+    else if (type == PD_SHIFT || type == PD_SHADOW) pitch_block(type, st, pbuf[t][e], k, x, n);
+    else if (type == PD_HARM) {}                /* (HARMONIZER plays a note beside each note: voice_on, gb_synth.h) */
+    else if (type == PD_ENS) ens_block(st, pbuf[t][e], k, x, n);
     else if (type == PD_SLOW) slow_block(st, k, x, n);
     else if (type == PD_GHOST) ghost_block(t, st, k, x, n);
     else if (type == PD_LOOSE) {                /* LOOSE: LATE (gb_clock.h), DOUBLE, DRIFT: the ghost player behind */
