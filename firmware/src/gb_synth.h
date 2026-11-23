@@ -238,22 +238,22 @@ static const sdef_t SND_BASS[] = {
 };
 static const sdef_t SND_PAD[] = {
     /* ORIGINAL */
-    SD("STRINGS", 0, 0, 80, 0, 0, W_SAW, W_SAW, 36, 40, 85, 100, 120, 90, 92, 12, L_PITCH, LW_TRI),    /* brighter, a little vibrato */
+    SD("STRINGS", 0, 0, 70, 0, 24, W_SAW, W_SAW, 36, 40, 85, 100, 120, 90, 92, 12, L_PITCH, LW_TRI),    /* brighter, a little vibrato */
     SD("CHOIR", 1, 0, 72, 80, 0, W_SAW, W_NOISE, 24, 35, 88, 100, 120, 92, 92, 14, L_PITCH, LW_TRI),   /* saw + breath through an "aah" resonance */
     SD("AC GUITAR", 2, 0, 88, 15, 40, W_SAW, W_TRI, 36, 40, 0, 96, 0, 84, 60, 0, L_PITCH, LW_TRI),     /* strummed steel strings */
     SD("ORGAN", 3, 0, 100, 0, 0, W_TRI, W_SIN, 36, 55, 2, 60, 127, 40, 96, 18, L_AMP, LW_TRI),         /* two drawbars, a slight wobble */
     SD("ELEC PIANO", 4, 0, 100, 0, 50, W_FM, W_SIN, 36, 30, 0, 100, 40, 85, 85, 20, L_AMP, LW_TRI),    /* a bell-like FM tine, tremolo */
     SD("HANDPAN", 5, 0, 90, 0, 40, W_FM, W_SIN, 43, 15, 2, 100, 0, 100, 60, 0, L_PITCH, LW_TRI),       /* a warm metal note, ringing long */
-    SD("WARM SYNTH", 6, 0, 50, 10, 10, W_SAW, W_SAW, 24, 64, 92, 100, 115, 95, 60, 0, L_PITCH, LW_TRI),/* soft saws, slow in and out */
+    SD("WARM SYNTH", 6, 0, 42, 10, 30, W_SAW, W_SAW, 24, 64, 92, 100, 115, 95, 60, 0, L_PITCH, LW_TRI),/* soft saws, slow in and out */
     SD("GLASS PAD", 7, 0, 100, 10, 20, W_FM, W_SIN, 48, 20, 85, 100, 110, 95, 70, 10, L_AMP, LW_TRI),  /* a soft, glassy FM shimmer */
     SD("DRONE", 8, 0, 40, 50, 0, W_SAW, W_SAW, 12, 50, 100, 100, 127, 110, 40, 40, L_FILT, LW_TRI),    /* dark saws, the filter breathing */
     SD("SWEEP", 9, 0, 50, 70, 0, W_SAW, W_SAW, 24, 50, 80, 100, 120, 95, 50, 80, L_FILT, LW_TRI),      /* a slow LFO sweeps the resonant filter */
     /* CLASSIC */
-    SD("JUNO STRINGS", 32, 0, 70, 10, 12, W_SAW, W_PULSE, 24, 55, 82, 100, 120, 95, 66, 40, L_PWM, LW_TRI),   /* saw + a swaying pulse (add CHORUS) */
+    SD("JUNO STRINGS", 32, 0, 58, 10, 36, W_SAW, W_PULSE, 24, 55, 82, 100, 120, 95, 66, 40, L_PWM, LW_TRI),   /* saw + a swaying pulse (add CHORUS) */
     SD("PROPHET BRASS", 33, 0, 44, 28, 82, W_SAW, W_PULSE, 24, 50, 62, 90, 100, 82, 95, 5, L_PITCH, LW_TRI),  /* poly brass, the filter swelling open */
     SD("SOLINA", 34, 0, 86, 0, 0, W_SAW, W_SAW, 36, 50, 90, 100, 127, 98, 100, 22, L_PITCH, LW_TRI),   /* string machine: a saw and its octave, ensemble shimmer */
     SD("POLY SYNTH", 35, 0, 74, 30, 48, W_SAW, W_SQR, 24, 40, 10, 90, 90, 80, 95, 0, L_PITCH, LW_TRI), /* bright chords that bloom and settle */
-    SD("PWM PAD", 36, 0, 74, 10, 0, W_PULSE, W_PULSE, 24, 40, 86, 100, 120, 96, 58, 92, L_PWM, LW_TRI),/* two pulses, their widths slowly swirling */
+    SD("PWM PAD", 36, 0, 62, 10, 30, W_PULSE, W_PULSE, 24, 40, 86, 100, 120, 96, 58, 92, L_PWM, LW_TRI),/* two pulses, their widths slowly swirling */
     SD("DX PIANO", 37, 0, 122, 0, 100, W_FM, W_SIN, 48, 25, 0, 96, 30, 82, 80, 16, L_AMP, LW_TRI),     /* FM 4:1: a bright, chiming electric piano */
     SD("WARM ANALOG", 38, 0, 46, 20, 22, W_SAW, W_TRI, 12, 50, 72, 100, 115, 100, 40, 8, L_FILT, LW_TRI),     /* a saw over a triangle an octave down, slow */
     SD("DIGITAL CHOIR", 39, 0, 80, 72, 0, W_PULSE, W_NOISE, 24, 25, 86, 100, 120, 95, 92, 12, L_PITCH, LW_TRI),/* a pulse and breath, a vowel's ring */
@@ -272,7 +272,7 @@ static const sdef_t SND_PAD[] = {
                                                    strokes on a held chord: nervous, the pitch clear, little reverb */
     SD("TAPE CHOIR", 44, 0, 64, 76, 0, W_SAW, W_NOISE, 24, 25, 66, 100, 120, 84, 30, 8, L_PITCH, LW_RND),   /* a grainy "ah", the top rolled
                                                    off, a firmer entrance, a gentle tape drift */
-    SD("DETUNED", 46, 0, 52, 15, 0, W_SAW, W_PULSE, 31, 18, 70, 100, 120, 88, 30, 60, L_PWM, LW_TRI),   /* a dark saw with a quiet pulse
+    SD("DETUNED", 46, 0, 46, 15, 20, W_SAW, W_PULSE, 31, 18, 70, 100, 120, 88, 30, 60, L_PWM, LW_TRI),   /* a dark saw with a quiet pulse
                                                    a fifth above, its width slowly drifting against the steady low voice: one
                                                    key's tension (a two-note chord still clear) */
     SD("TAPE STRINGS", 45, 0, 78, 12, 10, W_SAW, W_SAW, 36, 45, 20, 96, 118, 74, 88, 6, L_PITCH, LW_RND),   /* an old tape keyboard's strings:
@@ -325,8 +325,8 @@ static const struct { uint8_t ty, id; uint32_t g; } SND_TRIM[] = {   /* g: Q15 (
     {T_LEAD, 1, 51935},     /* XYLOPHONE +4 dB */
     {T_LEAD, 9, 18427},     /* CHIPTUNE -5 dB */
     {T_LEAD, 6, 23197},     /* THEREMIN -3 dB */
-    {T_BASS, 3, 118135},    /* PLUCKED +11 dB */
-    {T_BASS, 64, 16423},    /* GROWL -6 dB */
+    {T_BASS, 3, 68522},     /* PLUCKED +6 dB */
+    {T_BASS, 64, 22462},    /* GROWL -3 dB */
     {T_BASS, 34, 29736},    /* DX BASS -1 dB */
     {T_PAD, 39, 18427},     /* DIGITAL CHOIR -5 dB */
     {T_LEAD, 46, 16423},    /* CLAVIOLINE -6 dB */
@@ -335,13 +335,13 @@ static const struct { uint8_t ty, id; uint32_t g; } SND_TRIM[] = {   /* g: Q15 (
     {T_LEAD, 34, 19178},    /* PWM LEAD -5 dB */
     {T_PAD, 36, 20207},     /* PWM PAD -4 dB */
     {T_PAD, 38, 49473},     /* WARM ANALOG +4 dB */
-    {T_PAD, 6, 65943},      /* WARM SYNTH +6 dB */
+    {T_PAD, 6, 45655},      /* WARM SYNTH +3 dB */
     {T_PAD, 8, 213001},     /* DRONE +16 dB */
     {T_PAD, 67, 77495},     /* CATHEDRAL +7 dB */
     {T_PAD, 65, 50460},     /* TIDAL +4 dB */
-    {T_BASS, 38, 20805},    /* RUBBER BASS -4 dB */
+    {T_BASS, 38, 30373},    /* RUBBER BASS -1 dB */
     {T_BASS, 4, 20985},     /* FUZZ -4 dB */
-    {T_LEAD, 40, 22003},    /* TINE KEYS -3 dB */
+    {T_LEAD, 40, 21701},    /* TINE KEYS -4 dB */
     {T_LEAD, 57, 46257},    /* AC GUITAR +3 dB */
     {T_LEAD, 52, 54181},    /* FAIRLIGHT +4 dB */
     {T_LEAD, 68, 23406},    /* BOWED METAL -3 dB */
@@ -351,13 +351,19 @@ static const struct { uint8_t ty, id; uint32_t g; } SND_TRIM[] = {   /* g: Q15 (
     {T_PAD, 5, 23915},      /* HANDPAN -3 dB */
     {T_PAD, 35, 23200},     /* POLY SYNTH -3 dB */
     {T_PAD, 33, 22750},     /* PROPHET BRASS -3 dB */
-    {T_PAD, 46, 99918},     /* DETUNED +10 dB */
+    {T_PAD, 46, 55285},     /* DETUNED +5 dB */
     {T_PAD, 64, 23354},     /* FROZEN -3 dB */
     {T_PAD, 7, 22459},      /* GLASS PAD -3 dB */
     {T_BASS, 40, 54242},    /* FRETLESS +4 dB */
     {T_BASS, 42, 51965},    /* BLACKOUT +4 dB */
     {T_BASS, 39, 24063},    /* ELECTRO BASS -3 dB */
-    {T_BASS, 35, 21094},    /* DEEP REESE -4 dB */
+    {T_BASS, 35, 28585},    /* DEEP REESE -1 dB */
+    {T_PAD, 32, 23135},     /* JUNO STRINGS -3 dB */
+    {T_PAD, 9, 27163},      /* SWEEP -2 dB */
+    {T_BASS, 41, 45844},    /* PICKED +3 dB */
+    {T_BASS, 6, 23388},     /* FM -3 dB */
+    {T_BASS, 9, 21885},     /* WOBBLE -4 dB */
+    {T_BASS, 69, 23620},    /* WOMP -3 dB */
 };
 static uint32_t snd_trim(uint32_t ty, uint32_t id)
 {
@@ -365,15 +371,46 @@ static uint32_t snd_trim(uint32_t ty, uint32_t id)
     for (i = 0; i < sizeof SND_TRIM / sizeof SND_TRIM[0]; i++) if (SND_TRIM[i].ty == ty && SND_TRIM[i].id == id) return SND_TRIM[i].g;
     return 32768u;
 }
-static void sound_load(uint32_t t, uint32_t id) /* slot t takes sound id of its type: its settings, its glide */
+/* a sound's more (sndx_t, quartet.c): the library's (SNDX_LIB, gb_sndx.h), else as it always played (sndx_legacy: the
+ * filter following the level's envelope, nothing else) */
+#define SNDX_MAGIC 0x5Au
+static void sndx_legacy(const snd_t *s, sndx_t *x)
+{
+    uint8_t *z = (uint8_t *)x;
+    uint32_t i;
+    for (i = 0; i < sizeof *x; i++) z[i] = 0;
+    x->fa = s->a; x->fd = s->d; x->fs = s->s; x->fr = s->r;
+}
+#include "gb_sndx.h"                            /* (SNDX_LIB: each library sound's more) */
+static void sndx_def(uint32_t ty, uint32_t id, const snd_t *s, sndx_t *x)
+{
+    uint32_t i;
+    for (i = 0; i < sizeof SNDX_LIB / sizeof SNDX_LIB[0]; i++)
+        if (SNDX_LIB[i].ty == ty && SNDX_LIB[i].id == id) { *x = SNDX_LIB[i].x; return; }
+    sndx_legacy(s, x);
+}
+static void sndx_check(void)                    /* an older save (no more kept): every sound as it was */
+{
+    uint32_t t, u;
+    if (set.mu.ub.x.magic == SNDX_MAGIC) return;
+    for (t = 0; t < NSYN; t++) sndx_legacy(&set.snd[t], &set.mu.ub.x.slot[t]);
+    for (t = 0; t < NSYN; t++) for (u = 0; u < NUSND; u++) sndx_legacy(&set.mu.ub.snd[t][u], &set.mu.ub.x.user[t][u]);
+    set.mu.ub.x.magic = SNDX_MAGIC;
+}
+static void sound_load(uint32_t t, uint32_t id) /* slot t takes sound id of its type: its settings, its glide, its more */
 {
     uint32_t ty = set.styp[t] % NSYN;
     const sdef_t *d = sound_def(ty, id);
-    if (d) { set.snd[t] = d->s; set.glide[t] = d->glide; }
+    if (d) { set.snd[t] = d->s; set.glide[t] = d->glide; sndx_def(ty, id, &d->s, &set.mu.ub.x.slot[t]); }
     else if (sound_ok(ty, id)) {
         set.snd[t] = set.mu.ub.snd[ty][id - UID(0)];
         set.glide[t] = set.mu.ub.glide[ty][id - UID(0)];
-    } else { set.snd[t] = SND_LIB[ty][0].s; set.glide[t] = SND_LIB[ty][0].glide; return; }
+        set.mu.ub.x.slot[t] = set.mu.ub.x.user[ty][id - UID(0)];
+    } else {
+        set.snd[t] = SND_LIB[ty][0].s; set.glide[t] = SND_LIB[ty][0].glide;
+        sndx_def(ty, SND_LIB[ty][0].id, &SND_LIB[ty][0].s, &set.mu.ub.x.slot[t]);
+        return;
+    }
     set.snd[t].preset = (uint8_t)id;
 }
 
@@ -416,6 +453,12 @@ static struct {
     uint32_t tinc;                              /* glide: the pitch it slides to (inc: where it is now) */
     int32_t vel;                                /* how hard: Q15 (32767 = as ever; an accent ~+3 dB) */
     uint8_t acc;                                /* an accent: the filter a little more open too */
+    uint8_t fstage;                             /* the filter envelope's stage (as stage) */
+    int32_t fe;                                 /* the filter envelope, Q15 */
+    int32_t penv, nenv;                         /* the pitch envelope's and the noise burst's way back to nothing, Q15 */
+    int32_t nlp;                                /* the noise layer's colour filter */
+    uint16_t vt;                                /* blocks of 16 samples since the note began (the vibrato's delay) */
+    int8_t kcut, kenv, vh;                      /* key tracking: cutoff steps, envelope steps (shorter: more); hardness */
 } vx[NVOX];                                     /* interrupt only */
 static uint32_t syn_left[NSYN];                 /* interrupt: ticks until the sequenced notes of a track end */
 static uint32_t vx_ages;
@@ -464,6 +507,15 @@ static void voice_on(uint32_t trk, uint32_t note, uint32_t seq, uint32_t dyn)
     vx[pick].acc = (uint8_t)(dyn % NDYN == 4u);
     vx[pick].pizz = (uint8_t)(dyn % NDYN == 8u);
     vx[pick].age = ++vx_ages;
+    {                                           /* the more: key tracking from C4 (higher notes brighter, shorter); the
+                                                   note's hardness (its dynamic against NORMAL); the envelopes from the top */
+        const sndx_t *x = &set.mu.ub.x.slot[trk];
+        int32_t kn = (int32_t)note - 60, h = (vx[pick].vel - 32767) >> 8;
+        vx[pick].kcut = (int8_t)((kn * (int32_t)x->ktone * 177) >> 14);   /* (127: ~1.4 steps a semitone, the cutoff with the note) */
+        vx[pick].kenv = (int8_t)((kn * (int32_t)x->ktime * 106) >> 14);   /* (127: ~10 speed steps an octave: half as long) */
+        vx[pick].vh = (int8_t)(h < -100 ? -100 : h > 100 ? 100 : h);
+        vx[pick].fstage = 0; vx[pick].penv = 32767; vx[pick].nenv = 32767; vx[pick].vt = 0;
+    }
     vx[pick].stage = 0;                         /* attack, from wherever the envelope is (no click) */
     vx[pick].gate = 1;
 }
@@ -474,6 +526,7 @@ static void voice_off(uint32_t trk, uint32_t note, int seq_only)   /* note 0: al
         if ((!note || vx[v].note == note) && (!seq_only || vx[v].seq) && vx[v].gate) {
             vx[v].gate = 0;
             vx[v].stage = 2;                    /* release */
+            vx[v].fstage = 2;
         }
 }
 
@@ -638,6 +691,7 @@ static inline int32_t osc_wave(uint32_t w, uint32_t ph, uint32_t inc)   /* one c
     }
 }
 
+static uint32_t nz_syn = 0x1F2E3D4Cu;           /* the noise layers' noise (interrupt only) */
 static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* into each track's mono buffer, from off */
 {
     static uint32_t lfo_ph[NSYN], rnd = 12345u;
@@ -663,6 +717,7 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
     }
     for (t = 0; t < NSYN; t++) {
         const snd_t *sp = &set.snd[t];
+        const sndx_t *xs = &set.mu.ub.x.slot[t];
         int32_t lv, lmod, full = TRK[t].level << 8, trim = (int32_t)snd_trim(set.styp[t] % NSYN, sp->preset);
         uint32_t old = lfo_ph[t], w1 = sp->w1 % NWAVE, w2 = sp->w2 % NWAVE, mix = sp->mix & 127u, over = TRK[t].over;
         int32_t sus = (full >> 7) * (int32_t)(sp->s + (sp->s >> 6));   /* ~ full * s / 127 */
@@ -681,51 +736,90 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
         for (v = TRK[t].first; v < TRK[t].first + TRK[t].count; v++) {
             int32_t amp = vx[v].amp, dstep = vx[v].dstep, low = vx[v].low, band = vx[v].band, f = vx[v].f, q = vx[v].q;
             uint32_t ph = vx[v].ph, ph2 = vx[v].ph2, i1 = vx[v].inc, i2 = vx[v].inc2, blk = vx[v].blk, fmi = vx[v].fmi, i2s;
-            int32_t *o = &tbuf[t][off], pm = sp->ltgt == L_PITCH && lmod ? (lmod * 3874) >> 15 : 0;
+            int32_t *o = &tbuf[t][off], nlp = vx[v].nlp, ng = 0, nk = 1200 + (int32_t)xs->ncol * 250;
             if (!vx[v].gate && !amp && !vx[v].env) continue;   /* silent: costs nothing */
-            if (pm) {                           /* vibrato: up to +-1 semitone */
-                i1 += (uint32_t)(int32_t)(((int64_t)i1 * pm) >> 16);
-                i2 += (uint32_t)(int32_t)(((int64_t)i2 * pm) >> 16);
-            }
+            if (nk > 32767) nk = 32767;
             i2s = i2;
             for (i = 0; i < n; ) {
                 uint32_t m, j;
-                if (blk == 0u) {                /* every 16 samples: the envelope, the LFO, the filter's coefficients */
-                    int32_t env = vx[v].env, eff, en, c;
+                if (blk == 0u) {                /* every 16 samples: the envelopes, the pitch, the LFO, the filter's coefficients */
+                    int32_t env = vx[v].env, fe = vx[v].fe, eff, en, c, ke = vx[v].kenv, lm, st, vf;
+                    int32_t ia = (int32_t)(vx[v].pizz && sp->a > 20u ? 20u : sp->a & 127u) - (int32_t)vx[v].vh * (int32_t)xs->vatk / 600;
+                    int32_t id = (int32_t)(sp->d & 127u) - ke, ir = (int32_t)(sp->r & 127u) - ke;
+                    int32_t ifa = (int32_t)(vx[v].pizz && xs->fa > 20u ? 20u : xs->fa & 127u) - (int32_t)vx[v].vh * (int32_t)xs->vatk / 600;
+                    int32_t ifd = (int32_t)(xs->fd & 127u) - ke, ifr = (int32_t)(xs->fr & 127u) - ke;
+                    int32_t fsus = (32767 >> 7) * (int32_t)(xs->fs + (xs->fs >> 6));
+                    ia = ia < 0 ? 0 : ia > 127 ? 127 : ia; id = id < 0 ? 0 : id > 127 ? 127 : id; ir = ir < 0 ? 0 : ir > 127 ? 127 : ir;
+                    ifa = ifa < 0 ? 0 : ifa > 127 ? 127 : ifa; ifd = ifd < 0 ? 0 : ifd > 127 ? 127 : ifd; ifr = ifr < 0 ? 0 : ifr > 127 ? 127 : ifr;
+                    if (fsus > 32767) fsus = 32767;
+                    if (vx[v].vt < 0xFFFFu) vx[v].vt++;
                     if (vx[v].inc != vx[v].tinc) {   /* glide: a little nearer the note (8 ms .. 0.6 s, set.glide) */
                         int32_t d = (int32_t)(vx[v].tinc - vx[v].inc), gk = ENV_K[40u + (set.glide[t] & 127u) * 60u / 127u];
                         int32_t stp = (int32_t)(((int64_t)d * gk) >> 15);
                         vx[v].inc = stp ? vx[v].inc + (uint32_t)stp : vx[v].tinc;
                         vx[v].inc2 = inc2_of(vx[v].inc, sp->tune);
-                        i1 = vx[v].inc; i2 = vx[v].inc2;
-                        if (pm) { i1 += (uint32_t)(int32_t)(((int64_t)i1 * pm) >> 16); i2 += (uint32_t)(int32_t)(((int64_t)i2 * pm) >> 16); }
                     }
+                    /* the LFO for this voice: after its delay it fades in (vibrato that comes in after the attack) */
+                    vf = 32767;
+                    if (xs->vdel) {
+                        int32_t d0 = (int32_t)xs->vdel * 24, ramp = (int32_t)xs->vdel * 24 + 64, k = (int32_t)vx[v].vt - d0;
+                        vf = k <= 0 ? 0 : k >= ramp ? 32767 : k * 32767 / ramp;
+                    }
+                    lm = (int32_t)(((int64_t)lmod * vf) >> 15);
+                    /* the pitch: the vibrato and the pitch envelope, in 1/256 semitones, as a ratio */
+                    st = sp->ltgt == L_PITCH ? lm >> 7 : 0;   /* (+-1 semitone at full depth) */
+                    if (xs->pamt) {
+                        st += ((int32_t)xs->pamt * 64 * vx[v].penv) >> 15;
+                        vx[v].penv -= (int32_t)(((int64_t)vx[v].penv * ENV_K[xs->ptime & 127u]) >> 15);
+                    }
+                    if (st) {
+                        int32_t si = st >> 8, fr = st & 255, r0, r1, rt;
+                        si = si < -24 ? -24 : si > 23 ? 23 : si;
+                        r0 = (int32_t)SEMI[si + 24]; r1 = (int32_t)SEMI[si + 25];
+                        rt = r0 + (((r1 - r0) * fr) >> 8);
+                        i1 = (uint32_t)(((uint64_t)vx[v].inc * (uint32_t)rt) >> 16);
+                        i2 = (uint32_t)(((uint64_t)vx[v].inc2 * (uint32_t)rt) >> 16);
+                    } else { i1 = vx[v].inc; i2 = vx[v].inc2; }
+                    /* the level's envelope */
                     if (vx[v].stage == 0u) {    /* attack: towards 1.3 x full, done at full (pizzicato: at once) */
-                        env += (int32_t)(((int64_t)(full + (full >> 2) + (full >> 4) - env) * ENV_K[vx[v].pizz && sp->a > 20u ? 20u : sp->a & 127u]) >> 15);
+                        env += (int32_t)(((int64_t)(full + (full >> 2) + (full >> 4) - env) * ENV_K[ia]) >> 15);
                         if (env >= full) { env = full; vx[v].stage = 1; }
                     } else if (vx[v].stage == 1u && vx[v].pizz)   /* pizzicato: on down to nothing, soon */
-                        env += (int32_t)(((int64_t)(0 - env) * ENV_K[sp->d > 84u ? 84u : sp->d & 127u]) >> 15);
+                        env += (int32_t)(((int64_t)(0 - env) * ENV_K[id > 84 ? 84 : id]) >> 15);
                     else if (vx[v].stage == 1u)   /* decay to the sustain level, and stay */
-                        env += (int32_t)(((int64_t)(sus - env) * ENV_K[sp->d & 127u]) >> 15);
+                        env += (int32_t)(((int64_t)(sus - env) * ENV_K[id]) >> 15);
                     else {                      /* release */
-                        env -= (int32_t)(((int64_t)env * ENV_K[sp->r & 127u]) >> 15);
+                        env -= (int32_t)(((int64_t)env * ENV_K[ir]) >> 15);
                         if (env < 4096) env = 0;
                     }
                     vx[v].env = env;
+                    /* the filter's own envelope (an older sound: the level's settings, so the same curve) */
+                    if (vx[v].fstage == 0u) {
+                        fe += (int32_t)(((int64_t)(32767 + (32767 >> 2) + (32767 >> 4) - fe) * ENV_K[ifa]) >> 15);
+                        if (fe >= 32767) { fe = 32767; vx[v].fstage = 1; }
+                    } else if (vx[v].fstage == 1u && vx[v].pizz)
+                        fe += (int32_t)(((int64_t)(0 - fe) * ENV_K[ifd > 84 ? 84 : ifd]) >> 15);
+                    else if (vx[v].fstage == 1u)
+                        fe += (int32_t)(((int64_t)(fsus - fe) * ENV_K[ifd]) >> 15);
+                    else {
+                        fe -= (int32_t)(((int64_t)fe * ENV_K[ifr]) >> 15);
+                        if (fe < 16) fe = 0;
+                    }
+                    vx[v].fe = fe;
                     eff = env;
                     if (sp->ltgt == L_AMP)      /* tremolo: down to ~1 % at full depth */
-                        eff = (int32_t)(((int64_t)eff * (32768 - ((((lv + 32768) >> 1) * (int32_t)(sp->ldepth & 127u)) >> 7))) >> 15);
+                        eff = (int32_t)(((int64_t)eff * (32768 - ((((lv + 32768) >> 1) * (int32_t)(((int64_t)(sp->ldepth & 127u) * vf) >> 15)) >> 7))) >> 15);
                     eff = (int32_t)(((int64_t)eff * vx[v].vel) >> 15);   /* the note's dynamic */
                     if (trim != 32768) eff = (int32_t)(((int64_t)eff * trim) >> 15);   /* (a sound that stood out: evened) */
                     if (!env && vx[v].stage == 2u) { amp = 0; dstep = 0; }   /* the release has ended: silence */
                     else dstep = (eff - amp) >> 4;   /* a ramp over the block: no steps you could hear */
-                    en = ((env >> 8) * 32767) / TRK[t].level;   /* the envelope 0..32767 for the filter */
-                    c = (int32_t)sp->cut + ((en * (int32_t)sp->fenv) >> 15);
-                    if (w1 == W_FM) {           /* FM: how hard osc 2 bends: MIX, plus the envelope times FILTER ENV */
-                        int32_t fx = (int32_t)mix + ((en * (int32_t)sp->fenv) >> 15);
-                        fmi = (uint32_t)(fx > 127 ? 127 : fx);
+                    en = fe;                    /* the filter envelope 0..32767 */
+                    c = (int32_t)sp->cut + ((en * (int32_t)sp->fenv) >> 15) + vx[v].kcut + (int32_t)vx[v].vh * (int32_t)xs->vtone / 340;
+                    if (w1 == W_FM) {           /* FM: how hard osc 2 bends: MIX, plus the envelope times FILTER ENV (harder: more) */
+                        int32_t fx = (int32_t)mix + ((en * (int32_t)sp->fenv) >> 15) + (int32_t)vx[v].vh * (int32_t)xs->vtone / 400;
+                        fmi = (uint32_t)(fx < 0 ? 0 : fx > 127 ? 127 : fx);
                     }
-                    if (sp->ltgt == L_FILT) c += (lmod * 64) >> 15;   /* wah: +-64 cutoff steps */
+                    if (sp->ltgt == L_FILT) c += (lm * 64) >> 15;   /* wah: +-64 cutoff steps */
                     if (vx[v].acc) c += 10;     /* (an accent: brighter) */
                     i2s = w2 == W_SYNC ? i2 + (uint32_t)(((uint64_t)i2 * (uint32_t)((en * (int32_t)sp->fenv) >> 7)) >> 15) : i2;
                     c = c < 0 ? 0 : c > TRK[t].cmax ? TRK[t].cmax : c;
@@ -733,6 +827,11 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                     q = 16384 - (int32_t)(sp->res & 127u) * 119;   /* damping, Q13: 2.0 (none) .. 0.15 (screaming) */
                     if (low > SVF_LIM) low = SVF_LIM; else if (low < -SVF_LIM) low = -SVF_LIM;   /* (a safety net) */
                     if (band > SVF_LIM) band = SVF_LIM; else if (band < -SVF_LIM) band = -SVF_LIM;
+                    if (xs->nlvl) {             /* the noise layer: held with the note, or a burst dying away */
+                        int32_t ne = 32767;
+                        if (xs->ndec) { ne = vx[v].nenv; vx[v].nenv -= (int32_t)(((int64_t)vx[v].nenv * ENV_K[xs->ndec & 127u]) >> 15); }
+                        ng = ((int32_t)xs->nlvl * 128 * ne) >> 15;
+                    } else ng = 0;
                     blk = 16;
                 }
                 m = n - i < blk ? n - i : blk;  /* up to the next update, or the end of this piece */
@@ -767,12 +866,18 @@ static void synth_render(int32_t (*tbuf)[FXN], uint32_t off, uint32_t n)   /* in
                         band += (f * high) >> 14;
                     }
                     s = low > 32767 ? 32767 : low < -32767 ? -32767 : low;
+                    if (ng) {                   /* the noise layer, coloured, after the filter: breath, bow, hammer, pick */
+                        nz_syn ^= nz_syn << 13; nz_syn ^= nz_syn >> 17; nz_syn ^= nz_syn << 5;
+                        nlp += ((((int32_t)nz_syn >> 16) - nlp) * nk) >> 15;
+                        s += (nlp * ng) >> 15;
+                        s = s > 32767 ? 32767 : s < -32767 ? -32767 : s;
+                    }
                     s = (s * (amp >> 8)) >> 15;
                     *o++ += s;
                 }
             }
             vx[v].amp = amp; vx[v].dstep = dstep; vx[v].ph = ph; vx[v].ph2 = ph2; vx[v].fmi = (uint8_t)fmi;
-            vx[v].low = low; vx[v].band = band; vx[v].f = f; vx[v].q = q; vx[v].blk = (uint8_t)blk;
+            vx[v].low = low; vx[v].band = band; vx[v].f = f; vx[v].q = q; vx[v].blk = (uint8_t)blk; vx[v].nlp = nlp;
         }
     }
 }

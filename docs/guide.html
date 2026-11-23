@@ -491,16 +491,21 @@ footer a { color: var(--sub); }
   <div class="split">
     <div>
       <h3>The sound editor (<kbd>EDIT</kbd>)</h3>
-      <p>Press <kbd>EDIT</kbd> once for the <b>instrument</b> screen: the type, the group and the sound (<kbd>ALGORITHM</kbd> or <kbd>KNOB 3</kbd> steps through every sound, group into group). Press <kbd>EDIT</kbd> again for the <b>sound</b> editor: MAIN, OSC, ENV and LFO (<kbd>ALGORITHM</kbd> picks), each with a chart of what its four knobs do: the filter's curve, the waves, the envelope's shape, the LFO's wave.</p>
+      <p>Press <kbd>EDIT</kbd> once for the <b>instrument</b> screen: the type, the group and the sound (<kbd>ALGORITHM</kbd> or <kbd>KNOB 3</kbd> steps through every sound, group into group). Press <kbd>EDIT</kbd> again for the <b>sound</b> editor: eight pages, MAIN, OSC, AMP, FILT, PITCH, NOISE, KEYS and LFO (<kbd>ALGORITHM</kbd> picks), each with a chart of what its knobs do.</p>
       <table class="t grid4">
         <tr><th>Page</th><th>KNOB 1</th><th>KNOB 2</th><th>KNOB 3</th><th>KNOB 4</th></tr>
         <tr><td>INSTRUMENT (<kbd>EDIT</kbd>)</td><td>Type: lead, pad, bass</td><td>Group</td><td>Sound (on into the next group)</td><td>USER slot to save to</td></tr>
         <tr><td>MAIN</td><td>Glide</td><td>Brightness (cutoff)</td><td>Resonance</td><td>Filter envelope</td></tr>
         <tr><td>OSC</td><td>Wave 1</td><td>Wave 2</td><td>Wave 2 tuning</td><td>Mix / FM amount</td></tr>
-        <tr><td>ENV</td><td>Attack</td><td>Decay</td><td>Sustain</td><td>Release</td></tr>
+        <tr><td>AMP</td><td>Attack</td><td>Decay</td><td>Sustain</td><td>Release</td></tr>
+        <tr><td>FILT</td><td>Attack</td><td>Decay</td><td>Sustain</td><td>Release</td></tr>
+        <tr><td>PITCH</td><td>Amount: the note starts above (+) or below (&minus;) and slides in</td><td>Time: how quickly</td><td>Vibrato delay: the LFO fades in after the note starts</td><td></td></tr>
+        <tr><td>NOISE</td><td>Level</td><td>Colour: dark to bright</td><td>Decay: a short burst, or HELD with the note</td><td></td></tr>
+        <tr><td>KEYS</td><td>Key tone: higher notes brighter</td><td>Key time: higher notes shorter</td><td>Velocity tone: harder notes brighter</td><td>Velocity attack: harder notes snappier</td></tr>
         <tr><td>LFO</td><td>Rate</td><td>Depth</td><td>Target: pitch, filter, volume, PWM</td><td>Wave: tri, square, saw, random</td></tr>
       </table>
-      <p><b>MAIN</b>: brighter or darker, and glide. <b>ENV</b>: how a note starts and fades. <b>LFO</b>: movement, like vibrato or tremolo. Waves include pulse and sync (wave 2).</p>
+      <p><b>MAIN</b>: brighter or darker, and glide. <b>AMP</b>: how a note's volume starts and fades. <b>FILT</b>: the filter's own envelope, so the tone can bloom and settle on its own (MAIN's filter envelope knob sets how far it opens). <b>PITCH</b>: a scoop into the note, or a zap, and a vibrato that comes in late, like a singer's. <b>NOISE</b>: a layer of noise under the tone, for breath or grit (off in the built-in sounds: add it yourself). <b>KEYS</b>: how the sound changes across the keyboard and with how hard you play. <b>LFO</b>: movement, like vibrato or tremolo. Waves include pulse and sync (wave 2).</p>
+      <p>Every built-in sound has these set to suit it: pianos ring darker as they fade and are brighter when played hard, brass scoops up and blooms, strings open slowly with a delayed vibrato. Sounds in saves from older versions play as they always did.</p>
       <p>On drums: <kbd>EDIT</kbd> once is the kit screen (group, kit, USER slot); <kbd>EDIT</kbd> again, a tab per drum (BD SD HH OH CP PC) with its pitch, decay and level, and a chart of the hit dying away.</p>
 
       <h3 id="ownsound">Your own sounds</h3>
@@ -512,7 +517,8 @@ footer a { color: var(--sub); }
     <div class="shots">
       <div class="shot"><img src="guide/editor-main.png" alt="The MAIN page"><p>MAIN: the filter's curve.</p></div>
       <div class="shot"><img src="guide/editor.png" alt="The OSC page"><p>OSC: the two waves.</p></div>
-      <div class="shot"><img src="guide/editor-env.png" alt="The ENV page"><p>ENV: the envelope's shape.</p></div>
+      <div class="shot"><img src="guide/editor-env.png" alt="The AMP page"><p>AMP: the volume's envelope.</p></div>
+      <div class="shot"><img src="guide/editor-keys.png" alt="The KEYS page"><p>KEYS: brighter and shorter up the keyboard.</p></div>
       <div class="shot"><img src="guide/kit.png" alt="The kit screen"><p>Drums: the kit screen.</p></div>
       <div class="shot"><img src="guide/drum.png" alt="A drum's page"><p>A drum's page.</p></div>
     </div>
@@ -601,7 +607,7 @@ footer a { color: var(--sub); }
   <h3>Sound editor</h3>
   <table class="t">
     <tr><td><kbd>EDIT</kbd></td><td>Once: the instrument (drums: the kit). Again: the sound editor. Again: the pedalboard.</td></tr>
-    <tr><td><kbd>ALGORITHM</kbd></td><td>Instrument screen: the sound, group into group. Sound editor: the page, MAIN, OSC, ENV, LFO (drums: each drum).</td></tr>
+    <tr><td><kbd>ALGORITHM</kbd></td><td>Instrument screen: the sound, group into group. Sound editor: the page, MAIN, OSC, AMP, FILT, PITCH, NOISE, KEYS, LFO (drums: each drum).</td></tr>
     <tr><td><kbd>KNOB 1&ndash;4</kbd></td><td>The page's four settings.</td></tr>
     <tr><td><kbd>REC</kbd> twice</td><td>Any page: save the sound to the USER slot (chosen with <kbd>KNOB 4</kbd> on the instrument / kit screen).</td></tr>
   </table>
@@ -640,7 +646,9 @@ footer a { color: var(--sub); }
     <figure><img src="guide/save.png" alt="" loading="lazy"><figcaption>Save page</figcaption></figure>
     <figure><img src="guide/editor-main.png" alt="" loading="lazy"><figcaption>MAIN</figcaption></figure>
     <figure><img src="guide/editor.png" alt="" loading="lazy"><figcaption>OSC</figcaption></figure>
-    <figure><img src="guide/editor-env.png" alt="" loading="lazy"><figcaption>ENV</figcaption></figure>
+    <figure><img src="guide/editor-env.png" alt="" loading="lazy"><figcaption>AMP</figcaption></figure>
+    <figure><img src="guide/editor-filt.png" alt="" loading="lazy"><figcaption>FILT</figcaption></figure>
+    <figure><img src="guide/editor-keys.png" alt="" loading="lazy"><figcaption>KEYS</figcaption></figure>
     <figure><img src="guide/kit.png" alt="" loading="lazy"><figcaption>Kit screen</figcaption></figure>
     <figure><img src="guide/drum.png" alt="" loading="lazy"><figcaption>A drum</figcaption></figure>
   </div>

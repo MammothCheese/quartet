@@ -192,6 +192,7 @@ static const uint8_t *note_ped(uint32_t t, uint32_t p)   /* the track's pedal p,
 }
 /* WRONG STATION: the sound it went away from, kept to come back to */
 static snd_t ws_snd[NSYN];
+static sndx_t ws_sndx[NSYN];                    /* (and its more) */
 static uint8_t ws_glide[NSYN], ws_dkit, ws_away[NTRK], ws_alt[NTRK];
 static uint16_t ws_left[NTRK];
 static dsnd_t ws_dsnd[NDR];
@@ -200,7 +201,7 @@ static void ws_home(uint32_t t)                 /* back to the real sound (unles
 {
     if (!ws_away[t]) return;
     ws_away[t] = 0;
-    if (t < NSYN) { if (set.snd[t].preset == ws_alt[t]) { set.snd[t] = ws_snd[t]; set.glide[t] = ws_glide[t]; } }
+    if (t < NSYN) { if (set.snd[t].preset == ws_alt[t]) { set.snd[t] = ws_snd[t]; set.glide[t] = ws_glide[t]; set.mu.ub.x.slot[t] = ws_sndx[t]; } }
     else if (set.dkit == ws_alt[t]) { uint32_t d; for (d = 0; d < NDR; d++) set.dsnd[d] = ws_dsnd[d]; set.dkit = ws_dkit; }
 }
 static void ws_home_all(void) { uint32_t t; for (t = 0; t < NTRK; t++) ws_home(t); }
@@ -223,7 +224,7 @@ static void ws_step(uint32_t t, const uint8_t *k)   /* a step with WRONG STATION
     i = (r >> 16) % span + 1u;
     id = ids[(r >> 20 & 1u) ? (at + i) % n : (at + n - i % n) % n];
     if (id == (t < NSYN ? set.snd[t].preset : set.dkit)) return;
-    if (t < NSYN) { ws_snd[t] = set.snd[t]; ws_glide[t] = set.glide[t]; sound_load(t, id); }
+    if (t < NSYN) { ws_snd[t] = set.snd[t]; ws_glide[t] = set.glide[t]; ws_sndx[t] = set.mu.ub.x.slot[t]; sound_load(t, id); }
     else { uint32_t d; for (d = 0; d < NDR; d++) { ws_dsnd[d] = set.dsnd[d]; set.dsnd[d] = KITS[id][d]; } ws_dkit = set.dkit; set.dkit = (uint8_t)id; }
     ws_alt[t] = (uint8_t)id; ws_away[t] = 1;
     ws_left[t] = (uint16_t)(HOLD[k[2] & 3u] * (1u + (r >> 22 & 1u)));
