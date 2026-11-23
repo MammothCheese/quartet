@@ -261,7 +261,7 @@ static struct {
     uint8_t styp[NSYN];                         /* each synth slot's type: T_LEAD, T_BASS or T_PAD (as the slot it began as) */
     uint8_t glide[NSYN];                        /* each synth slot's glide (portamento) 0..127, 0 off */
     chord_t chord_b[NPAT][NSTEP];               /* slot 2's patterns (it began as BASS, one note a step: now chords too) */
-} set;
+} set __attribute__((aligned(4)));          /* (4: set_swap and the bridge's handoff move it a word at a time) */
 typedef char ubank_fits[sizeof(ubank_t) <= sizeof(mono_t) * NPAT * NSTEP ? 1 : -1];
 #define SET_V10 ((uint32_t)((uint8_t *)&set.sseq_on - (uint8_t *)&set))   /* the size of a v1.0 save */
 #define SET_SS1 ((uint32_t)((uint8_t *)&set.clen - (uint8_t *)&set))      /* the size of a save from before song lengths */
@@ -382,7 +382,7 @@ static int song_load(void)                      /* 0 = loaded (a part that fails
 static struct {
     uint8_t s[NSYN][NPAT][NSTEP];               /* the synth slots' steps */
     uint8_t d[NPAT][NDR][NSTEP];                /* each drum's hits */
-} sx;
+} sx __attribute__((aligned(4)));           /* (4: copied a word at a time at the bridge's handoff) */
 #define SX_PROB(x) ((uint32_t)(x) & 7u)
 #define SX_RAT(x) ((uint32_t)(x) >> 3 & 3u)
 #define SX_NUD(x) ((int32_t)(int8_t)(x) >> 5)
@@ -393,7 +393,9 @@ static struct {
  * a drum fill; then on beat one the new song starts as PLAY starts it, the tempo having moved to its own over the four
  * bars. One clock all through; the two projects are never both playing (only the bridge's few borrowed patterns) */
 static uint8_t proj_buf[sizeof set] __attribute__((section(".pool"), aligned(4)));   /* a slot read in here first */
-static __typeof__(sx) sx_next __attribute__((section(".pool")));   /* (the staged project's step extras) */
+static __typeof__(sx) sx_next __attribute__((section(".pool"), aligned(4)));   /* (the staged project's step extras; 4: copied a
+                                                   word at a time, in the interrupt: unaligned, the chip faults) */
+typedef char word_aligned[__alignof__(set) >= 4u && __alignof__(sx) >= 4u && __alignof__(sx_next) >= 4u && __alignof__(proj_buf) >= 4u ? 1 : -1];
 static volatile uint32_t brg_state;             /* 0 none, 1 staged (waits for a bar line), 2 bridging, 3 handed over
                                                    (the main loop tidies up) */
 static volatile uint32_t brg_mute;              /* the bridge: tracks kept quiet now (bit t) */
