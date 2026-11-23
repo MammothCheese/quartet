@@ -3,482 +3,242 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QUARTET: a pedal-driven groovebox for the M-VAVE FM-1</title>
-<meta name="description" content="A guided tour of QUARTET, the pedal-driven groovebox for the M-VAVE FM-1: play, pick a sound, stomp on pedals, make a beat, record a part, make a song.">
+<title>QUARTET cheat sheet: a pedal-driven groovebox for the M-VAVE FM-1</title>
+<meta name="description" content="QUARTET turns the M-VAVE FM-1 into a four-player groovebox with a pedalboard for every player. The cheat sheet: what it is, and every button and knob on one page.">
 <link rel="icon" href="card.png">
 <style>
 :root {
   --bg: #F0EEE9; --card: #FAF9F6; --line: #DAD8D2; --ink: #1A1A1E; --sub: #5C5C64; --dim: #A8A69F; --cap: #E6E4DE;
-  --lead: #C86E00; --pad: #7A46DA; --bass: #0080BE; --drums: #188C32; --mute: #D63026;
+  --lead: #C86E00; --pad: #7A46DA; --bass: #0080BE; --drums: #188C32; --mute: #D63026; --bridge: #1F9D4A;
   --narrow: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--sans); }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--sans); }
 a { color: var(--lead); }
-kbd { font: 700 13px var(--mono); background: var(--cap); border: 1px solid var(--line); border-bottom: 2px solid #B8B6B0; border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+kbd { font: 700 12.5px var(--mono); background: var(--cap); border: 1px solid var(--line); border-bottom: 2px solid #B8B6B0; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
 
-/* the top bar: the name, and the four colours filling as you go down the page */
-header { position: sticky; top: 0; z-index: 10; background: rgba(240, 238, 233, .92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
-.bar { max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 54px; display: flex; align-items: center; justify-content: space-between; }
+/* the bar every page shares */
+header { position: sticky; top: 0; z-index: 10; background: rgba(240, 238, 233, .93); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+.bar { max-width: 1120px; margin: 0 auto; padding: 0 22px; height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--narrow); letter-spacing: 3px; color: var(--ink); text-decoration: none; }
 .bars { display: inline-flex; gap: 3px; } .bars i { display: block; width: 5px; height: 18px; border-radius: 2px; }
-header nav a { margin-left: 18px; color: var(--sub); text-decoration: none; font-size: 14.5px; }
+header nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+header nav a { color: var(--sub); text-decoration: none; font-size: 14.5px; padding: 6px 9px; border-radius: 8px; }
 header nav a:hover { color: var(--lead); }
-header nav a.cta { color: #fff; background: var(--lead); padding: 6px 13px; border-radius: 8px; font-weight: 600; }
-#progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; display: flex; }
-#progress i { flex: 1; transform-origin: 0 50%; transform: scaleX(0); }
+header nav a.here { color: var(--ink); font-weight: 700; }
+header nav a.cta { color: #fff; background: var(--lead); font-weight: 600; }
 
-/* scenes: words on one side, a line drawing on the other, a thin line running down through them all */
-main { max-width: 1120px; margin: 0 auto; padding: 0 24px; position: relative; }
-.rail { position: absolute; left: 24px; top: 0; bottom: 0; width: 2px; background: var(--line); }
-.rail i { position: absolute; left: 0; top: 0; width: 2px; height: 0; background: var(--ink); }
-.scene { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 56px; align-items: center; min-height: 86vh; padding: 70px 0 70px 52px; }
-.scene.flip .words { order: 2; } .scene.flip .art { order: 1; }
-.node { position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line);
-  transition: border-color .4s, background .4s; }
-.scene.seen .node { border-color: var(--c, var(--ink)); background: var(--c, var(--ink)); }
-.kicker { font: 700 12.5px var(--mono); letter-spacing: 2.5px; text-transform: uppercase; color: var(--c, var(--lead)); }
-h1 { font: 700 clamp(44px, 6.4vw, 78px)/1 var(--narrow); margin: 12px 0 18px; letter-spacing: .3px; }
+main { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 40px; align-items: center; padding: 42px 0 30px; }
+.kicker { font: 700 12.5px var(--mono); letter-spacing: 2.5px; text-transform: uppercase; color: var(--lead); }
+h1 { font: 700 clamp(38px, 5.6vw, 64px)/1.02 var(--narrow); margin: 10px 0 14px; letter-spacing: .3px; }
 h1 em { font-style: normal; color: var(--lead); }
-h2 { font: 700 clamp(32px, 4vw, 46px)/1.05 var(--narrow); margin: 10px 0 14px; }
-.words p { margin: 0 0 14px; color: #2C2C32; max-width: 470px; }
-.words p.lede { font-size: 19px; color: var(--sub); }
-.do { list-style: none; padding: 0; margin: 18px 0 0; max-width: 470px; }
-.do li { position: relative; padding: 9px 0 9px 34px; border-top: 1px solid var(--line); }
-.do li::before { content: counter(s); counter-increment: s; position: absolute; left: 0; top: 10px; width: 22px; height: 22px; border-radius: 50%;
-  border: 1.5px solid var(--c, var(--ink)); color: var(--c, var(--ink)); font: 700 12px/19px var(--mono); text-align: center; }
-.do { counter-reset: s; }
-.try { margin-top: 16px; font-size: 14.5px; color: var(--sub); }
-.try b { color: var(--ink); }
-.btn { display: inline-block; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15.5px; margin: 6px 10px 6px 0; }
+.lede { font-size: 18px; color: var(--sub); margin: 0 0 18px; max-width: 620px; }
+.btn { display: inline-block; padding: 10px 17px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; margin: 4px 8px 4px 0; }
 .btn.primary { background: var(--lead); color: #fff; }
 .btn.ghost { border: 1.5px solid var(--ink); color: var(--ink); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+.facts li { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 13.5px; color: var(--sub); }
+.facts b { color: var(--ink); }
+.screen { text-align: center; }
+.screen img { width: 100%; max-width: 300px; image-rendering: pixelated; border: 10px solid #1A1A1E; border-radius: 14px; box-shadow: 0 0 0 1px var(--line), 0 10px 28px rgba(60, 50, 30, .18); background: #1A1A1E; }
+.screen p { color: var(--sub); font-size: 13px; margin: 8px 0 0; }
 
-/* the drawings: ink lines on paper, a caption under each that says what is happening */
-.art { position: relative; }
-.art svg { display: block; width: 100%; height: auto; overflow: visible; }
-.cap { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; font: 600 12px var(--mono); letter-spacing: 1.5px; text-transform: uppercase; color: var(--sub); }
-.cap b { color: var(--c, var(--lead)); font-weight: 700; }
-svg .ln { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-svg .thin { stroke-width: 1.1; }
-svg .ln:not([fill]) { fill: none; }
-svg .soft { stroke: var(--dim); }
-svg .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); transition: stroke-dashoffset 1.6s cubic-bezier(.6, .05, .3, 1); }
-.seen svg .draw { stroke-dashoffset: 0; }
-svg text { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; fill: var(--sub); }
-svg text.big { font-size: 13px; font-weight: 700; fill: var(--ink); }
-svg .fade { opacity: 0; transition: opacity .6s .9s; } .seen svg .fade { opacity: 1; }
+.players { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0 30px; }
+.players div { background: var(--card); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+.players b { display: block; color: var(--c); font: 700 15px var(--mono); letter-spacing: 1.5px; }
 
-/* install */
-.steps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 22px; }
-.steps3 div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; font-size: 15px; }
-.steps3 h3 { margin: 0 0 4px; font: 700 20px var(--narrow); }
+h2 { font: 700 30px var(--narrow); margin: 0 0 4px; letter-spacing: .3px; }
+.section { padding: 26px 0 8px; border-top: 1px solid var(--line); }
+.section > p.sub { color: var(--sub); margin: 0 0 16px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 10px; break-inside: avoid; }
+.card h3 { margin: 0 0 8px; font: 700 13px var(--mono); letter-spacing: 1.8px; text-transform: uppercase; color: var(--c, var(--lead)); }
+.card table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.card td { padding: 5px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.card tr:first-child td { border-top: 0; }
+.card td:first-child { white-space: nowrap; padding-right: 12px; width: 1%; }
+.card p { margin: 0 0 8px; font-size: 14.5px; }
+.hint { color: var(--sub); font-size: 13px; }
+
+.steps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.steps3 div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; font-size: 14.5px; }
+.steps3 h3 { margin: 0 0 4px; font: 700 19px var(--narrow); }
 .steps3 .n { font: 700 12px var(--mono); letter-spacing: 2px; color: var(--lead); }
-.small { font-size: 13.5px; color: var(--sub); }
-footer { max-width: 1120px; margin: 0 auto; padding: 30px 24px 60px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13.5px; }
+.more { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 6px 0 30px; }
+.more a { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; text-decoration: none; color: var(--ink); }
+.more a b { display: block; font: 700 19px var(--narrow); color: var(--lead); }
+.more a span { color: var(--sub); font-size: 14.5px; }
+footer { max-width: 1120px; margin: 0 auto; padding: 26px 22px 50px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13.5px; }
 footer a { color: var(--sub); }
-@media (max-width: 880px) {
-  .scene, .scene.flip { grid-template-columns: 1fr; gap: 24px; min-height: 0; padding: 56px 0 56px 34px; }
-  .scene.flip .words, .scene.flip .art { order: 0; }
-  header nav a:not(.cta) { display: none; }
-  .steps3 { grid-template-columns: 1fr; }
-  .node { top: 66px; }
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; gap: 22px; padding-top: 26px; }
+  .players, .steps3, .more { grid-template-columns: 1fr 1fr; }
+  header nav a.dl, header nav a.here { display: none; } header nav a { padding: 6px 7px; font-size: 14px; } .brand { letter-spacing: 2px; }
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } svg .draw { transition: none; stroke-dashoffset: 0; } svg .fade { transition: none; opacity: 1; } }
+@media (max-width: 520px) { .players, .steps3, .more { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } }
+@media print {
+  @page { margin: 12mm; }
+  body { background: #fff; font-size: 12px; } header, .btn, .screen, .more, footer, .install { display: none; }
+  .hero { display: block; padding: 0 0 8px; } h1 { font-size: 30px; margin: 4px 0; } .lede { font-size: 13px; margin: 0 0 6px; }
+  .facts li, .card, .players div { background: #fff; border-color: #bbb; } .section { padding: 10px 0 0; border-color: #bbb; }
+  .cards { grid-template-columns: 1fr 1fr; gap: 8px; } .card { padding: 8px 10px 4px; } .card table, .card p { font-size: 11.5px; }
+  kbd { background: #fff; border-color: #999; font-size: 10.5px; } h2 { font-size: 20px; } .players { margin: 4px 0 10px; }
+}
+@media (max-width: 420px) { .brand .word { display: none; } header nav, nav ul { flex-wrap: nowrap; } }
 </style>
 </head>
 <body>
 <header><div class="bar">
-  <a class="brand" href="#top"><span class="bars"><i style="background:var(--lead)"></i><i style="background:var(--pad)"></i><i style="background:var(--bass)"></i><i style="background:var(--drums)"></i></span>QUARTET</a>
-  <nav><a href="#play">Play</a><a href="#pedals">Pedals</a><a href="#beat">Beats</a><a href="#song">Songs</a><a href="#install">Install</a><a href="quickstart.html">First song</a><a href="guide.html">Full guide</a><a class="cta" href="emu/">Try it now</a></nav>
-</div><div id="progress"><i style="background:var(--lead)"></i><i style="background:var(--pad)"></i><i style="background:var(--bass)"></i><i style="background:var(--drums)"></i></div></header>
+  <a class="brand" href="./"><span class="bars"><i style="background:var(--lead)"></i><i style="background:var(--pad)"></i><i style="background:var(--bass)"></i><i style="background:var(--drums)"></i></span><span class="word">QUARTET</span></a>
+  <nav><a class="here" href="./">Cheat sheet</a><a href="start.html">Quick start</a><a href="guide.html">Full guide</a><a class="dl" href="https://github.com/MammothCheese/quartet/releases/latest">Download</a><a class="cta" href="emu/">Try it</a></nav>
+</div></header>
 
-<main id="top">
-  <div class="rail"><i id="railfill"></i></div>
-
-  <!-- 0: hello -->
-  <section class="scene" style="--c: var(--lead)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">A pedal-driven groovebox for the M-VAVE FM-1</div>
+<main>
+  <section class="hero">
+    <div>
+      <div class="kicker">A pedal-driven groovebox for the M-VAVE FM-1 &middot; free and open source</div>
       <h1>A little band,<br>a lot of <em>pedals</em>.</h1>
-      <p class="lede">QUARTET turns the FM-1 into four players (drums, bass, pads and a lead), each with its own board of effects pedals. Make a beat, stomp on fuzz while it plays, turn it into a song.</p>
-      <a class="btn primary" href="emu/">Play it in your browser</a><a class="btn ghost" href="#install">Put it on your FM-1</a>
-      <p class="try">Free and open source. Scroll down: six steps, five minutes, and you've made a song.</p>
-      <p class="try">Starting from nothing? <a href="quickstart.html">Make your first song</a>, every key drawn for you (<a href="start.html">phone version</a>).</p>
+      <p class="lede">QUARTET is custom firmware that turns the FM-1 into four players (a lead, pads, a bass and drums), each with its own board of four effects pedals. Make a beat, play and record parts over it, stomp on fuzz or spring reverb while it plays, chain patterns into songs, and bridge live from one song into the next.</p>
+      <a class="btn primary" href="start.html">Quick start</a><a class="btn ghost" href="guide.html">Full guide</a><a class="btn ghost" href="emu/">Play it in your browser</a>
+      <ul class="facts">
+        <li><b>4</b> players</li><li><b>10</b> patterns each</li><li><b>10</b> songs</li><li><b>86</b> sounds</li><li><b>26</b> drum kits</li>
+        <li><b>40</b> pedals</li><li><b>12</b> saves</li><li><b>4</b> looks</li>
+      </ul>
     </div>
-    <div class="art"><svg id="hero" viewBox="0 0 600 360"></svg>
-      <div class="cap"><span>QUARTET on the FM-1</span><span id="heroCap"><b>LEAD</b> · PIANO</span></div></div>
+    <div class="screen"><img src="guide/home.png" alt="QUARTET's home screen: a pill per player, the chosen one open with its steps, its pedals along the bottom"><p>Home: the four players, the chosen one open, its pedals along the bottom.</p></div>
   </section>
 
-  <!-- 1: play -->
-  <section class="scene flip" id="play" style="--c: var(--lead)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">Step 1 · Hear the band</div>
-      <h2>Press PLAY.<br>The band starts.</h2>
-      <p>Switch on and press <kbd>PLAY</kbd>: four players come in on the beat, each on its own line. That's a pattern, sixteen steps long, going round and round.</p>
-      <ul class="do"><li><kbd>PLAY</kbd> starts and stops everything.</li><li><kbd>MASTER</kbd> is the volume. <kbd>KNOB 1</kbd> on home sets the tempo.</li></ul>
-    </div>
-    <div class="art"><svg id="seq" viewBox="0 0 600 330"></svg>
-      <div class="cap"><span>Four players, sixteen steps</span><span id="seqCap"><b>STEP 01</b> / 16 · 120 BPM</span></div></div>
-  </section>
+  <div class="players">
+    <div style="--c: var(--lead)"><b>LEAD</b>Melodies and riffs, chords of up to four notes.</div>
+    <div style="--c: var(--pad)"><b>PAD</b>Chords and textures, up to four notes.</div>
+    <div style="--c: var(--bass)"><b>BASS</b>Basslines, one note at a time.</div>
+    <div style="--c: var(--drums)"><b>DRUMS</b>Kick, snare, hats, clap and a percussion lane.</div>
+  </div>
 
-  <!-- 2: choose -->
-  <section class="scene" id="choose" style="--c: var(--pad)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">Step 2 · Pick a player</div>
-      <h2>Choose who you play,<br>then what they sound like.</h2>
-      <p>Turn <kbd>SELECT</kbd> to move between the four players. Whoever's chosen is the one the keys play. Turn <kbd>ALGORITHM</kbd> to give them another sound: 72 to choose from, plus 23 drum kits.</p>
-      <ul class="do"><li><kbd>SELECT</kbd> picks lead, pad, bass or drums.</li><li><kbd>ALGORITHM</kbd> picks the sound. Play the keys to hear it.</li></ul>
-    </div>
-    <div class="art"><svg id="pick" viewBox="0 0 600 330"></svg>
-      <div class="cap"><span>SELECT and ALGORITHM</span><span id="pickCap"><b>LEAD</b> · PIANO</span></div></div>
-  </section>
-
-  <!-- 3: pedals -->
-  <section class="scene flip" id="pedals" style="--c: var(--bass)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">Step 3 · Stomp on a pedal</div>
-      <h2>Every player has<br>four pedals.</h2>
-      <p>The sound runs through a pedalboard on its way out: fuzz, chorus, delay, spring reverb and 33 more. <kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd> are the four footswitches. Tap one while it plays and hear it kick in.</p>
-      <ul class="do"><li><b>Tap</b> a pedal button: on, off.</li><li><b>Hold</b> it to open the pedal; the knobs turn its knobs.</li><li><kbd>ALGORITHM</kbd> on a pedal swaps it for another.</li></ul>
-    </div>
-    <div class="art"><svg id="chain" viewBox="0 0 600 330"></svg>
-      <div class="cap"><span>The signal, through the pedals</span><span id="chainCap"><b>ALL OFF</b> · CLEAN</span></div></div>
-  </section>
-
-  <!-- 4: beat -->
-  <section class="scene" id="beat" style="--c: var(--drums)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">Step 4 · Make a beat</div>
-      <h2>Tap the hits in<br>where you want them.</h2>
-      <p>Pick the drums, pick an empty pattern with <kbd>PRESETS</kbd>, then press <kbd>SEQ</kbd>. The black keys choose a drum; the white keys are the steps. Tap one and the hit is there, in time.</p>
-      <ul class="do"><li><kbd>SEQ</kbd> opens the step grid.</li><li>Black key: the drum. White key: a hit on that step.</li><li><kbd>PLAY</kbd> and keep tapping while it loops.</li></ul>
-    </div>
-    <div class="art"><svg id="grid" viewBox="0 0 600 330"></svg>
-      <div class="cap"><span>Six drums, sixteen steps</span><span id="gridCap"><b>KICK</b> · STEP 01</span></div></div>
-  </section>
-
-  <!-- 5: record -->
-  <section class="scene flip" id="record" style="--c: var(--lead)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">Step 5 · Play a part in</div>
-      <h2>Press REC.<br>Play. It sticks.</h2>
-      <p>Choose the lead or the bass, press <kbd>SEQ</kbd>, then <kbd>REC</kbd> to arm, and <kbd>REC</kbd> again to record. Play along with the loop and every note lands on the nearest step, as long as you held it. A MIDI keyboard works too.</p>
-      <ul class="do"><li><kbd>SEQ</kbd> <kbd>REC</kbd> <kbd>REC</kbd>: recording, on the beat.</li><li>Not quite right? Play it again, or fix notes in the step recorder.</li></ul>
-    </div>
-    <div class="art"><svg id="roll" viewBox="0 0 600 330"></svg>
-      <div class="cap"><span>Live recording</span><span id="rollCap"><b>REC</b> · LISTENING</span></div></div>
-  </section>
-
-  <!-- 6: song -->
-  <section class="scene" id="song" style="--c: var(--pad)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">Step 6 · Make it a song</div>
-      <h2>Chain the patterns.<br>That's a song.</h2>
-      <p>Every player has ten patterns, A to J: a verse, a chorus, a break. <kbd>SEQ</kbd> twice opens SUPER SEQ, where you line them up box by box and the song plays itself. Ten songs fit, and four projects save to the FM-1.</p>
-      <ul class="do"><li><kbd>PRESETS</kbd> picks a pattern; hold <kbd>ARP</kbd> to copy one to the next letter.</li><li><kbd>SEQ</kbd> <kbd>SEQ</kbd>: SUPER SEQ. <kbd>SAVE</kbd>: keep it.</li></ul>
-    </div>
-    <div class="art"><svg id="sseq" viewBox="0 0 600 330"></svg>
-      <div class="cap"><span>SUPER SEQ</span><span id="sseqCap"><b>BOX 1</b> · A</span></div></div>
-  </section>
-
-  <!-- 7: yours -->
-  <section class="scene flip" id="yours" style="--c: var(--drums)">
-    <span class="node"></span>
-    <div class="words">
-      <div class="kicker">And then</div>
-      <h2>Make it look and<br>sound like yours.</h2>
-      <p>Shape any sound in depth with <kbd>EDIT</kbd> and save it as your own. Mix the four players with <kbd>GLO</kbd>. Lock the keys to a scale with <kbd>GLO</kbd> <kbd>GLO</kbd>. And hold <kbd>HOME</kbd> and turn <kbd>PRESETS</kbd> to pick a look: Paper, Dark, Neon or LCD.</p>
-      <p class="try"><b>Everything else</b> is in the <a href="guide.html">full guide</a>: every pedal, every control.</p>
-    </div>
-    <div class="art"><svg id="themes" viewBox="0 0 600 330"></svg>
-      <div class="cap"><span>HOME + PRESETS</span><span id="themeCap"><b>PAPER</b></span></div></div>
-  </section>
-
-  <!-- 8: install -->
-  <section class="scene" id="install" style="--c: var(--lead)">
-    <span class="node"></span>
-    <div class="words" style="grid-column: 1 / -1">
-      <div class="kicker">Put it on your FM-1</div>
-      <h2>Two minutes, one file.</h2>
-      <p>Try it in your browser first if you like: it's the real firmware. When you're ready:</p>
-      <div class="steps3">
-        <div><span class="n">01</span><h3>Download</h3>Get <b>quartet-X.Y.fwsc</b> from the latest release.<br><a href="https://github.com/MammothCheese/quartet/releases/latest">Latest release</a></div>
-        <div><span class="n">02</span><h3>Install</h3>Plug in the FM-1 and use the <a href="https://thefirmwarehub.com/">Firmware Hub</a> or <a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a>. Back up first.<br><span class="small">Details and going back: <a href="https://github.com/MammothCheese/quartet#install">README</a></span></div>
-        <div><span class="n">03</span><h3>Play</h3>Switch on, press <kbd>PLAY</kbd>, and come back up this page.<br><span class="small">Stuck? Hold <kbd>OCT-</kbd> while switching on for rescue mode.</span></div>
+  <section class="section">
+    <h2>Every control</h2>
+    <p class="sub">Three rules: <kbd>SELECT</kbd> always picks the player, <kbd>KNOB 1&ndash;4</kbd> set what the screen shows left to right, and <b>tap</b> switches while <b>hold</b> opens. <kbd>HOME</kbd> gets you back from anywhere.</p>
+    <div class="cards">
+      <div class="card">
+        <h3>Everyday</h3>
+        <table>
+          <tr><td><kbd>PLAY</kbd></td><td>Start (from step one) and stop.</td></tr>
+          <tr><td><kbd>MASTER</kbd></td><td>Volume.</td></tr>
+          <tr><td><kbd>SELECT</kbd></td><td>Pick the player the keys play.</td></tr>
+          <tr><td><kbd>ALGORITHM</kbd></td><td>Its sound (drums: the kit), group after group. In other pages it chooses on that page.</td></tr>
+          <tr><td><kbd>PRESETS</kbd></td><td>Its pattern, A&ndash;J. While playing, it switches at the end of the current one.</td></tr>
+          <tr><td><kbd>OCT-</kbd> <kbd>OCT+</kbd></td><td>Tap: the keys' octave (lit one down or up, blinking at two). Hold: move the pattern an octave.</td></tr>
+          <tr><td><kbd>HOME</kbd></td><td>Home, from anywhere.</td></tr>
+        </table>
       </div>
-      <p style="margin-top:22px"><a class="btn primary" href="emu/">Play it in your browser</a><a class="btn ghost" href="https://github.com/MammothCheese/quartet/releases/latest">Download</a></p>
+      <div class="card">
+        <h3>The home screen's knobs</h3>
+        <table>
+          <tr><td><kbd>KNOB 1</kbd></td><td>Tempo.</td></tr>
+          <tr><td><kbd>KNOB 2</kbd></td><td>The chosen player's mix level.</td></tr>
+          <tr><td><kbd>KNOB 3</kbd></td><td>Its brightness (drums: the kit's decay).</td></tr>
+          <tr><td><kbd>KNOB 4</kbd></td><td>Pedal fade: pedals switch at once, or fade in and out over 1&ndash;4 bars.</td></tr>
+        </table>
+        <p class="hint" style="margin-top:8px">The line under the title shows all four.</p>
+      </div>
+      <div class="card" style="--c: #B23FCF">
+        <h3>Pedals</h3>
+        <table>
+          <tr><td><kbd>FX</kbd> <kbd>SEL</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd></td><td>The chosen player's four pedals. <b>Tap</b>: on or off (lit when on). <b>Hold</b>: open it.</td></tr>
+          <tr><td>On a pedal</td><td><kbd>KNOB 1</kbd> on/off, <kbd>KNOB 2&ndash;4</kbd> its knobs, <kbd>ALGORITHM</kbd> another pedal, <kbd>PRESETS</kbd> another kind.</td></tr>
+          <tr><td><kbd>EDIT</kbd> &times;3</td><td>The whole pedalboard at once.</td></tr>
+        </table>
+      </div>
+      <div class="card" style="--c: var(--drums)">
+        <h3>Making a beat (SEQ)</h3>
+        <table>
+          <tr><td><kbd>SEQ</kbd></td><td>The step recorder for the chosen player.</td></tr>
+          <tr><td>Drums</td><td>A black key picks the drum, white keys switch its hits.</td></tr>
+          <tr><td>Lead, pad, bass</td><td><kbd>ALGORITHM</kbd> moves the cursor; play a key to write a note (hold several for a chord).</td></tr>
+          <tr><td>Knobs</td><td>Bars, note length, expression, note.</td></tr>
+          <tr><td><kbd>EDIT</kbd></td><td>Switch the knobs to <b>STEP FX</b>: chance, ratchet, nudge, note in key.</td></tr>
+          <tr><td><kbd>ARP</kbd></td><td>Tap: tie the note on. Hold: a rest.</td></tr>
+        </table>
+      </div>
+      <div class="card" style="--c: var(--mute)">
+        <h3>Recording</h3>
+        <table>
+          <tr><td><kbd>REC</kbd></td><td>From home: record into the chosen player. A bar's count-in first (or from the next bar, if playing). Tap again to stop.</td></tr>
+          <tr><td><kbd>ARP</kbd></td><td>On the LIVE page: undo the last take.</td></tr>
+          <tr><td>Hold <kbd>REC</kbd></td><td>The RECORD page: clear the pattern or everything (<kbd>REC</kbd> twice).</td></tr>
+        </table>
+        <p class="hint" style="margin-top:8px">A first take into an empty pattern sets its length. A MIDI keyboard records too, with its velocity.</p>
+      </div>
+      <div class="card" style="--c: var(--pad)">
+        <h3>Songs</h3>
+        <table>
+          <tr><td><kbd>SEQ</kbd> &times;2</td><td>SUPER SEQ: line patterns up box by box, a row per player. Ten songs.</td></tr>
+          <tr><td><kbd>SEQ</kbd> held</td><td>In the step recorder: the copy page.</td></tr>
+          <tr><td><kbd>ARP</kbd> + <kbd>PRESETS</kbd></td><td>Copy the pattern into the next letter.</td></tr>
+        </table>
+      </div>
+      <div class="card" style="--c: var(--bass)">
+        <h3>Sounds (EDIT)</h3>
+        <table>
+          <tr><td><kbd>EDIT</kbd></td><td>The instrument: type, group, sound.</td></tr>
+          <tr><td><kbd>EDIT</kbd> &times;2</td><td>The sound editor: MAIN, OSC, ENV, LFO, each with a chart (drums: a page per drum).</td></tr>
+          <tr><td><kbd>REC</kbd> twice</td><td>Save the sound to a USER slot.</td></tr>
+        </table>
+      </div>
+      <div class="card" style="--c: var(--lead)">
+        <h3>Mix, key and feel (GLO)</h3>
+        <table>
+          <tr><td><kbd>GLO</kbd></td><td>The mixer: four volumes; the pedal buttons mute.</td></tr>
+          <tr><td><kbd>GLO</kbd> &times;2</td><td>SONG: the key, scale lock, key lights, swing, time signature.</td></tr>
+          <tr><td><kbd>GLO</kbd> &times;3</td><td>BRIDGE: how a bridge between saves goes.</td></tr>
+          <tr><td>Hold <kbd>GLO</kbd></td><td>Beat repeat; the first five white keys pick 1/2 to 1/32.</td></tr>
+          <tr><td><kbd>ARP</kbd></td><td>Arpeggiator. Tap: on/off. Hold: rate, octaves, direction.</td></tr>
+        </table>
+      </div>
+      <div class="card" style="--c: var(--bridge)">
+        <h3>Saving and bridging (SAVE)</h3>
+        <table>
+          <tr><td><kbd>SAVE</kbd></td><td>Twelve slots. <kbd>PRESETS</kbd> picks one, <kbd>KNOB 1&ndash;4</kbd> each player's starting pattern.</td></tr>
+          <tr><td><kbd>REC</kbd> twice</td><td>Save. <kbd>PLAY</kbd> twice: load.</td></tr>
+          <tr><td><kbd>SELECT</kbd></td><td>Bridge on. Then, while playing, <kbd>PLAY</kbd> bridges into the chosen save on the beat (again: cancel).</td></tr>
+        </table>
+        <p class="hint" style="margin-top:8px">Your work also saves itself when the music stops.</p>
+      </div>
+      <div class="card" style="--c: var(--sub)">
+        <h3>Shortcuts</h3>
+        <table>
+          <tr><td><kbd>HOME</kbd> + <kbd>PRESETS</kbd></td><td>The look: Paper, Dark, Neon, LCD.</td></tr>
+          <tr><td><kbd>HOME</kbd> + <kbd>ALGORITHM</kbd></td><td>The MIDI channel (or OMNI).</td></tr>
+          <tr><td><kbd>REC</kbd> twice</td><td>Confirms anything that keeps or replaces work.</td></tr>
+          <tr><td><kbd>OCT-</kbd> at power-on</td><td>USB rescue mode, if something goes wrong.</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section install">
+    <h2>Put it on your FM-1</h2>
+    <p class="sub">Try it in your browser first if you like: it's the real firmware.</p>
+    <div class="steps3">
+      <div><span class="n">01</span><h3>Download</h3>Get <b>quartet-X.Y.fwsc</b> from the <a href="https://github.com/MammothCheese/quartet/releases/latest">latest release</a>.</div>
+      <div><span class="n">02</span><h3>Install</h3>Plug in the FM-1 and use the <a href="https://thefirmwarehub.com/">Firmware Hub</a> or <a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a>. Back up first. <a href="https://github.com/MammothCheese/quartet#install">Details</a></div>
+      <div><span class="n">03</span><h3>Play</h3>Switch on and press <kbd>PLAY</kbd>. Hold <kbd>OCT-</kbd> while switching on for rescue mode.</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Where next</h2>
+    <div class="more">
+      <a href="start.html"><b>Quick start</b><span>Your first song from nothing, one step a screen. Made for a phone beside the FM-1.</span></a>
+      <a href="guide.html"><b>Full guide</b><span>Every control, sound and pedal, with pictures of every screen.</span></a>
+      <a href="emu/"><b>Emulator</b><span>The real firmware in your browser: play it with the keyboard or a MIDI keyboard.</span></a>
     </div>
   </section>
 </main>
 <footer>QUARTET is free and open source (<a href="https://github.com/MammothCheese/quartet">GitHub</a>). &ldquo;M-VAVE&rdquo; and &ldquo;FM-1&rdquo; belong to their owners; not made or endorsed by M-VAVE. Installing firmware is at your own risk.</footer>
-
-<script>
-(() => {
-  'use strict';
-  const NS = 'http://www.w3.org/2000/svg';
-  const COL = { lead: '#C86E00', pad: '#7A46DA', bass: '#0080BE', drums: '#188C32', ink: '#1A1A1E', sub: '#5C5C64', dim: '#A8A69F', paper: '#F0EEE9', card: '#FAF9F6' };
-  const TRK = ['lead', 'pad', 'bass', 'drums'];
-  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const $ = (id) => document.getElementById(id);
-  function el(parent, tag, a, text) {                        // an SVG element; "draw" lines get their length set
-    const e = document.createElementNS(NS, tag);
-    for (const k in a) e.setAttribute(k, a[k]);
-    if (text != null) e.textContent = text;
-    parent.appendChild(e);
-    return e;
-  }
-  function lengths(svg) { svg.querySelectorAll('.draw').forEach((p) => { const L = p.getTotalLength ? Math.ceil(p.getTotalLength()) + 2 : 2000; p.style.setProperty('--len', L); }); }
-  const rr = (x, y, w, h, r) => `M${x + r},${y}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 -${r},${r}h${2 * r - w}a${r},${r} 0 0 1 -${r},-${r}v${2 * r - h}a${r},${r} 0 0 1 ${r},-${r}z`;
-  const cap = (id, b, rest) => { $(id).innerHTML = '<b>' + b + '</b>' + (rest ? ' · ' + rest : ''); };
-
-  // each scene: build() once, then tick(t) a few times a second while it's on screen
-  const scenes = [];
-  function scene(svgId, build, tick, every) { scenes.push({ svg: $(svgId), build, tick, every: every || 250, on: false, t: 0, timer: 0 }); }
-
-  // ---- 0: the FM-1, drawn line by line; on its screen the four players and their pedals
-  scene('hero', (g) => {
-    el(g, 'path', { class: 'ln draw', d: rr(20, 20, 560, 320, 30) });
-    [[70, 70], [130, 70], [70, 130], [130, 130]].forEach(([x, y]) => el(g, 'circle', { class: 'ln draw', cx: x, cy: y, r: 13 }));
-    el(g, 'path', { class: 'ln draw thin', d: rr(52, 168, 96, 26, 7) });
-    el(g, 'path', { class: 'ln draw', d: rr(178, 38, 150, 150, 10) });
-    for (let i = 0; i < 4; i++) el(g, 'circle', { class: 'ln draw', cx: 372 + i * 54, cy: 62, r: 12 });
-    el(g, 'path', { class: 'ln draw thin', d: rr(352, 104, 206, 84, 10) });
-    for (let r = 0; r < 2; r++) for (let c = 0; c < 6; c++) el(g, 'path', { class: 'ln draw thin', d: rr(362 + c * 32.5, 113 + r * 37, 25, 28, 6) });
-    el(g, 'path', { class: 'ln draw thin', d: rr(40, 214, 520, 110, 16) });
-    const BL = [1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1];
-    for (let i = 0; i < 16; i++) el(g, 'path', { class: 'ln draw thin', d: rr(52 + i * 31.5, 272, 24, 44, 12) });
-    let bx = 0; [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14].forEach((w) => el(g, 'path', { class: 'ln draw thin', d: rr(52 + w * 31.5 + 19, 222, 22, 42, 11) }));
-    // the screen: four rows (the players), a pedal row; drawn in their colours after the case
-    const sc = el(g, 'g', { class: 'fade' });
-    TRK.forEach((t, i) => {
-      el(sc, 'path', { d: rr(188, 52 + i * 26, 130, 21, 5), fill: COL.card, stroke: COL[t], 'stroke-width': 1.4, id: 'hrow' + i });
-      el(sc, 'text', { x: 196, y: 66 + i * 26, fill: COL[t], style: 'font-size:9px;font-weight:700' }, t.toUpperCase());
-      for (let s = 0; s < 8; s++) el(sc, 'rect', { x: 246 + s * 8.5, y: 58 + i * 26, width: 6, height: 9, rx: 1.5, fill: COL[t], opacity: .22, id: 'hs' + i + s });
-    });
-    for (let p = 0; p < 4; p++) el(sc, 'path', { d: rr(188 + p * 33, 160, 30, 16, 8), fill: COL.card, stroke: COL.dim, 'stroke-width': 1, id: 'hp' + p });
-  }, (t) => {
-    const s = t % 8, who = Math.floor(t / 16) % 4;
-    for (let i = 0; i < 4; i++) for (let k = 0; k < 8; k++) $('hs' + i + k).setAttribute('opacity', k === s ? 1 : ((i + k) % 3 === 0 ? .5 : .18));
-    for (let i = 0; i < 4; i++) $('hrow' + i).setAttribute('stroke-width', i === who ? 3 : 1.2);
-    for (let p = 0; p < 4; p++) $('hp' + p).setAttribute('stroke', p === Math.floor(t / 8) % 4 ? COL[TRK[who]] : COL.dim);
-    cap('heroCap', TRK[who].toUpperCase(), ['PIANO', 'STRINGS', 'REESE', '808'][who]);
-  }, 180);
-
-  // ---- 1: four lanes, notes on them, a playhead going round
-  const PAT = [[0, 3, 6, 8, 10, 12, 14], [0, 8], [0, 3, 6, 10, 11, 14], [0, 2, 4, 6, 8, 10, 12, 14]];
-  scene('seq', (g) => {
-    TRK.forEach((t, i) => {
-      const y = 40 + i * 66;
-      el(g, 'text', { x: 0, y: y + 22, fill: COL[t], style: 'font-weight:700' }, t.toUpperCase());
-      el(g, 'path', { class: 'ln draw thin soft', d: `M70,${y + 18}H590` });
-      for (let s = 0; s < 16; s++) {
-        const x = 78 + s * 32.4;
-        el(g, 'path', { class: 'ln draw thin soft', d: `M${x - 4},${y + 14}v8` });
-        if (PAT[i].includes(s)) el(g, 'circle', { cx: x + 10, cy: y + 18, r: i === 1 ? 0 : 7, fill: 'none', stroke: COL[t], 'stroke-width': 1.8, class: 'fade', id: `n${i}_${s}` });
-      }
-      if (i === 1) el(g, 'path', { d: `M80,${y + 18}H330M342,${y + 18}H588`, stroke: COL.pad, 'stroke-width': 7, 'stroke-linecap': 'round', class: 'fade', opacity: .35, id: 'padlong' });
-    });
-    el(g, 'path', { id: 'ph', d: 'M0,24V300', stroke: COL.ink, 'stroke-width': 1.6 });
-    el(g, 'path', { class: 'ln draw thin', d: rr(250, 300, 100, 26, 13) });
-    el(g, 'path', { d: 'M292,307l14,6l-14,6z', fill: COL.drums, class: 'fade' });
-  }, (t) => {
-    const s = t % 16, x = 78 + s * 32.4 + 10;
-    $('ph').setAttribute('transform', `translate(${x},0)`);
-    PAT.forEach((p, i) => p.forEach((k) => { const n = $(`n${i}_${k}`); if (n) { n.setAttribute('fill', k === s ? COL[TRK[i]] : 'none'); n.setAttribute('r', k === s ? 9 : 7); } }));
-    cap('seqCap', 'STEP ' + String(s + 1).padStart(2, '0'), '16 · 120 BPM');
-  }, 125);
-
-  // ---- 2: SELECT moves between the players, ALGORITHM through their sounds
-  const SOUNDS = [['PIANO', 'HARMONICA', 'ACID LEAD', 'THEREMIN'], ['STRINGS', 'CHOIR', 'JUNO STRINGS', 'GLASS PAD'], ['REESE', 'MOOG BASS', '303 LINE', 'WOBBLE'], ['808', 'HOUSE', 'TRAP', 'DUB']];
-  scene('pick', (g) => {
-    TRK.forEach((t, i) => {
-      el(g, 'path', { d: rr(150, 30 + i * 70, 300, 54, 12), fill: COL.card, stroke: COL[t], 'stroke-width': 1.4, id: 'prow' + i, class: 'ln draw' });
-      el(g, 'text', { x: 170, y: 63 + i * 70, fill: COL[t], style: 'font-weight:700;font-size:13px' }, t.toUpperCase());
-      el(g, 'text', { x: 250, y: 63 + i * 70, class: 'big', id: 'psnd' + i }, SOUNDS[i][0]);
-    });
-    [['SELECT', 70], ['ALGORITHM', 530]].forEach(([l, x], j) => {
-      el(g, 'circle', { class: 'ln draw', cx: x, cy: 150, r: 30 });
-      el(g, 'path', { d: `M${x},150V126`, stroke: COL.ink, 'stroke-width': 3, 'stroke-linecap': 'round', id: 'kp' + j });
-      el(g, 'text', { x, y: 202, 'text-anchor': 'middle' }, l);
-    });
-    el(g, 'path', { id: 'plink', d: 'M100,150H150', class: 'ln thin', 'stroke-dasharray': '3 4' });
-  }, (t) => {
-    const who = Math.floor(t / 4) % 4, snd = t % 4;
-    for (let i = 0; i < 4; i++) { $('prow' + i).setAttribute('stroke-width', i === who ? 3.2 : 1.2); $('prow' + i).setAttribute('fill', i === who ? COL.card : COL.paper); }
-    $('psnd' + who).textContent = SOUNDS[who][snd];
-    $('kp0').setAttribute('transform', `rotate(${(who - 1.5) * 45} 70 150)`);
-    $('kp1').setAttribute('transform', `rotate(${t * 30} 530 150)`);
-    $('plink').setAttribute('d', `M100,150 C125,150 125,${57 + who * 70} 150,${57 + who * 70}`);
-    cap('pickCap', TRK[who].toUpperCase(), SOUNDS[who][snd]);
-  }, 700);
-
-  // ---- 3: the signal through four pedals; each one switched on changes the wave after it
-  const PEDALS = ['FUZZ', 'CHORUS', 'DELAY', 'SPRING'];
-  scene('chain', (g) => {
-    el(g, 'path', { class: 'ln draw', d: rr(0, 130, 64, 70, 10) }); el(g, 'text', { x: 32, y: 170, 'text-anchor': 'middle', fill: COL.bass, style: 'font-weight:700' }, 'BASS');
-    PEDALS.forEach((p, i) => {
-      const x = 100 + i * 112;
-      el(g, 'path', { class: 'ln draw', d: rr(x, 110, 76, 110, 10), id: 'pb' + i });
-      el(g, 'text', { x: x + 38, y: 134, 'text-anchor': 'middle', style: 'font-weight:700' }, p);
-      for (let k = 0; k < 3; k++) el(g, 'circle', { class: 'ln draw thin', cx: x + 16 + k * 22, cy: 158, r: 7 });
-      el(g, 'circle', { cx: x + 38, cy: 198, r: 9, class: 'ln draw thin' });
-      el(g, 'circle', { cx: x + 64, cy: 122, r: 3.5, fill: COL.dim, id: 'pl' + i });
-      el(g, 'text', { x: x + 38, y: 246, 'text-anchor': 'middle' }, ['FX', 'SEL', 'ENV', 'LFO'][i]);
-    });
-    el(g, 'path', { class: 'ln draw', d: 'M560,140l18,-14v78l-18,-14h-10v-50z' });
-    for (let i = 0; i < 5; i++) el(g, 'path', { id: 'w' + i, fill: 'none', stroke: COL.bass, 'stroke-width': 1.8, 'stroke-linecap': 'round' });
-  }, (t) => {
-    const on = [0, 1, 2, 3].map((i) => (t % 100) >= 12 + i * 12 && (t % 100) < 80);
-    PEDALS.forEach((p, i) => {
-      $('pb' + i).setAttribute('fill', on[i] ? '#E4F1F8' : 'none');
-      $('pl' + i).setAttribute('fill', on[i] ? '#FF4632' : COL.dim);
-    });
-    // the wave between the stages, shaped by what's on before it
-    const ph = t * 0.35;
-    for (let i = 0; i < 5; i++) {
-      const x0 = i === 0 ? 64 : 100 + (i - 1) * 112 + 76, x1 = i === 4 ? 550 : 100 + i * 112;
-      const fuzz = i >= 1 && on[0], cho = i >= 2 && on[1], del = i >= 3 && on[2], spr = i >= 4 && on[3];
-      let d = '';
-      for (let x = x0; x <= x1; x += 1.5) {
-        const u = (x - x0) / 9 - ph;                 // (minus: the signal travels left to right, into the pedals)
-        let v = Math.sin(u);
-        if (fuzz) v = Math.max(-0.55, Math.min(0.55, v * 2.4)) / 0.55;
-        if (cho) v = v * 0.7 + 0.35 * Math.sin(u * 1.03 + 1.6 + Math.sin(ph * 0.3));
-        if (del) v = v + 0.35 * Math.sin(u - 2.2) * (fuzz ? 0.8 : 1);
-        if (spr) v = v + 0.18 * Math.sin(u * 3.1 + ph * 2);
-        d += (d ? 'L' : 'M') + x.toFixed(1) + ',' + (165 - v * 14).toFixed(1);
-      }
-      $('w' + i).setAttribute('d', d);
-    }
-    const last = [3, 2, 1, 0].find((i) => on[i]);
-    cap('chainCap', last === undefined ? 'ALL OFF' : PEDALS.filter((p, i) => on[i]).join(' + '), last === undefined ? 'CLEAN' : 'ON');
-  }, 60);
-
-  // ---- 4: the drum grid fills, hit by hit, then plays
-  const DR = ['KICK', 'SNARE', 'HAT', 'OPEN', 'CLAP', 'PERC'];
-  const HITS = [[0, 0], [0, 8], [1, 4], [1, 12], [2, 0], [2, 2], [2, 4], [2, 6], [2, 8], [2, 10], [2, 12], [2, 14], [0, 10], [3, 14], [4, 12], [5, 7]];
-  scene('grid', (g) => {
-    DR.forEach((d, r) => {
-      el(g, 'text', { x: 0, y: 42 + r * 44, fill: r === 0 ? COL.drums : COL.sub, style: 'font-weight:700' }, d);
-      for (let s = 0; s < 16; s++) el(g, 'path', { class: 'ln draw thin' + (s % 4 ? ' soft' : ''), d: rr(70 + s * 32.5, 22 + r * 44, 26, 28, 5), id: `g${r}_${s}` });
-    });
-    el(g, 'path', { id: 'gph', d: 'M0,14V286', stroke: COL.ink, 'stroke-width': 1.6, opacity: 0 });
-  }, (t) => {
-    const T = t % 64, placed = Math.min(HITS.length, T);
-    for (let r = 0; r < 6; r++) for (let s = 0; s < 16; s++) $(`g${r}_${s}`).setAttribute('fill', 'none');
-    HITS.slice(0, placed).forEach(([r, s]) => $(`g${r}_${s}`).setAttribute('fill', COL.drums));
-    if (T < HITS.length) {
-      $('gph').setAttribute('opacity', 0);
-      const [r, s] = HITS[T]; cap('gridCap', DR[r], 'STEP ' + String(s + 1).padStart(2, '0'));
-    } else {
-      const s = (T - HITS.length) % 16;
-      $('gph').setAttribute('opacity', 1); $('gph').setAttribute('transform', `translate(${70 + s * 32.5 + 13},0)`);
-      HITS.forEach(([r, k]) => { if (k === s) $(`g${r}_${k}`).setAttribute('fill', COL.ink); });
-      cap('gridCap', 'PLAYING', 'STEP ' + String(s + 1).padStart(2, '0'));
-    }
-  }, 160);
-
-  // ---- 5: live recording: the playhead goes round, notes land as they're played
-  const PART = [[0, 7, 2], [2, 9, 1], [4, 11, 2], [7, 9, 1], [8, 7, 3], [12, 4, 2], [14, 5, 2]];   // step, row (pitch), length
-  scene('roll', (g) => {
-    for (let r = 0; r < 13; r++) {
-      const black = [1, 3, 6, 8, 10].includes(r % 12);
-      el(g, 'path', { class: 'ln draw thin', d: rr(0, 272 - r * 20, 40, 18, 3), fill: black ? COL.ink : 'none' });
-      el(g, 'path', { class: 'ln draw thin soft', d: `M48,${281 - r * 20}H590` });
-    }
-    for (let s = 0; s <= 16; s += 4) el(g, 'path', { class: 'ln draw thin soft', d: `M${50 + s * 33.7},24V292` });
-    PART.forEach(([s, r, l], i) => el(g, 'rect', { id: 'rn' + i, x: 52 + s * 33.7, y: 274 - r * 20, width: l * 33.7 - 4, height: 14, rx: 4, fill: COL.lead, opacity: 0 }));
-    el(g, 'path', { id: 'rph', d: 'M0,20V296', stroke: COL.ink, 'stroke-width': 1.6 });
-    el(g, 'circle', { cx: 580, cy: 12, r: 7, fill: COL.mute, id: 'rled' });
-    el(g, 'text', { x: 566, y: 16, 'text-anchor': 'end', style: 'font-weight:700', fill: COL.mute }, 'REC');
-  }, (t) => {
-    const s = (t % 32) / 2, loop = Math.floor((t % 64) / 32);   // (16 steps, half a step a tick; the second time round, all in)
-    $('rph').setAttribute('transform', `translate(${50 + s * 33.7},0)`);
-    $('rled').setAttribute('opacity', Math.floor(t / 2) % 2 ? 1 : .35);
-    let last = null;
-    PART.forEach(([k, r, l], i) => {
-      const done = loop === 1 || s >= k;
-      $('rn' + i).setAttribute('opacity', done ? (s >= k && s < k + l ? 1 : .75) : 0);
-      if (s >= k && s < k + l) last = r;
-    });
-    cap('rollCap', 'REC', last === null ? 'LISTENING' : 'NOTE IN · STEP ' + String(Math.floor(s) + 1).padStart(2, '0'));
-  }, 62);
-
-  // ---- 6: SUPER SEQ: four lanes of pattern letters, a box at a time
-  const SONG = [['A', 'A', 'B', 'B', 'A', 'C', 'C', 'A'], ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'A'], ['A', 'A', 'B', 'B', 'A', 'B', 'B', 'A'], ['A', 'B', 'A', 'B', 'C', 'C', 'B', 'D']];
-  scene('sseq', (g) => {
-    TRK.forEach((t, i) => {
-      el(g, 'text', { x: 0, y: 64 + i * 64, fill: COL[t], style: 'font-weight:700' }, ['LD', 'PD', 'BS', 'DR'][i]);
-      SONG[i].forEach((p, b) => {
-        el(g, 'path', { class: 'ln draw thin', d: rr(40 + b * 68, 38 + i * 64, 58, 44, 8), id: `sb${i}_${b}`, stroke: COL[t] });
-        el(g, 'text', { x: 69 + b * 68, y: 66 + i * 64, 'text-anchor': 'middle', class: 'big', id: `st${i}_${b}`, fill: COL[t] }, p);
-      });
-    });
-    el(g, 'path', { id: 'scur', d: rr(34, 30, 70, 266, 10), fill: 'none', stroke: COL.ink, 'stroke-width': 2 });
-  }, (t) => {
-    const b = t % 8;
-    $('scur').setAttribute('transform', `translate(${b * 68},0)`);
-    for (let i = 0; i < 4; i++) for (let k = 0; k < 8; k++) $(`sb${i}_${k}`).setAttribute('fill', k === b ? COL[TRK[i]] : COL.card);
-    for (let i = 0; i < 4; i++) for (let k = 0; k < 8; k++) $(`st${i}_${k}`).setAttribute('fill', k === b ? '#fff' : COL[TRK[i]]);
-    cap('sseqCap', 'BOX ' + (b + 1), SONG.map((l) => l[b]).join(' '));
-  }, 900);
-
-  // ---- 7: the screen, in each of the four looks
-  const LOOKS = [['PAPER', '#F0EEE9', '#FAF9F6', '#1A1A1E', ['#D67800', '#804CE2', '#0088C8', '#1A9636']],
-                 ['DARK', '#0C0C10', '#16161C', '#ECECF4', ['#FFB824', '#B27CFF', '#24C6F0', '#5CE268']],
-                 ['NEON', '#160828', '#24103E', '#FAF0FF', ['#FF46B4', '#B0FF28', '#00E6FF', '#FF961E']],
-                 ['LCD', '#9CAA5C', '#909E54', '#18200C', ['#121A06', '#384614', '#24300E', '#485622']]];
-  scene('themes', (g) => {
-    el(g, 'path', { class: 'ln draw', d: rr(150, 10, 300, 300, 22) });
-    el(g, 'rect', { x: 164, y: 24, width: 272, height: 272, rx: 6, id: 'tbg', class: 'fade' });
-    el(g, 'text', { x: 180, y: 58, id: 'thead', style: 'font:700 26px var(--narrow)' }, 'LEAD');
-    TRK.forEach((t, i) => {
-      el(g, 'rect', { x: 178, y: 80 + i * 46, width: 244, height: 38, rx: 9, id: 'tr' + i, 'stroke-width': 2 });
-      el(g, 'text', { x: 192, y: 104 + i * 46, id: 'tt' + i, style: 'font-weight:700;font-size:12px' }, t.toUpperCase());
-      for (let s = 0; s < 8; s++) el(g, 'rect', { x: 290 + s * 15, y: 92 + i * 46, width: 10, height: 14, rx: 2, id: `tq${i}_${s}` });
-    });
-    el(g, 'text', { x: 300, y: 330, 'text-anchor': 'middle' }, 'HOLD HOME · TURN PRESETS');
-  }, (t) => {
-    const L = LOOKS[Math.floor(t / 4) % 4], s = t % 8;
-    $('tbg').setAttribute('fill', L[1]); $('thead').setAttribute('fill', L[4][0]);
-    TRK.forEach((tr, i) => {
-      $('tr' + i).setAttribute('fill', L[2]); $('tr' + i).setAttribute('stroke', L[4][i]); $('tt' + i).setAttribute('fill', L[4][i]);
-      for (let k = 0; k < 8; k++) { const q = $(`tq${i}_${k}`); q.setAttribute('fill', L[4][i]); q.setAttribute('opacity', k === s ? 1 : (i + k) % 3 ? .25 : .55); }
-    });
-    cap('themeCap', L[0], '');
-  }, 500);
-
-  // ---- start each scene when it comes into view; stop it when it leaves
-  scenes.forEach((S) => { S.build(S.svg); lengths(S.svg); });
-  const io = new IntersectionObserver((ents) => ents.forEach((e) => {
-    const S = scenes.find((x) => x.svg === e.target.querySelector('svg')), sec = e.target;
-    if (e.isIntersecting) {
-      sec.classList.add('seen');
-      if (S && !S.on) { S.on = true; S.tick(S.t); if (!RM) S.timer = setInterval(() => S.tick(++S.t), S.every); }
-    } else if (S && S.on) { S.on = false; clearInterval(S.timer); }
-  }), { threshold: 0.15 });
-  document.querySelectorAll('.scene').forEach((s) => io.observe(s));
-
-  // ---- the line down the page and the colours along the top follow the scroll
-  function onScroll() {
-    const m = document.querySelector('main'), r = m.getBoundingClientRect(), vh = innerHeight;
-    const p = Math.min(1, Math.max(0, (vh * 0.55 - r.top) / r.height));
-    $('railfill').style.height = (p * 100) + '%';
-    document.querySelectorAll('#progress i').forEach((b, i) => { b.style.transform = `scaleX(${Math.min(1, Math.max(0, p * 4 - i))})`; });
-  }
-  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
-})();
-</script>
 </body>
 </html>

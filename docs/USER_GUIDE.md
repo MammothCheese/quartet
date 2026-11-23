@@ -269,9 +269,9 @@ To clear the current project, **hold REC** for the RECORD page, choose **CLEAR E
 
 | Control | Playing / home | Step recorder | Other screens |
 |---|---|---|---|
-| **SELECT** | Select instrument | Select instrument | SUPER SEQ: select row; SOUND, chain: another instrument; copy page: the track to copy from |
-| **PRESETS** | Select pattern A–J | Select pattern | SUPER SEQ: select song; pedal: the type (category); chain: another pedal; copy page: the pattern to copy from |
-| **ALGORITHM** | Select sound/kit (no test note) | Melodic step cursor | Pedal: the pedal within its type; SOUND: the page; chain: the slot; copy page: the pattern; SUPER SEQ: the box; save: the slot; KEY: the key; arpeggiator, mixer: nothing |
+| **SELECT** | Select instrument | Select instrument | SUPER SEQ: select row; save page: the bridge on / off; sound editor, chain: another instrument; copy page: the track to copy from |
+| **PRESETS** | Select pattern A–J | Select pattern | Save page: the slot; SUPER SEQ: select song; pedal: the type (category); chain: another pedal; copy page: the pattern to copy from |
+| **ALGORITHM** | Select sound/kit (no test note) | Melodic step cursor | Pedal: the pedal within its type; instrument screen: the sound; sound editor: the page; chain: the slot; copy page: the pattern; SUPER SEQ: the box; SONG: the key; BRIDGE: the start; arpeggiator, mixer, save: nothing |
 | **KNOB1–4** | Tempo / the chosen track's mix level / its brightness (drums: kit decay) / pedal fade (0–4 bars) | Bars / note length / expression / note (drums: bars / — / expression / bar) | LIVE: bars / cursor / bar / —; SONG: lock / lights / swing / time signature; SUPER SEQ: on-off / box / pattern / length; otherwise labelled settings |
 | **Keys** | Play notes; drums: first six white keys | Melodic notes; drums: black keys choose voice, white keys toggle hits | LIVE: play and record |
 | **OCT− / OCT+** | Tap: octave; hold: the pattern an octave | Tap: drum step page; hold: the pattern an octave (synths) | Octave where applicable |
@@ -281,8 +281,8 @@ To clear the current project, **hold REC** for the RECORD page, choose **CLEAR E
 | **REC** | Tap: record into the chosen track (count-in first); hold: the RECORD page | Tap: LIVE; hold: the RECORD page | LIVE: a take on/off, hold: the RECORD page; RECORD page: twice clears; save: twice saves; INSTR / KIT: twice saves to the USER slot; copy page: twice copies; elsewhere holding it does nothing |
 | **ARP** | Tap: on/off; hold: arpeggiator page | Tap: tie; hold: rest (LIVE: tap undoes the last take) | Arpeggiator page: tap on/off |
 | **FX / SEL / ENV / LFO** | Tap: pedal on/off (its name shows); hold: the pedal page | Same | Mixer: mute lead / pads / bass / drums; pedal page: PRESETS type, ALGORITHM pedal, KNOB1 on/off, KNOB2–4 adjust it |
-| **EDIT** | The SOUND page (the sound editor, from INSTR) | Switches the knobs between the NOTE and STEP FX decks | SOUND page: the signal chain; chain: home |
-| **GLO** | Tap: mixer, then KEY, then home. Hold: beat repeat (white keys 1–5 choose 1/2–1/32) | Same | Same |
+| **EDIT** | The instrument screen; again: the sound editor | Switches the knobs between the NOTE and STEP FX decks | Sound editor: the signal chain; chain: home |
+| **GLO** | Tap: mixer, then SONG, then BRIDGE, then home. Hold: beat repeat (white keys 1–5 choose 1/2–1/32) | Same | Same |
 | **SAVE** | Open save screen | Open save screen | Save screen: close |
 | **MASTER** | Overall volume | Overall volume | Overall volume |
 
