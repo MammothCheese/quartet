@@ -37,12 +37,14 @@ static const uint16_t KDEF[NDR] = {16, 64, 128, 16, 24, 48};
  * plays six samples of a real Linn LM-1 (rossf's, lm1_samples.h; CLAP and PERC play its low and high tom).
  * (The drum engine's changes come from SPLITMILK 0.10-0.13, the same author's firmware built on QUARTET.) */
 #include "lm1_samples.h"                       /* (firmware/gen: tools/samples2c.py) */
-#define NKIT 23u                                /* the kits: 0..9 QUARTET's first ten (every older save's), then the later */
+#define NKIT 25u                                /* the kits: 0..9 QUARTET's first ten (every older save's), then the later */
 #define KIT_ROCK 0u
 #define KIT_POPS 2u
 #define KIT_LM1 4u                              /* the LM-1: real samples, not synthesised */
 #define KIT_808 6u                              /* the 808: the kit a new project starts with */
 #define KIT_909 7u
+#define KIT_TOMS 23u                            /* OPEN HAT and CLAP play toms (FT MT; PERC the high one) */
+#define KIT_GATED 24u                           /* CLAP plays a tom (TL; PERC the high one) */
 static const dsnd_t KITS[NKIT][NDR] = {
     {{58, 60, 92}, {70, 82, 65}, {64, 60, 60}, {56, 112, 66}, {64, 64, 64}, {34, 82, 78}},     /* ROCK: a punchy kick, a fat snare, a crash, a floor tom */
     {{46, 96, 84}, {54, 80, 57}, {56, 46, 48}, {56, 66, 46}, {56, 70, 66}, {70, 60, 56}},      /* HIP-HOP: a low boomy kick, a fat snare, dark hats, dusty */
@@ -69,22 +71,27 @@ static const dsnd_t KITS[NKIT][NDR] = {
     {{60, 58, 90}, {80, 56, 84}, {74, 36, 58}, {74, 60, 54}, {66, 56, 70}, {62, 52, 64}},      /* FUNK: tight and dry, a crisp snare, a conga */
     {{50, 84, 88}, {72, 60, 70}, {86, 30, 60}, {86, 62, 58}, {70, 64, 72}, {64, 50, 62}},      /* HOUSE: a round thump, a big clap, open hats, a shaker */
     {{42, 96, 78}, {60, 84, 55}, {64, 40, 54}, {60, 90, 50}, {56, 90, 64}, {50, 60, 66}},     /* DUB: a deep kick, a long snare, a rim */
-    {{80, 40, 70}, {96, 40, 64}, {108, 30, 56}, {104, 60, 52}, {92, 40, 60}, {86, 60, 66}}};   /* KITCHEN: pots, pans and a cowbell */
+    {{80, 40, 70}, {96, 40, 64}, {108, 30, 56}, {104, 60, 52}, {92, 40, 60}, {86, 60, 66}},    /* KITCHEN: pots, pans and a cowbell */
+    {{58, 64, 84}, {66, 64, 60}, {68, 46, 50}, {64, 74, 60}, {64, 70, 66}, {64, 66, 80}},      /* TOMS: kick, a dry snare, a hat, then three
+                                                   toms (FT, MT, HT on OH, CP, PC) */
+    {{56, 66, 92}, {72, 64, 54}, {84, 34, 52}, {84, 46, 44}, {72, 64, 66}, {70, 60, 74}}};     /* GATED: a punchy kick, the gated snare, dry
+                                                   hats, two descending electronic toms (TL, TH on CP, PC) */
 static const char *const KIT_NAME[NKIT] = {"ROCK", "HIP-HOP", "MINI POPS", "CR-78", "LM-1", "606", "808", "909", "LO-FI", "INDUSTRIAL",
                                            "ELECTRO", "TECHNO", "TRAP", "BREAKS", "METAL", "GLITCH", "TOY", "NOISE",
-                                           "JAZZ", "FUNK", "HOUSE", "DUB", "KITCHEN"};
+                                           "JAZZ", "FUNK", "HOUSE", "DUB", "KITCHEN", "TOMS", "GATED"};
 static const char *const KBANK_NAME[5] = {"GROOVE", "MACHINES", "ELECTRO", "ODD", "USER"};
-static const uint8_t KIT_GRP[4][6] = {          /* the kits offered, group by group (0xFF: the end) */
-    {0, 1, 8, 13, 18, 19},                      /* GROOVE: rock, hip-hop, lo-fi, breaks, jazz, funk */
-    {3, 2, 4, 5, 6, 7},                         /* MACHINES: CR-78, Mini Pops, LM-1, 606, 808, 909 */
-    {10, 11, 12, 20, 21, 9},                    /* ELECTRO: electro, techno, trap, house, dub, industrial */
-    {16, 15, 14, 17, 22, 0xFFu}};               /* ODD: toy, glitch, metal, noise, kitchen */
+#define NKGRP_MAX 8u                            /* kits a group offers, at most */
+static const uint8_t KIT_GRP[4][NKGRP_MAX] = {  /* the kits offered, group by group (0xFF: the end) */
+    {0, 1, 8, 13, 18, 19, 23, 0xFFu},           /* GROOVE: rock, hip-hop, lo-fi, breaks, jazz, funk, toms */
+    {3, 2, 4, 5, 6, 7, 0xFFu, 0xFFu},           /* MACHINES: CR-78, Mini Pops, LM-1, 606, 808, 909 */
+    {10, 11, 12, 20, 21, 9, 24, 0xFFu},         /* ELECTRO: electro, techno, trap, house, dub, industrial, gated */
+    {16, 15, 14, 17, 22, 0xFFu, 0xFFu, 0xFFu}}; /* ODD: toy, glitch, metal, noise, kitchen */
 #define KUID(u) (96u + (u))                     /* a USER kit's id */
 static uint32_t kit_bank(uint32_t id)           /* a kit's group (0-3), USER 4; one no longer offered: 0xFF */
 {
     uint32_t g, i;
     if (id >= KUID(0)) return 4u;
-    for (g = 0; g < 4u; g++) for (i = 0; i < 6u; i++) if (KIT_GRP[g][i] == id) return g;
+    for (g = 0; g < 4u; g++) for (i = 0; i < NKGRP_MAX; i++) if (KIT_GRP[g][i] == id && id != 0xFFu) return g;
     return 0xFFu;
 }
 static uint32_t kit_now(void)                   /* the kit the engine plays (a USER kit: the one it was made from) */
@@ -100,7 +107,10 @@ static uint32_t kit_now(void)                   /* the kit the engine plays (a U
  *   P_RIM    a short 1.7 kHz crack and a click: a rimshot         P_SHAKER bright noise swelling in: maracas
  *   P_GUIRO  noise scraped in short ramps: a guiro                P_TAMB   three quick bursts, then a ring
  * (PITCH moves each up / down, 64 = as above; DECAY sets its length) */
-typedef struct { uint8_t click, hat, open, clap_tune, perc; } ktone_t;
+typedef struct { uint8_t click, hat, open, clap_tune, perc, toms, gate, etom; } ktone_t;   /* toms: OPEN HAT (bit 0) and CLAP
+                                                   (bit 1) play toms instead (~100 and ~145 Hz); gate: the snare's noise
+                                                   held that many 10 ms (DECAY scales it), then shut: a gated room; etom:
+                                                   the toms fall further and faster, electronic */
 enum { P_SINE, P_TOM, P_CONGA, P_COWBELL, P_RIM, P_SHAKER, P_GUIRO, P_TAMB, NPERC };
 static const ktone_t KIT_TONE[NKIT] = {
     {1, 0, 0, 0, P_SINE}, {0, 0, 0, 0, P_SINE}, {0, 2, 0, 0, P_SHAKER}, {0, 0, 0, 0, P_CONGA},   /* ROCK, HIP-HOP, MINI POPS, CR-78 */
@@ -109,10 +119,11 @@ static const ktone_t KIT_TONE[NKIT] = {
     {1, 0, 0, 1, P_COWBELL}, {2, 1, 1, 0, P_RIM}, {0, 0, 0, 1, P_RIM}, {1, 0, 0, 0, P_CONGA},      /* ELECTRO, TECHNO, TRAP, BREAKS */
     {3, 1, 1, 1, P_COWBELL}, {2, 0, 0, 1, P_RIM}, {0, 2, 2, 1, P_GUIRO}, {0, 1, 1, 0, P_TAMB},     /* METAL, GLITCH, TOY, NOISE */
     {0, 1, 1, 0, P_TOM}, {1, 0, 0, 0, P_CONGA}, {1, 1, 1, 1, P_SHAKER}, {0, 0, 0, 0, P_RIM},        /* JAZZ, FUNK, HOUSE, DUB */
-    {2, 1, 0, 1, P_COWBELL}};                                                                     /* KITCHEN */
+    {2, 1, 0, 1, P_COWBELL},                                                                      /* KITCHEN */
+    {1, 0, 0, 0, P_TOM, 3, 0, 0}, {2, 0, 0, 0, P_TOM, 2, 25, 1}};                                 /* TOMS, GATED */
 /* the crushers: keep one sample in n (0: off) and round to steps of mask + 1 */
-static const uint8_t KIT_CRUSH_N[NKIT] = {0, 2, 0, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0, 2, 0, 4, 0, 3, 0, 0, 0, 2, 0};
-static const uint16_t KIT_CRUSH_M[NKIT] = {0, 255, 0, 0, 0, 0, 0, 0, 1023, 4095, 0, 0, 0, 255, 0, 2047, 0, 4095, 0, 0, 0, 511, 0};
+static const uint8_t KIT_CRUSH_N[NKIT] = {0, 2, 0, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0, 2, 0, 4, 0, 3, 0, 0, 0, 2, 0, 0, 0};
+static const uint16_t KIT_CRUSH_M[NKIT] = {0, 255, 0, 0, 0, 0, 0, 0, 1023, 4095, 0, 0, 0, 255, 0, 2047, 0, 4095, 0, 0, 0, 511, 0, 0, 0};
 
 static struct { uint32_t ph, inc, end, cnt; int32_t amp, amp2, lp1, lp2; } dr[NDR];   /* interrupt only */
 static uint8_t dvel[NDR] = {128, 128, 128, 128, 128, 128};   /* each drum's last hit: how hard (Q7, 128 = as ever) */
@@ -139,7 +150,8 @@ static void drum_trigger(uint32_t d)
         dr[d].inc = scale_q12(PERC_TOP, m); dr[d].end = dr[d].inc - (dr[d].inc >> 2) - (dr[d].inc >> 4);
         dr[d].amp2 = 0; dr[d].lp1 = dr[d].lp2 = 0;
         switch (KIT_TONE[kit].perc) {
-        case P_TOM: dr[d].inc = scale_q12(19478299u, m); dr[d].end = (dr[d].inc >> 1) + (dr[d].inc >> 4); dr[d].amp2 = AMP_FULL; break;   /* 200 Hz to 56 % */
+        case P_TOM: dr[d].inc = scale_q12(19478299u, m); dr[d].amp2 = AMP_FULL;   /* 200 Hz to 56 % (electronic: to 37 %) */
+                    dr[d].end = KIT_TONE[kit].etom ? (dr[d].inc >> 2) + (dr[d].inc >> 3) : (dr[d].inc >> 1) + (dr[d].inc >> 4); break;
         case P_CONGA: dr[d].inc = scale_q12(37008776u, m); dr[d].end = dr[d].inc - (dr[d].inc >> 3); dr[d].amp2 = AMP_FULL; break;     /* 380 Hz to 88 % */
         case P_COWBELL: dr[d].inc = scale_q12(52591424u, m); dr[d].cnt = scale_q12(77913221u, m); dr[d].end = 0; dr[d].amp2 = AMP_FULL; break;   /* 540, 800 Hz */
         case P_RIM: dr[d].inc = scale_q12(165565594u, m); dr[d].amp2 = AMP_FULL; break;   /* 1.7 kHz */
@@ -147,7 +159,14 @@ static void drum_trigger(uint32_t d)
         default: break;
         }
     }
-    if (d == DR_HAT) dr[DR_OPEN].amp = 0;       /* a closed hat cuts an open one short, like a real hi-hat */
+    if ((d == DR_OPEN && KIT_TONE[kit].toms & 1u) || (d == DR_CLAP && KIT_TONE[kit].toms & 2u)) {   /* a tom on this lane:
+                                                   ~100 Hz (OPEN HAT), ~145 Hz (CLAP), skin at the hit */
+        dr[d].inc = scale_q12(d == DR_OPEN ? 9739150u : 14121267u, m);
+        dr[d].end = KIT_TONE[kit].etom ? (dr[d].inc >> 2) + (dr[d].inc >> 3) : (dr[d].inc >> 1) + (dr[d].inc >> 4);
+        dr[d].amp2 = AMP_FULL;
+    }
+    if (d == DR_HAT && !(KIT_TONE[kit].toms & 1u)) dr[DR_OPEN].amp = 0;   /* a closed hat cuts an open one short, like a
+                                                   real hi-hat (not a tom) */
     if (kit == KIT_LM1) { dr[d].ph = 0; dr[d].inc = m << 4; dr[d].amp2 = 0; }   /* a sample: from its start, at PITCH's speed
                                                    (ph: the place, Q16; 64 = as recorded) */
 }
@@ -186,6 +205,16 @@ static int32_t decay_k(int32_t a, int32_t k)    /* a (Q24) falls by k / 65536 ea
     return a < 0 ? 0 : a;
 }
 
+static int32_t tom_tick(uint32_t d, int32_t noise, uint32_t et, int32_t kk, int32_t gg)   /* a tom on lane d, a sample */
+{
+    int32_t a9 = dr[d].amp >> 9, b9 = dr[d].amp2 >> 9, pv;
+    dr[d].inc -= (uint32_t)((int32_t)(dr[d].inc - dr[d].end) >> (et ? 9 : 11));
+    dr[d].ph += dr[d].inc;
+    pv = (((sine(dr[d].ph) * a9) >> 15) >> 1) + (((noise * b9) >> 15) >> 3);
+    dr[d].amp2 = decay_k(dr[d].amp2, 250);
+    dr[d].amp = decay_k(dr[d].amp, kk);
+    return (pv * gg) >> 6;
+}
 static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's mono buffer */
 {
     static uint8_t hit_done[NDR];
@@ -264,13 +293,19 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
             if (pops) {                         /* MINI POPS: mostly the drum's tone, a little rattle */
                 sn = ((sine(dr[DR_SNARE].ph) * (dr[DR_SNARE].amp >> 9)) >> 15) * 5 >> 3;
                 sn += ((noise * (dr[DR_SNARE].amp2 >> 9)) >> 15) >> 2;
+            } else if (kt->gate) {              /* gated: a bright room that holds, then shuts */
+                sn = ((sine(dr[DR_SNARE].ph) * (dr[DR_SNARE].amp >> 9)) >> 15) * 3 >> 3;
+                sn += ((((noise + hp) >> 1) * (dr[DR_SNARE].amp2 >> 9)) >> 15) >> 1;
             } else {
                 sn = ((sine(dr[DR_SNARE].ph) * (dr[DR_SNARE].amp >> 9)) >> 15) * 3 >> 3;
                 sn += ((noise * (dr[DR_SNARE].amp2 >> 9)) >> 15) >> 1;
             }
             s += ((sn * g[DR_SNARE]) >> 6) * 9 >> 4;   /* (x 9/16, -5 dB: the snares sat far above the band) */
             dr[DR_SNARE].amp = decay_k(dr[DR_SNARE].amp, k[DR_SNARE]);
-            dr[DR_SNARE].amp2 = decay_k(dr[DR_SNARE].amp2, k[DR_SNARE] >> 1);
+            if (kt->gate) {                     /* (held kt->gate x 10 ms, DECAY 64: as is; then gone in a few ms) */
+                uint32_t gl = (uint32_t)kt->gate * 441u * MULT[set.dsnd[DR_SNARE].decay & 127u] >> 12;
+                dr[DR_SNARE].amp2 = decay_k(dr[DR_SNARE].amp2, ++dr[DR_SNARE].cnt < gl ? (dart[DR_SNARE] == 1u ? 40 : 3) : 900);
+            } else dr[DR_SNARE].amp2 = decay_k(dr[DR_SNARE].amp2, k[DR_SNARE] >> 1);
         }
         if (dr[DR_HAT].amp) {                   /* HAT: very short bright noise */
             int32_t hn = hp >> 2;
@@ -279,14 +314,16 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
             s += (((hn * (dr[DR_HAT].amp >> 9)) >> 15) * g[DR_HAT]) >> 6;
             dr[DR_HAT].amp = decay_k(dr[DR_HAT].amp, k[DR_HAT]);
         }
-        if (dr[DR_OPEN].amp) {                  /* OPEN HAT: the same noise, ringing longer */
+        if (dr[DR_OPEN].amp && kt->toms & 1u) s += tom_tick(DR_OPEN, noise, kt->etom, k[DR_OPEN], g[DR_OPEN]);   /* (a tom) */
+        else if (dr[DR_OPEN].amp) {             /* OPEN HAT: the same noise, ringing longer */
             int32_t oh = hp >> 2;
             if (kt->open == 2u) { dr[DR_OPEN].lp1 += (noise - dr[DR_OPEN].lp1) >> 1; oh = dr[DR_OPEN].lp1 >> 1; }   /* soft */
             else if (kt->open == 1u) oh = noise >> 2;   /* full */
             s += (((oh * (dr[DR_OPEN].amp >> 9)) >> 15) * g[DR_OPEN]) >> 6;
             dr[DR_OPEN].amp = decay_k(dr[DR_OPEN].amp, k[DR_OPEN]);
         }
-        if (dr[DR_CLAP].amp) {                  /* CLAP: three quick bursts of mid noise, then a tail */
+        if (dr[DR_CLAP].amp && kt->toms & 2u) s += tom_tick(DR_CLAP, noise, kt->etom, k[DR_CLAP], g[DR_CLAP]);   /* (a tom) */
+        else if (dr[DR_CLAP].amp) {             /* CLAP: three quick bursts of mid noise, then a tail */
             uint32_t c = ++dr[DR_CLAP].cnt;
             int32_t band;
             if (c == CLAP_GAP || c == 2u * CLAP_GAP) dr[DR_CLAP].amp = AMP_FULL;
@@ -304,8 +341,8 @@ static void drums_render(int32_t *out, uint32_t n)      /* out: the drum track's
         if (dr[DR_PERC].amp) {                  /* PERC, by the kit's type */
             int32_t pv, a9 = dr[DR_PERC].amp >> 9, b9 = dr[DR_PERC].amp2 >> 9;
             switch (kt->perc) {
-            case P_TOM:                         /* a long fall, skin at the hit */
-                dr[DR_PERC].inc -= (uint32_t)((int32_t)(dr[DR_PERC].inc - dr[DR_PERC].end) >> 11);
+            case P_TOM:                         /* a long fall, skin at the hit (electronic: quicker) */
+                dr[DR_PERC].inc -= (uint32_t)((int32_t)(dr[DR_PERC].inc - dr[DR_PERC].end) >> (kt->etom ? 9 : 11));
                 dr[DR_PERC].ph += dr[DR_PERC].inc;
                 pv = (((sine(dr[DR_PERC].ph) * a9) >> 15) >> 1) + (((noise * b9) >> 15) >> 3);
                 dr[DR_PERC].amp2 = decay_k(dr[DR_PERC].amp2, 250);

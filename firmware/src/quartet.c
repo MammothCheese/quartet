@@ -713,8 +713,14 @@ static const uint8_t SEQ_ORDER[NTRK] = {T_LEAD, T_PAD, T_BASS, T_DRUMS};   /* th
 static const uint8_t MUTE_BTN[NTRK] = {BTN_FX, BTN_SEL, BTN_ENV, BTN_LFO};
 static const char *const MUTE_BTN_NAME[NTRK] = {"FX", "SEL", "ENV", "LFO"};
 static const char *const DR_NAME_ALL[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "CLAP", "PERC"};
-static const char *const DR_NAME_LM1[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "TOM L", "TOM H"};   /* (the LM-1's samples) */
-#define DR_NAME (kit_now() == KIT_LM1 ? DR_NAME_LM1 : DR_NAME_ALL)   /* each drum's name, with this kit */
+static const char *const DR_NAME_LM1[NDR] = {"KICK", "SNARE", "HAT", "OPEN HAT", "TOM L", "TOM H"};   /* (the LM-1's samples; GATED's toms) */
+static const char *const DR_NAME_TOMS[NDR] = {"KICK", "SNARE", "HAT", "FLOOR TOM", "MID TOM", "HIGH TOM"};
+static const char *const DR_SHORT_ALL[NDR] = {"BD", "SD", "HH", "OH", "CP", "PC"};
+static const char *const DR_SHORT_LM1[NDR] = {"BD", "SD", "HH", "OH", "TL", "TH"};
+static const char *const DR_SHORT_TOMS[NDR] = {"BD", "SD", "HH", "FT", "MT", "HT"};
+#define DR_NAME (kit_now() == KIT_TOMS ? DR_NAME_TOMS : kit_now() == KIT_LM1 || kit_now() == KIT_GATED ? DR_NAME_LM1 : DR_NAME_ALL)   /* each
+                                                   drum's name, with this kit */
+#define DR_SHORT (kit_now() == KIT_TOMS ? DR_SHORT_TOMS : kit_now() == KIT_LM1 || kit_now() == KIT_GATED ? DR_SHORT_LM1 : DR_SHORT_ALL)
 enum { PG_MAIN, PG_OSC, PG_ENV, PG_LFO, NPAGE,  /* the sound pages (the SOUND page's tabs; home is MAIN) */
        PG_FX = NPAGE,                           /* then the effect pages PG_FX + E_REV .. (the top buttons) */
        PG_PROJ = PG_FX + NFX,                   /* the save page (SAVE) */
@@ -1162,10 +1168,22 @@ static void head_mixer(void)                    /* MIXER, the stripe in the four
     cv_blit(0, Y_BIG);
 }
 
+static uint32_t id_bank(uint32_t t, uint32_t id);
+static int32_t tiny_w(const char *s);
+static int32_t tiny_text(int32_t x, int32_t y, const char *s, uint16_t c);
 static void draw_big(uint32_t trk, uint32_t drum_edit, uint32_t drum, uint32_t preset_flash)   /* the chosen track (or drum), its pattern */
 {
     if (preset_flash) {                         /* a sound (or kit) just picked: its name, big, for a moment */
-        head_text(trk < NSYN ? sound_name(TTYPE(trk), set.snd[trk].preset) : kit_name(), C_WHITE, trk_c(trk, 100));
+        uint32_t id = trk < NSYN ? set.snd[trk].preset : set.dkit, bk = id_bank(trk, id);
+        const char *nm = trk < NSYN ? sound_name(TTYPE(trk), id) : kit_name();
+        const char *cat = bk < NBANK ? (trk < NSYN ? BANK_NAME[TTYPE(trk)][bk] : KBANK_NAME[bk]) : bk == 4u ? "USER" : "";
+        int32_t cw = cat[0] ? tiny_w(cat) + 12 : 0, nw = text_w(&FONT_L, nm), x;
+        head_begin(trk_c(trk, 100));            /* (the group small and quiet, the sound big: SYNTH  MINI LEAD) */
+        if (cw + nw > 220) { head_text(nm, C_WHITE, trk_c(trk, 100)); return; }   /* (a long name: alone) */
+        x = 124 - (cw + nw) / 2;
+        if (cat[0]) tiny_text(x, 15, cat, C_SUB);
+        cv_text_bg(x + cw, 3, &FONT_L, nm, C_WHITE, C_PANEL);
+        cv_blit(0, Y_BIG);
         return;
     }
     head_track(trk, drum_edit ? DR_NAME[drum] : slot_name(trk), 1);
@@ -1241,7 +1259,9 @@ static void bottom_seq(const char *l, uint32_t fx, uint16_t col)
 
 static uint32_t kit_list(uint8_t *ids, uint32_t cur);
 static uint32_t id_bank(uint32_t t, uint32_t id);
-static uint32_t snd_pg;                         /* the sound editor's page: 0 INSTR (drums: KIT), then MAIN OSC ENV LFO (drums: a drum each) */
+static uint32_t snd_pg;                         /* EDIT: 0 the instrument (drums: the kit); then the sound editor's page, MAIN OSC
+                                                   ENV LFO (drums: a drum each) */
+static uint32_t snd_deep;                       /* (the sound editor's page last shown, 0 MAIN .. 3 LFO: EDIT goes back to it) */
 static uint32_t usr_slot, usr_ask, usr_t;       /* the USER slot to save to (KNOB4 on INSTR); "sure?" (REC again within 3 s, any page) */
 static uint32_t chain_sl;                       /* the signal chain (EDIT twice): the pedal slot chosen, 0..3 */
 static uint32_t cp_trk, cp_pat, cp_ask, cp_t, cp_live;   /* the copy page (SEQ held): the pattern to copy from; "sure?"
@@ -1269,8 +1289,7 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
                 p = put_num(p, drum + 1u, 1); *p++ = '/'; p = put_num(p, L, 1);
                 *p++ = ' '; p = put(p, NLEN_NAME[ui_len % NNLEN]);
             } else {                            /* drums: the drum, the hit chosen (HH 7/16) */
-                static const char *const DS[NDR] = {"BD", "SD", "HH", "OH", "CP", "PC"};
-                p = put(p, DS[drum % NDR]);
+                p = put(p, DR_SHORT[drum % NDR]);
                 if (sx_ds < L) { *p++ = ' '; p = put_num(p, sx_ds + 1u, 1); *p++ = '/'; p = put_num(p, L, 1); }
             }
             *p = 0;
@@ -1289,7 +1308,7 @@ static void draw_status(int32_t oct, uint32_t trk, uint32_t show_ch, uint32_t pa
         p = put(p, "FX, SEL, ENV, LFO: MUTE TRACKS");
     } else if (page == PG_SOUND) {              /* the sound editor */
         if (usr_ask) { p = put(p, "REC AGAIN: SAVE TO USER "); *p++ = (char)('1' + usr_slot); }
-        else { p = put(p, "ALG:PAGE  REC TWICE:SAVE U"); *p++ = (char)('1' + usr_slot); }
+        else { p = put(p, snd_pg ? "ALG:PAGE  REC TWICE:SAVE U" : "ALG:SOUND  REC TWICE:SAVE U"); *p++ = (char)('1' + usr_slot); }
     } else if (page == PG_CHAIN) {              /* the signal chain: what KNOB2-4 turn on the chosen pedal */
         pknob_t pk[3];
         uint32_t k, n;
@@ -1532,9 +1551,6 @@ static void draw_home(uint32_t sel, uint32_t run)
 static void draw_grid(uint32_t pt, uint32_t drum, uint32_t page, uint32_t play, uint32_t len, int32_t y0, int32_t h)   /* play:
                                                    the step playing, or none; y0, h: where (the step recorder's: shorter) */
 {
-    static const char *const DR_SHORT_ALL[NDR] = {"BD", "SD", "HH", "OH", "CP", "PC"};
-    static const char *const DR_SHORT_LM1[NDR] = {"BD", "SD", "HH", "OH", "TL", "TH"};   /* (the LM-1: its two toms) */
-    const char *const *DR_SHORT = kit_now() == KIT_LM1 ? DR_SHORT_LM1 : DR_SHORT_ALL;
     uint32_t d, s;
     uint16_t col = trk_c(T_DRUMS, 100), dim = trk_c(T_DRUMS, 22);
     int32_t rh = h / (int32_t)NDR, ch = rh - 7;
@@ -3241,14 +3257,11 @@ static void art_print(uint32_t kind, int32_t x, int32_t y, int32_t w, int32_t h,
 }
 static void draw_instr(uint32_t trk)
 {
-    static const char *const TAB[NPAGE + 1u] = {"INSTR", "MAIN", "OSC", "ENV", "LFO"};
-    static const char *const DTAB[NDR + 1u] = {"KIT", "BD", "SD", "HH", "OH", "CP", "PC"};
     static const uint16_t YEL = RGB(255, 200, 60);
     const uint8_t *rgb = trk_rgb(trk);
     uint16_t col = rgbk(rgb, 100), dim = C_ROW;
-    uint8_t ids[40], sub[40];
+    uint8_t ids[64], sub[64];
     uint32_t now = trk < NSYN ? set.snd[trk].preset : set.dkit, bk = id_bank(trk, now), n, m = 0, at = 0, i, half, top;
-    uint32_t ntab = trk < NSYN ? NPAGE + 1u : NDR + 1u;
     const char *const *bkn = trk < NSYN ? BANK_NAME[TTYPE(trk)] : KBANK_NAME;
     uint32_t used = trk < NSYN ? set.mu.ub.snd[TTYPE(trk)][usr_slot % NUSND].preset != 0u : set.mu.ub.kit[usr_slot % NUKIT].used != 0u;
     char ty[16], gr[20], us[16], *p;
@@ -3264,11 +3277,11 @@ static void draw_instr(uint32_t trk)
     for (half = 0; half < 2u; half++) {
         cv_begin(240, H_PEDAL / 2, C_BG);
         cv_oy = -(int32_t)half * (H_PEDAL / 2);
-        for (i = 0; i < ntab; i++) {            /* the pages, as pills, INSTR lit */
-            int32_t tw = 232 / (int32_t)ntab, tx = 4 + (int32_t)i * tw;
-            const char *tn = trk < NSYN ? TAB[i] : DTAB[i];
-            cv_rrect(tx + 1, 2, tw - 3, 20, 10, i == 0u ? col : dim);
-            cv_text_bg(tx + tw / 2 - 1 - text_w(&FONT_S, tn) / 2, 4, &FONT_S, tn, i == 0u ? C_ON : C_SUB, i == 0u ? col : dim);
+        {                                       /* INSTRUMENT lit, then where EDIT goes next: the SOUND editor */
+            cv_rrect(5, 2, 140, 20, 10, col);
+            cv_text_bg(75 - text_w(&FONT_S, "INSTRUMENT") / 2, 4, &FONT_S, "INSTRUMENT", C_ON, col);
+            cv_rrect(149, 2, 87, 20, 10, dim);
+            tiny_text(192 - tiny_w("EDIT: SOUND") / 2, 7, "EDIT: SOUND", C_SUB);
         }
         art_print(TTYPE(trk), 4, 26, 86, 62, rgb);   /* the type's picture */
         cv_rrect(4, 92, 86, 18, 9, rgbm(rgb, 30));   /* K1 the type, K2 the group */
@@ -3290,33 +3303,163 @@ static void draw_instr(uint32_t trk)
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
     }
 }
+/* the SOUND editor's charts (EDIT twice), in the box x 4..236, y 28..96: what the page's knobs do, drawn */
+#define CH_X 10                                 /* the plot: x CH_X .. CH_X + CH_W, y CH_T .. CH_B */
+#define CH_W 220
+#define CH_T 34
+#define CH_B 90
+static int32_t wave_at(uint32_t w, uint32_t ph)  /* a wave's level, -100..100, at phase ph (256 a cycle) */
+{
+    ph &= 255u;
+    switch (w % NWAVE) {
+    case W_SIN: return sine(ph << 24) * 100 / 32767;
+    case W_TRI: return ph < 128u ? (int32_t)ph * 200 / 128 - 100 : 100 - ((int32_t)ph - 128) * 200 / 128;
+    case W_SAW: return 100 - (int32_t)ph * 200 / 255;
+    case W_SQR: return ph < 128u ? 80 : -80;
+    case W_PULSE: return ph < 56u ? 80 : -80;
+    case W_NOISE: { uint32_t h = ph * 2654435761u; return (int32_t)(h >> 25) - 64; }
+    case W_FM: return sine((ph << 24) + (uint32_t)(sine(ph << 25) * 40000)) * 100 / 32767;
+    default: return 100 - (int32_t)(ph * 3u / 2u % 256u) * 200 / 255;   /* SYNC: a saw restarted half-way through */
+    }
+}
+static void chart_box(void) { cv_rrect(4, 28, 232, 68, 6, C_BG); }
+static void chart_line(int32_t *y, uint16_t c)  /* a curve, a point a column, joined */
+{
+    int32_t x;
+    for (x = 1; x < CH_W; x++) thick(CH_X + x - 1, y[x - 1], CH_X + x, y[x], c);
+}
+static void chart_fill(const int32_t *y, uint16_t c)   /* (under a curve, down to the base) */
+{
+    int32_t x;
+    for (x = 0; x < CH_W; x++) if (y[x] < CH_B) cv_rect(CH_X + x, y[x], 1, CH_B - y[x], c);
+}
+static void draw_chart(uint32_t trk, uint32_t pg, uint16_t col, uint16_t tint)   /* pg: the page (synths 0 MAIN .. 3
+                                                   LFO; drums: the drum) */
+{
+    static int32_t y[CH_W], y2[CH_W];
+    int32_t x, h = CH_B - CH_T;
+    chart_box();
+    if (trk >= NSYN) {                          /* a drum: its hit, dying away (DECAY), as loud as LEVEL, as high as PITCH */
+        const dsnd_t *ds = &set.dsnd[pg % NDR];
+        int32_t len = 16 + (int32_t)ds->decay * (CH_W - 20) / 127, amp = 4 + (int32_t)ds->level * (h / 2 - 4) / 127, mid = (CH_T + CH_B) / 2;
+        uint32_t ph = 0, inc = (uint32_t)(40000000u + (uint32_t)ds->pitch * 3000000u);
+        for (x = 0; x < CH_W; x++) {
+            int32_t e = x < len ? amp * (len - x) / len * (len - x) / len : 0;
+            if (e) cv_rect(CH_X + x, mid - e, 1, 2 * e + 1, tint);
+            y[x] = mid - sine(ph) * e / 32767; ph += inc;
+        }
+        chart_line(y, col);
+        cv_rect(CH_X, mid, CH_W, 1, C_KEYCAP);
+        return;
+    }
+    {
+        const snd_t *sp = &set.snd[trk];
+        switch (pg) {
+        case 0: {          /* MAIN: the filter, loud to the left, cut above CUTOFF; RESO a peak there;
+                                                   FILT ENV where the envelope opens it to (the dotted curve) */
+            int32_t k;
+            for (k = 0; k < 2; k++) {
+                int32_t xc = (int32_t)sp->cut * (CH_W - 20) / 127 + (k ? (int32_t)sp->fenv * (CH_W - 20) / 254 : 0) + 8;
+                int32_t *yy = k ? y2 : y;
+                if (xc > CH_W - 2) xc = CH_W - 2;
+                for (x = 0; x < CH_W; x++) {
+                    int32_t d = x - xc, a = 560, bw = 18, bump = 0;
+                    if (d > -bw && d < bw) { int32_t q = bw - (d < 0 ? -d : d); bump = (int32_t)sp->res * 3 * q * q / (bw * bw); }
+                    if (d > 0) a -= d * 18;
+                    a += bump; if (a < 0) a = 0; if (a > 1000) a = 1000;
+                    yy[x] = CH_B - a * h / 1000;
+                }
+            }
+            if (sp->fenv) for (x = 0; x < CH_W; x += 3) cv_rect(CH_X + x, y2[x], 2, 2, rgbk(trk_rgb(trk), 45));
+            chart_fill(y, tint);
+            chart_line(y, col);
+            break;
+        }
+        case 1: {                               /* OSC: wave 1 (two cycles), wave 2 at its tuning over it; the MIX brightens
+                                                   the one heard more */
+            int32_t st = (int32_t)sp->tune - 24, r256 = 256, mid = (CH_T + CH_B) / 2, a = h / 2 - 2;
+            uint32_t m = sp->mix;
+            while (st >= 12) { r256 *= 2; st -= 12; }
+            while (st < 0) { r256 /= 2; st += 12; }
+            r256 = r256 * (100 + st * 6) / 100;   /* (a semitone ~6 %) */
+            for (x = 0; x < CH_W; x++) {
+                y[x] = mid - wave_at(sp->w1, (uint32_t)(x * 512 / CH_W)) * a / 100;
+                y2[x] = mid - wave_at(sp->w2, (uint32_t)(x * 512 / CH_W * r256 / 256)) * a / 100;
+            }
+            cv_rect(CH_X, mid, CH_W, 1, C_KEYCAP);
+            chart_line(y2, trk_c(trk, 25u + m * 75u / 127u));
+            chart_line(y, trk_c(trk, 100u - m * 75u / 127u));
+            break;
+        }
+        case 2: {                               /* ENV: ATTACK up, DECAY down to SUSTAIN, held, RELEASE down */
+            int32_t aw = 3 + (int32_t)sp->a * 52 / 127, dw = 3 + (int32_t)sp->d * 52 / 127, rw = 3 + (int32_t)sp->r * 64 / 127;
+            int32_t sy = CH_B - (int32_t)sp->s * h / 127, hw = CH_W - aw - dw - rw - 2;
+            if (hw < 20) hw = 20;
+            for (x = 0; x < CH_W; x++) {
+                int32_t v;
+                if (x < aw) v = CH_B - x * h / aw;
+                else if (x < aw + dw) v = CH_T + (sy - CH_T) * (x - aw) / dw;
+                else if (x < aw + dw + hw) v = sy;
+                else if (x < aw + dw + hw + rw) v = sy + (CH_B - sy) * (x - aw - dw - hw) / rw;
+                else v = CH_B;
+                y[x] = v;
+            }
+            chart_fill(y, tint);
+            chart_line(y, col);
+            break;
+        }
+        default: {                              /* LFO: its WAVE, as many cycles as fast as RATE, as deep as DEPTH; TARGET named */
+            static const char *const TG2[NLTGT] = {"TO PITCH", "TO FILTER", "TO VOLUME", "TO PULSE"};
+            int32_t cyc = 1 + (int32_t)sp->lrate * 5 / 127, a = 2 + (int32_t)sp->ldepth * (h / 2 - 4) / 127, mid = (CH_T + CH_B) / 2 + 4;
+            uint32_t sd = 7;
+            int32_t held = 0;
+            for (x = 0; x < CH_W; x++) {
+                uint32_t ph = (uint32_t)(x * cyc * 256 / CH_W);
+                int32_t v;
+                switch (sp->lwave % NLWAVE) {
+                case 0: v = (ph & 255u) < 128u ? (int32_t)(ph & 255u) * 200 / 128 - 100 : 100 - ((int32_t)(ph & 255u) - 128) * 200 / 128; break;
+                case 1: v = (ph & 255u) < 128u ? 100 : -100; break;
+                case 2: v = 100 - (int32_t)(ph & 255u) * 200 / 255; break;
+                default:
+                    if (x == 0 || (ph & 255u) < (uint32_t)((x - 1) * cyc * 256 / CH_W & 255)) held = (int32_t)rnd_n(&sd, 201) - 100;
+                    v = held;
+                }
+                y[x] = mid - v * a / 100;
+            }
+            cv_rect(CH_X, mid, CH_W, 1, C_KEYCAP);
+            chart_line(y, col);
+            tiny_text(CH_X, CH_T - 2, TG2[sp->ltgt % NLTGT], C_SUB);
+        }
+        }
+    }
+}
 static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
 {
-    static const char *const TAB[NPAGE + 1u] = {"INSTR", "MAIN", "OSC", "ENV", "LFO"};
-    static const char *const DTAB[NDR + 1u] = {"KIT", "BD", "SD", "HH", "OH", "CP", "PC"};
+    static const char *const TAB[NPAGE] = {"MAIN", "OSC", "ENV", "LFO"};
     const char *const *WAVE = WAVE_NAME, *const *LTGT = LTGT_NAME;
     static const char *const LWAVE[NLWAVE] = {"TRI", "SQR", "SAW", "RND"};
     const uint8_t *rgb = trk_mute >> trk & 1u ? MUTE_RGB : TRK_RGB[TTYPE(trk)];
     uint16_t col = rgbk(rgb, 100), ink = C_TXT;
     const char *nm[4], *vs[4];
-    uint32_t v[4], mx[4], half, i, ntab = trk < NSYN ? NPAGE + 1u : NDR + 1u, sel = pg % ntab;
+    uint32_t v[4], mx[4], half, i, ntab = trk < NSYN ? NPAGE : NDR, sel;
     char vb[4][8];
-    if (sel == 0u) { draw_instr(trk); return; }   /* (INSTR / KIT: a menu) */
+    if (pg == 0u) { draw_instr(trk); return; }  /* (EDIT once: the instrument) */
+    sel = (pg - 1u) % ntab;
     if (trk < NSYN) {
         const snd_t *sp = &set.snd[trk];
-        switch (sel - 1u) {
-        case PG_MAIN: nm[0] = "GLIDE"; v[0] = set.glide[trk]; mx[0] = 127;
-                      nm[1] = "CUTOFF"; v[1] = sp->cut; nm[2] = "RESO"; v[2] = sp->res; nm[3] = "FILT ENV"; v[3] = sp->fenv;
-                      mx[1] = mx[2] = mx[3] = 127; break;
-        case PG_OSC: nm[0] = "WAVE 1"; v[0] = sp->w1 % NWAVE; mx[0] = NWAVE - 1u; nm[1] = "WAVE 2"; v[1] = sp->w2 % NWAVE; mx[1] = NWAVE - 1u;
-                     nm[2] = "TUNE 2"; v[2] = sp->tune; mx[2] = 48; nm[3] = "MIX"; v[3] = sp->mix; mx[3] = 127; break;
-        case PG_ENV: nm[0] = "ATTACK"; v[0] = sp->a; nm[1] = "DECAY"; v[1] = sp->d; nm[2] = "SUSTAIN"; v[2] = sp->s; nm[3] = "RELEASE"; v[3] = sp->r;
-                     mx[0] = mx[1] = mx[2] = mx[3] = 127; break;
+        switch (sel) {
+        case 0: nm[0] = "GLIDE"; v[0] = set.glide[trk]; mx[0] = 127;
+                nm[1] = "CUTOFF"; v[1] = sp->cut; nm[2] = "RESO"; v[2] = sp->res; nm[3] = "FILT ENV"; v[3] = sp->fenv;
+                mx[1] = mx[2] = mx[3] = 127; break;
+        case 1: nm[0] = "WAVE 1"; v[0] = sp->w1 % NWAVE; mx[0] = NWAVE - 1u; nm[1] = "WAVE 2"; v[1] = sp->w2 % NWAVE; mx[1] = NWAVE - 1u;
+                nm[2] = "TUNE 2"; v[2] = sp->tune; mx[2] = 48; nm[3] = "MIX"; v[3] = sp->mix; mx[3] = 127; break;
+        case 2: nm[0] = "ATTACK"; v[0] = sp->a; nm[1] = "DECAY"; v[1] = sp->d; nm[2] = "SUSTAIN"; v[2] = sp->s; nm[3] = "RELEASE"; v[3] = sp->r;
+                mx[0] = mx[1] = mx[2] = mx[3] = 127; break;
         default: nm[0] = "RATE"; v[0] = sp->lrate; mx[0] = 127; nm[1] = "DEPTH"; v[1] = sp->ldepth; mx[1] = 127;
                  nm[2] = "TARGET"; v[2] = sp->ltgt % NLTGT; mx[2] = NLTGT - 1u; nm[3] = "WAVE"; v[3] = sp->lwave % NLWAVE; mx[3] = NLWAVE - 1u;
         }
     } else {
-        const dsnd_t *ds = &set.dsnd[(sel - 1u) % NDR];
+        const dsnd_t *ds = &set.dsnd[sel % NDR];
         (void)drum;
         nm[0] = "PITCH"; v[0] = ds->pitch; nm[1] = "DECAY"; v[1] = ds->decay; nm[2] = "LEVEL"; v[2] = ds->level;
         nm[3] = ""; v[3] = 0; mx[0] = mx[1] = mx[2] = 127; mx[3] = 0;
@@ -3324,12 +3467,12 @@ static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
     for (i = 0; i < 4u; i++) {                  /* the values as words or numbers */
         vs[i] = vb[i];
         if (!nm[i][0]) vb[i][0] = 0;
-        else if (trk < NSYN && sel - 1u == PG_OSC && i < 2u) vs[i] = WAVE[v[i] % NWAVE];
-        else if (trk < NSYN && sel - 1u == PG_OSC && i == 2u) {
+        else if (trk < NSYN && sel == 1u && i < 2u) vs[i] = WAVE[v[i] % NWAVE];
+        else if (trk < NSYN && sel == 1u && i == 2u) {
             int32_t st = (int32_t)v[2] - 24; char *p = vb[2];
             *p++ = st < 0 ? '-' : '+'; *put_num(p, (uint32_t)(st < 0 ? -st : st), 1) = 0;
-        } else if (trk < NSYN && sel - 1u == PG_LFO && i == 2u) vs[i] = LTGT[v[2] % NLTGT];
-        else if (trk < NSYN && sel - 1u == PG_LFO && i == 3u) vs[i] = LWAVE[v[3] % NLWAVE];
+        } else if (trk < NSYN && sel == 3u && i == 2u) vs[i] = LTGT[v[2] % NLTGT];
+        else if (trk < NSYN && sel == 3u && i == 3u) vs[i] = LWAVE[v[3] % NLWAVE];
         else *put_num(vb[i], v[i], 1) = 0;
     }
     for (half = 0; half < 2u; half++) {
@@ -3337,21 +3480,22 @@ static void draw_sound(uint32_t trk, uint32_t pg, uint32_t drum)
         cv_oy = -(int32_t)half * (H_PEDAL / 2);
         cv_rrect(0, 0, 240, H_PEDAL, 8, C_PANEL);
         for (i = 0; i < ntab; i++) {            /* the pages (drums: the drums), the chosen one lit */
-            int32_t tw = 232 / (int32_t)ntab, tx = 4 + (int32_t)i * tw;   /* (7 drum tabs: 33 px each) */
-            const char *tn = trk < NSYN ? TAB[i] : DTAB[i];
-            cv_rrect(tx + 1, 6, tw - 2, 22, 11, i == sel ? col : C_KEYCAP);
-            cv_text_bg(tx + tw / 2 - text_w(&FONT_S, tn) / 2, 9, &FONT_S, tn, i == sel ? C_ON : C_SUB, i == sel ? col : C_KEYCAP);
+            int32_t tw = 232 / (int32_t)ntab, tx = 4 + (int32_t)i * tw;
+            const char *tn = trk < NSYN ? TAB[i] : DR_SHORT[i];
+            cv_rrect(tx + 1, 3, tw - 2, 21, 10, i == sel ? col : C_KEYCAP);
+            cv_text_bg(tx + tw / 2 - text_w(&FONT_S, tn) / 2, 5, &FONT_S, tn, i == sel ? C_ON : C_SUB, i == sel ? col : C_KEYCAP);
         }
-        {
-            const char *sn = (trk < NSYN ? sound_name(TTYPE(trk), set.snd[trk].preset) : kit_name());
-            cv_text_bg(120 - text_w(&FONT_S, sn) / 2, 36, &FONT_S, sn, col, C_PANEL);
+        draw_chart(trk, sel, col, rgbk(rgb, 30));
+        {                                       /* the sound's name, small, in the chart's corner */
+            const char *sn = trk < NSYN ? sound_name(TTYPE(trk), set.snd[trk].preset) : kit_name();
+            tiny_text(230 - tiny_w(sn), CH_T - 2, sn, col);
         }
         for (i = 0; i < 4u; i++) {              /* the four knobs, KNOB1-4 (drums: three) */
             int32_t cx = 31 + (int32_t)i * 59;
             if (!nm[i][0]) continue;
-            draw_knob(cx, 84, v[i], mx[i] ? mx[i] : 1u, col, rgbk(rgb, 35));
-            cv_text_bg(cx - text_w(&FONT_S, nm[i]) / 2, 106, &FONT_S, nm[i], ink, C_PANEL);
-            lcd_value(cx, 126, 54, vs[i], C_LCDTXT);
+            mini_knob(cx, 114, v[i], mx[i] ? mx[i] : 1u, col, rgbk(rgb, 35));
+            tiny_text(cx - tiny_w(nm[i]) / 2, 131, nm[i], ink);   /* (the small font: the names fit side by side) */
+            lcd_value(cx, 145, 54, vs[i], C_LCDTXT);
         }
         cv_oy = 0;
         cv_blit(0, Y_PEDAL + half * (H_PEDAL / 2));
@@ -3551,7 +3695,7 @@ static uint32_t kit_list(uint8_t *ids, uint32_t cur)   /* the kits offered, grou
 {
     uint32_t g, i, n = 0;
     if (kit_bank(cur) == 0xFFu && cur < NKIT) ids[n++] = (uint8_t)cur;
-    for (g = 0; g < 4u; g++) for (i = 0; i < 6u && KIT_GRP[g][i] != 0xFFu; i++) ids[n++] = KIT_GRP[g][i];
+    for (g = 0; g < 4u; g++) for (i = 0; i < NKGRP_MAX && KIT_GRP[g][i] != 0xFFu; i++) ids[n++] = KIT_GRP[g][i];
     for (i = 0; i < NUKIT; i++) if (set.mu.ub.kit[i].used) ids[n++] = (uint8_t)KUID(i);
     return n;
 }
@@ -3566,7 +3710,7 @@ static void kit_load(uint32_t id)               /* the drums take kit id: its si
 static uint32_t id_bank(uint32_t t, uint32_t id) { return t < NSYN ? sound_group(TTYPE(t), id) : kit_bank(id); }
 static void snd_step(uint32_t t, int32_t e, int bank_only)   /* e sounds on (bank_only: staying in its bank) */
 {
-    uint8_t ids[40], sub[40];
+    uint8_t ids[64], sub[64];
     uint32_t now = t < NSYN ? set.snd[t].preset : set.dkit, n = t < NSYN ? sound_list(TTYPE(t), ids, now) : kit_list(ids, now), i, k = 0, m = 0;
     for (i = 0; i < n; i++) if (!bank_only || id_bank(t, ids[i]) == id_bank(t, now)) sub[m++] = ids[i];
     if (!m) return;
@@ -3576,7 +3720,7 @@ static void snd_step(uint32_t t, int32_t e, int bank_only)   /* e sounds on (ban
 }
 static int snd_bank(uint32_t t, int32_t e)      /* another bank: its first sound (an empty USER bank is passed by) */
 {
-    uint8_t ids[40];
+    uint8_t ids[64];
     uint32_t now = t < NSYN ? set.snd[t].preset : set.dkit, n = t < NSYN ? sound_list(TTYPE(t), ids, now) : kit_list(ids, now);
     uint32_t b = id_bank(t, now), tries, i;
     if (b >= NBANK) b = e > 0 ? NBANK - 1u : 0u;   /* (from one no longer offered: the first group, or the last) */
@@ -4441,11 +4585,14 @@ static void app_main(void)
                 set.key = (int8_t)(v < -7 ? -7 : v > 7 ? 7 : v);
                 CHANGED();
             }
-            else if (spage == PG_SOUND) {       /* the sound editor: the page: INSTR, then MAIN OSC ENV LFO (drums: KIT, then
-                                                   the six drums) */
-                uint32_t np = trk < NSYN ? NPAGE + 1u : NDR + 1u;
-                snd_pg = (uint32_t)(((int32_t)(snd_pg % np) + e % (int32_t)np + (int32_t)np) % (int32_t)np);
-                if (trk == T_DRUMS && snd_pg) drum = snd_pg - 1u;
+            else if (spage == PG_SOUND && snd_pg == 0u) {   /* the instrument: the sound, a click each, on from one group
+                                                   into the next (as home's ALGORITHM) */
+                snd_step(trk, e, 0); usr_ask = 0; CHANGED();
+            }
+            else if (spage == PG_SOUND) {       /* the sound editor: its page, MAIN OSC ENV LFO (drums: the six drums) */
+                uint32_t np = trk < NSYN ? NPAGE : NDR;
+                snd_pg = 1u + (uint32_t)(((int32_t)((snd_pg - 1u) % np) + e % (int32_t)np + (int32_t)np) % (int32_t)np);
+                if (trk == T_DRUMS) drum = snd_pg - 1u; else snd_deep = snd_pg - 1u;
                 usr_ask = 0;
             }
             else if (syn_edit) {                /* editing a synth: the cursor, through all pages */
@@ -4487,8 +4634,10 @@ static void app_main(void)
         if (!edit || live_mode || spage >= PG_FX) sx_hold = 0;   /* (out of the step recorder: back to the NOTE deck) */
         if (b & (1u << BTN_EDIT) && edit && !live_mode && spage < PG_FX) sx_hold ^= 1u;   /* the step recorder: EDIT
                                                    switches the knobs between the NOTE and STEP FX decks */
-        else if (b & (1u << BTN_EDIT)) {        /* EDIT: the sound editor; again: the signal chain; again: home */
-            if (spage == PG_SOUND) { spage = PG_CHAIN; chain_sl = 0; }
+        else if (b & (1u << BTN_EDIT)) {        /* EDIT: the instrument; again: the sound editor (its charts); again: the
+                                                   signal chain; again: home */
+            if (spage == PG_SOUND && snd_pg == 0u) { snd_pg = trk < NSYN ? 1u + (snd_deep % NPAGE) : 1u + drum % NDR; usr_ask = 0; }
+            else if (spage == PG_SOUND) { spage = PG_CHAIN; chain_sl = 0; }
             else if (spage == PG_CHAIN) spage = PG_MAIN;
             else { spage = PG_SOUND; snd_pg = 0; usr_ask = 0; edit = 0; live_mode = 0; live_rec = 0; chord_n = 0; }
         }
@@ -4653,7 +4802,7 @@ static void app_main(void)
                 ch = 1;
             }
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) ch |= snd_bank(trk, e);
-            if ((e = fm1_enc_take(ENC_KNOB3)) != 0) { snd_step(trk, e, 1); ch = 1; }
+            if ((e = fm1_enc_take(ENC_KNOB3)) != 0) { snd_step(trk, e, 0); ch = 1; }   /* (past a group's end: the next group) */
             { uint8_t us = (uint8_t)usr_slot; knob(ENC_KNOB4, &us, 0, (int32_t)(trk < NSYN ? NUSND : NUKIT) - 1); usr_slot = us; }
             if (ch) { CHANGED(); usr_ask = 0; }
         } else if (spage == PG_SOUND) {         /* the sound editor: the page's four knobs */

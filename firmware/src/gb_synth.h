@@ -101,17 +101,22 @@ static const char *const BANK_NAME[NSYN][NBANK] = {   /* by type: T_LEAD, T_BASS
 /* the sounds offered, group by group (0xFF: the end). The library's others are not offered any more but stay here,
  * loadable, so an older save sounds as it did (its ids never change) */
 #define GX 0xFFu
-static const uint8_t SND_GRP[NSYN][4][6] = {
-    {{0, 1, 3, 38, 40, 41}, {5, 2, 4, 36, 42, 43}, {32, 33, 34, 35, 9, 39}, {6, 64, 67, 68, 66, 69}},
-    /* LEAD: KEYS piano, xylophone, music box, FM bell, tine keys, clavinet; BAND Hammond, brass, electric guitar, synth
-       brass, flute, harmonica; SYNTH mini, Juno lead, PWM, acid lead, chiptune, porta lead; ODD theremin, glass harp,
-       laser, bowed metal, sine swarm, stepper */
-    {{0, 2, 3, 1, 40, 41}, {32, 33, 36, 5, 38, 68}, {34, 8, 39, 6, 35, 37}, {4, 9, 64, 66, 69, 67}},
+#define NGRP_MAX 10u                            /* sounds a group offers, at most */
+static const uint8_t SND_GRP[NSYN][4][NGRP_MAX] = {
+    {{0, 44, 5, 45, 46, 1, 3, 38, 40, 41}, {2, 47, 48, 4, 42, 43, GX, GX, GX, GX},
+     {32, 33, 34, 35, 9, 39, 36, 49, 50, 51}, {6, 64, 67, 68, 66, 69, GX, GX, GX, GX}},
+    /* LEAD: KEYS piano, room piano, tonewheel organ (once HAMMOND), church organ, clavioline, xylophone, music box, FM
+       bell, tine keys, clavinet; BAND brass, French horn, solo strings, electric guitar, flute, harmonica; SYNTH mini,
+       Juno lead, PWM, acid lead, chiptune, porta lead, synth brass, night pulse, underpass, signal lead; ODD theremin,
+       glass harp, laser, bowed metal, sine swarm, stepper */
+    {{0, 2, 3, 1, 40, 41, GX, GX, GX, GX}, {32, 33, 36, 5, 38, 68, GX, GX, GX, GX},
+     {34, 8, 39, 6, 35, 37, GX, GX, GX, GX}, {4, 9, 64, 66, 69, 67, GX, GX, GX, GX}},
     /* BASS: ACOUSTIC upright, slap, plucked, tuba, fretless, picked; ANALOG Moog, 303 line, sub, synth bass, rubber,
        slide sub; DIGITAL DX bass, Reese, electro bass, FM, deep Reese, synth pluck; WILD fuzz, wobble, growl, Juno bass,
        womp, dirt bass */
-    {{0, 34, 1, 2, 40, 39}, {4, 37, 3, 5, 41, 42}, {32, 35, 36, 33, 38, 6}, {8, 64, 67, 9, 7, 65}}};
-    /* PAD: STRINGS strings, Solina, choir, acoustic guitar, harp, digital choir; KEYS electric piano, DX piano, organ,
+    {{0, 34, 43, 45, 1, 44, 2, 40, 39, GX}, {4, 37, 3, 5, 41, 42, GX, GX, GX, GX},
+     {32, 35, 36, 33, 38, 6, GX, GX, GX, GX}, {8, 64, 67, 9, 7, 65, GX, GX, GX, GX}}};
+    /* PAD: STRINGS strings, Solina, tremolo strings, tape strings, choir, tape choir, acoustic guitar, harp, digital choir; KEYS electric piano, DX piano, organ,
        handpan, vibes, marimba; SYNTH Juno strings, poly synth, PWM pad, Prophet brass, warm analog, warm synth; ATMOS
        drone, frozen, cathedral, sweep, glass pad, tidal strings, poly synth, PWM pad, Prophet brass; ATMOS drone, frozen, cathedral, sweep */
 #define UID(u) (96u + (u))                      /* a USER sound's id */
@@ -122,7 +127,9 @@ static const sdef_t SND_LEAD[] = {
     SD("BRASS", 2, 0, 45, 20, 85, W_SAW, W_SAW, 24, 50, 55, 85, 100, 60, 95, 8, L_PITCH, LW_TRI),      /* two saws, a 25 ms swell, the filter opening */
     SD("MUSIC BOX", 3, 0, 112, 0, 0, W_SIN, W_SIN, 48, 30, 0, 92, 0, 90, 95, 0, L_PITCH, LW_TRI),      /* a sine + two octaves up, a tinkling pluck */
     SD("ELEC GUITAR", 4, 0, 70, 35, 55, W_SAW, W_SQR, 24, 45, 0, 92, 60, 62, 95, 0, L_PITCH, LW_TRI),  /* a picked, bright string that rings on */
-    SD("HAMMOND", 5, 0, 80, 10, 25, W_SQR, W_SIN, 43, 45, 0, 60, 127, 30, 105, 10, L_PITCH, LW_TRI),   /* a drawbar organ, a fast Leslie wobble */
+    SD("TONEWHEEL ORGAN", 5, 0, 100, 0, 22, W_TRI, W_SIN, 36, 58, 0, 58, 118, 22, 95, 0, L_PITCH, LW_TRI),   /* (once HAMMOND) a drawbar organ:
+                                                   the fundamental and its octave, a brief key click and a touch of
+                                                   percussion; level while held, dry (the ROTARY pedal moves it) */
     SD("THEREMIN", 6, 0, 112, 0, 0, W_SIN, W_SIN, 24, 0, 70, 80, 127, 80, 90, 30, L_PITCH, LW_TRI),    /* a pure sine, a wide singing vibrato */
     SD("SYNTH", 7, 0, 85, 25, 30, W_SAW, W_SAW, 24, 50, 5, 70, 110, 55, 95, 0, L_PITCH, LW_TRI),       /* two saws, wide, held */
     SD("SQUARE LEAD", 8, 0, 80, 40, 40, W_SQR, W_SQR, 24, 50, 0, 80, 110, 60, 95, 6, L_PITCH, LW_TRI), /* two detuned squares, a touch of vibrato */
@@ -150,6 +157,26 @@ static const sdef_t SND_LEAD[] = {
     SD("CLAVINET", 41, 0, 70, 55, 85, W_PULSE, W_SAW, 36, 30, 0, 70, 0, 35, 95, 0, L_PITCH, LW_TRI),  /* a funky, snappy plucked string */
     SD("FLUTE", 42, 0, 92, 10, 10, W_SIN, W_NOISE, 24, 12, 40, 80, 110, 55, 95, 10, L_PITCH, LW_TRI), /* a breathy sine with vibrato */
     SD("HARMONICA", 43, 0, 72, 30, 25, W_PULSE, W_SQR, 24, 45, 25, 80, 100, 45, 90, 14, L_AMP, LW_TRI),   /* reedy, a little tremble */
+    SD("ROOM PIANO", 44, 0, 82, 0, 62, W_TRI, W_SAW, 36, 24, 0, 100, 0, 84, 95, 0, L_PITCH, LW_TRI),   /* a close piano: a clear hammer
+                                                   (the filter's quick opening), a warm decay; dry, for the reverb pedals */
+    SD("CHURCH ORGAN", 45, 0, 92, 0, 0, W_TRI, W_SIN, 36, 34, 64, 90, 127, 74, 95, 0, L_PITCH, LW_TRI),   /* pipes: a broad flutey 8' and a
+                                                   quieter octave, an airy onset, a little bloom on release */
+    SD("CLAVIOLINE", 46, 0, 76, 72, 14, W_PULSE, W_SAW, 24, 22, 22, 60, 127, 24, 101, 16, L_PITCH, LW_TRI),   /* the CLAVIOLINE firmware's
+                                                   CLAVIOLINE TONE, as near as this engine gets: the multivibrator's narrow
+                                                   buzzy pulse through a nasal formant (tablets 3 4 6), gated on and off in
+                                                   a few ms, the fast vibrato with AMP */
+    SD("FRENCH HORN", 47, 0, 40, 12, 64, W_SAW, W_TRI, 24, 46, 70, 92, 104, 66, 95, 4, L_PITCH, LW_TRI),   /* a soft rounded attack opening into
+                                                   warm brass; an accent blooms brighter */
+    SD("SOLO STRINGS", 48, 6, 112, 22, 18, W_SAW, W_NOISE, 24, 10, 66, 95, 118, 76, 104, 10, L_PITCH, LW_TRI),   /* a bowed solo line, as the
+                                                   CONDUCTOR firmware's violins: a saw through the bridge's peak and the
+                                                   top cut, a little bow scrape, a 7 Hz vibrato, growing into the note;
+                                                   a touch of glide joins legato notes */
+    SD("NIGHT PULSE", 49, 0, 34, 46, 72, W_PULSE, W_SQR, 12, 30, 0, 62, 40, 30, 95, 0, L_PITCH, LW_TRI),   /* dark and hollow for repeating 8ths
+                                                   and 16ths: a filter tick, a quick drop darker, a tight release */
+    SD("UNDERPASS", 50, 0, 66, 30, 0, W_TRI, W_SAW, 24, 22, 30, 100, 120, 80, 40, 30, L_FILT, LW_TRI),   /* a deep triangle with a faint grainy
+                                                   saw that drifts and brightens as a note is held */
+    SD("SIGNAL LEAD", 51, 20, 70, 15, 20, W_PULSE, W_SIN, 36, 30, 34, 90, 115, 74, 100, 9, L_PITCH, LW_TRI),   /* a lonely mono melody: a soft
+                                                   pulse edge, a little air an octave up, vibrato, a short glide */
 };
 #define SND_REESE 8u                            /* the bass a new project starts with */
 static const sdef_t SND_BASS[] = {
@@ -219,6 +246,12 @@ static const sdef_t SND_PAD[] = {
     SD("HARP", 40, 0, 104, 0, 25, W_TRI, W_SIN, 36, 30, 0, 98, 0, 96, 95, 0, L_PITCH, LW_TRI),       /* plucked strings that ring on */
     SD("VIBES", 41, 0, 127, 0, 0, W_SIN, W_SIN, 48, 25, 0, 100, 0, 98, 92, 30, L_AMP, LW_TRI),       /* soft mallets, the motor's tremolo */
     SD("MARIMBA", 42, 0, 110, 0, 10, W_SIN, W_TRI, 43, 20, 0, 80, 0, 64, 95, 0, L_PITCH, LW_TRI),     /* wooden bars, a short warm knock */
+    SD("TREMOLO STRINGS", 43, 0, 84, 6, 0, W_SAW, W_SAW, 36, 40, 40, 100, 120, 76, 112, 70, L_AMP, LW_RND),   /* fast, lightly uneven bow
+                                                   strokes on a held chord: nervous, the pitch clear, little reverb */
+    SD("TAPE CHOIR", 44, 0, 64, 76, 0, W_SAW, W_NOISE, 24, 25, 66, 100, 120, 84, 30, 8, L_PITCH, LW_RND),   /* a grainy "ah", the top rolled
+                                                   off, a firmer entrance, a gentle tape drift */
+    SD("TAPE STRINGS", 45, 0, 78, 12, 10, W_SAW, W_SAW, 36, 45, 20, 96, 118, 74, 88, 6, L_PITCH, LW_RND),   /* an old tape keyboard's strings:
+                                                   a grainy middle, a direct attack, a fine flutter */
 };
 static const sdef_t *const SND_LIB[NSYN] = {SND_LEAD, SND_BASS, SND_PAD};   /* by type: T_LEAD, T_BASS, T_PAD */
 static const uint8_t SND_N[NSYN] = {sizeof SND_LEAD / sizeof SND_LEAD[0], sizeof SND_BASS / sizeof SND_BASS[0],
@@ -238,7 +271,7 @@ static uint32_t sound_group(uint32_t ty, uint32_t id)   /* a sound's group (0-3)
 {
     uint32_t g, i;
     if (id >= UID(0)) return BK_USER;
-    for (g = 0; g < 4u; g++) for (i = 0; i < 6u; i++) if (SND_GRP[ty % NSYN][g][i] == id) return g;
+    for (g = 0; g < 4u; g++) for (i = 0; i < NGRP_MAX; i++) if (SND_GRP[ty % NSYN][g][i] == id && id != GX) return g;
     return GX;
 }
 static uint32_t sound_list(uint32_t ty, uint8_t *ids, uint32_t cur)   /* the sounds offered, group by group, then USER
@@ -246,7 +279,7 @@ static uint32_t sound_list(uint32_t ty, uint8_t *ids, uint32_t cur)   /* the sou
 {
     uint32_t g, i, n = 0;
     if (sound_group(ty, cur) == GX && sound_def(ty, cur)) ids[n++] = (uint8_t)cur;
-    for (g = 0; g < 4u; g++) for (i = 0; i < 6u && SND_GRP[ty % NSYN][g][i] != GX; i++) ids[n++] = SND_GRP[ty % NSYN][g][i];
+    for (g = 0; g < 4u; g++) for (i = 0; i < NGRP_MAX && SND_GRP[ty % NSYN][g][i] != GX; i++) ids[n++] = SND_GRP[ty % NSYN][g][i];
     for (i = 0; i < NUSND; i++) if (set.mu.ub.snd[ty % NSYN][i].preset) ids[n++] = (uint8_t)UID(i);
     return n;
 }
@@ -270,6 +303,10 @@ static const struct { uint8_t ty, id; uint16_t g; } SND_TRIM[] = {
     {T_BASS, 64, 16423},                        /* GROWL -6 */
     {T_BASS, 34, 18427},                        /* DX BASS -5 */
     {T_PAD, 39, 18427},                         /* DIGITAL CHOIR -5 */
+    {T_LEAD, 46, 16423},                        /* CLAVIOLINE -6 (its formant peak) */
+    {T_LEAD, 49, 51935},                        /* NIGHT PULSE +4 */
+    {T_LEAD, 50, 51935},                        /* UNDERPASS +4 (deep: little up top) */
+    {T_LEAD, 51, 26029},                        /* SIGNAL LEAD -2 */
 };
 static uint32_t snd_trim(uint32_t ty, uint32_t id)
 {

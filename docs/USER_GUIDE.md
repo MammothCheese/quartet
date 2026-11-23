@@ -28,7 +28,7 @@ The same rules hold on every page:
 - **KNOB1–4** are the four settings shown, left to right. Where a page has an on/off switch (pedals, the arpeggiator, SUPER SEQ), it is **KNOB1**.
 - **Tap or hold:** a tap switches something or opens it, a half-second hold does the other. Pedal buttons and **ARP**: tap on/off, hold for the page. **GLO**: tap the mixer, hold beat repeat. **SEQ** in the step recorder: tap SUPER SEQ, hold the copy page.
 - **REC twice** confirms anything that keeps or replaces work: saving a sound or a project, copying a pattern, clearing everything. Holding **REC** (on home, the step recorder or the LIVE page) opens the **RECORD** page, where clearing a pattern or everything is chosen and confirmed.
-- A page's own button again moves on or closes it (**EDIT**: sound → chain → home; **SEQ**: recorder ↔ SUPER SEQ; **GLO**: mixer → KEY → home; **SAVE**: closes). **HOME** always goes home.
+- A page's own button again moves on or closes it (**EDIT**: instrument → sound editor → chain → home; **SEQ**: recorder ↔ SUPER SEQ; **GLO**: mixer → KEY → home; **SAVE**: closes). **HOME** always goes home.
 
 ## Patterns and step recording
 
@@ -110,24 +110,29 @@ The synths share nine voices: a LEAD or PAD slot gets four, a BASS one. Three LE
 
 ### Groups
 
-Each player's sounds come in **four groups**, by what they are, then **USER** (up to 8 of your own per type, 4 drum kits):
+Each player's sounds come in **four groups**, by what they are, then **USER** (up to 8 of your own per type, 4 drum kits). (Tonewheel Organ is what older saves' Hammond plays now; in the **Toms** kit the OH, CP and PC lanes are a floor, mid and high tom (FT MT HT); in **Gated** CP and PC are two electronic toms (TL TH) and the snare is a big room cut off short, DECAY setting how long it holds.)
 
 | Lead | | Pads | | Bass | | Drums | |
 |---|---|---|---|---|---|---|---|
-| **KEYS** | Piano, Xylophone, Music Box, FM Bell, Tine Keys, Clavinet | **STRINGS** | Strings, Solina, Choir, Acoustic Guitar, Harp, Digital Choir | **ACOUSTIC** | Upright, Slap, Plucked, Tuba, Fretless, Picked | **GROOVE** | Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk |
-| **BAND** | Hammond, Brass, Electric Guitar, Synth Brass, Flute, Harmonica | **KEYS** | Electric Piano, DX Piano, Organ, Handpan, Vibes, Marimba | **ANALOG** | Moog Bass, 303 Line, Sub Bass, Synth Bass, Rubber Bass, Slide Sub | **MACHINES** | CR-78, Mini Pops, LM-1, 606, 808, 909 |
-| **SYNTH** | Mini Lead, Juno Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead | **SYNTH** | Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth | **DIGITAL** | DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck | **ELECTRO** | Electro, Techno, Trap, House, Dub, Industrial |
+| **KEYS** | Piano, Room Piano, Tonewheel Organ, Church Organ, Clavioline, Xylophone, Music Box, FM Bell, Tine Keys, Clavinet | **STRINGS** | Strings, Solina, Tremolo Strings, Tape Strings, Choir, Tape Choir, Acoustic Guitar, Harp, Digital Choir | **ACOUSTIC** | Upright, Slap, Plucked, Tuba, Fretless, Picked | **GROOVE** | Rock, Hip-Hop, Lo-Fi, Breaks, Jazz, Funk, Toms |
+| **BAND** | Brass, French Horn, Solo Strings, Electric Guitar, Flute, Harmonica | **KEYS** | Electric Piano, DX Piano, Organ, Handpan, Vibes, Marimba | **ANALOG** | Moog Bass, 303 Line, Sub Bass, Synth Bass, Rubber Bass, Slide Sub | **MACHINES** | CR-78, Mini Pops, LM-1, 606, 808, 909 |
+| **SYNTH** | Mini Lead, Juno Lead, PWM Lead, Acid Lead, Chiptune, Porta Lead, Synth Brass, Night Pulse, Underpass, Signal Lead | **SYNTH** | Juno Strings, Poly Synth, PWM Pad, Prophet Brass, Warm Analog, Warm Synth | **DIGITAL** | DX Bass, Reese, Electro Bass, FM, Deep Reese, Synth Pluck | **ELECTRO** | Electro, Techno, Trap, House, Dub, Industrial, Gated |
 | **ODD** | Theremin, Glass Harp, Laser, Bowed Metal, Sine Swarm, Stepper | **ATMOS** | Drone, Frozen, Cathedral, Sweep, Glass Pad, Tidal | **WILD** | Fuzz, Wobble, Growl, Juno Bass, Womp, Dirt Bass | **ODD** | Toy, Glitch, Metal, Noise, Kitchen |
 
-Each type has its own sounds: a slot switched to BASS chooses from the bass sounds. On the home screen, turn **ALGORITHM** to step through every sound of the slot's type, group after group (in the step recorder it moves the cursor instead). Selecting another sound loads its settings, replacing your tweaks. A sound or kit from an older save that is no longer on the list still loads and plays as it did, and shows at the top of the list while it is chosen.
+Each type has its own sounds: a slot switched to BASS chooses from the bass sounds. On the home screen, turn **ALGORITHM** to step through every sound of the slot's type, group after group (in the step recorder it moves the cursor instead). The top bar shows the sound's name big with its group small and quiet beside it (e.g. SYNTH **MINI LEAD**). Selecting another sound loads its settings, replacing your tweaks. A sound or kit from an older save that is no longer on the list still loads and plays as it did, and shows at the top of the list while it is chosen.
 
 The drum kits are synthesised, except the **LM-1**, which plays samples of a real Linn LM-1; on it the CLAP and PERC keys are its **low and high toms** (TL / TH on the drum grid). PERC is a different instrument per kit: a conga on CR-78, a shaker on Mini Pops and 606, a high tom on 808 and a low tom on Lo-Fi.
 
-**Press EDIT** for the **SOUND** page, the in-depth sound editor for the chosen instrument (the button lights). It opens on the **INSTR** page, with the track's slot on top (**SLOT 1–4**, as on the home screen, its type beside it): a sound browser with a picture for the type on the left, screen-printed in two inks like a pedal with the type's name lettered on it (mountains under a sun for lead, rings for pad, stacked blocks for bass, confetti for drums), under it the type (**KNOB1**: lead, pad or bass) and the group (**KNOB2**) as pills and the USER slot to save to (**KNOB4**); on the right the group's sounds as pills (**KNOB3**), the one playing filled in the track's colour. **SELECT** moves to another instrument's page, **ALGORITHM** chooses the page, **KNOB1–4** edit it. **EDIT** again opens the **signal chain** (below), and once more goes home; **HOME** goes home at any time:
+**Press EDIT once** for the **INSTRUMENT** screen (the button lights), with the track's slot on top (**SLOT 1–4**, its type beside it): a sound browser with a picture for the type on the left, screen-printed in two inks like a pedal with the type's name lettered on it (mountains under a sun for lead, rings for pad, stacked blocks for bass, confetti for drums), under it the type (**KNOB1**: lead, pad or bass) and the group (**KNOB2**) as pills and the USER slot to save to (**KNOB4**); on the right the group's sounds as pills, the one playing filled in the track's colour. **KNOB3** or **ALGORITHM** steps through the sounds, and past the end of a group goes on into the next, so every sound of the type comes round. **Press EDIT again** for the **SOUND** editor: four pages, **MAIN**, **OSC**, **ENV** and **LFO** (**ALGORITHM** chooses), each with a **chart** of what its knobs do and four small knobs, named, their values under them (**KNOB1–4** turn them). **EDIT** a third time opens the **signal chain** (below), and once more goes home; **SELECT** moves to another instrument, **HOME** goes home at any time. The charts:
+- **MAIN:** the filter. Loud on the left, falling away above the **cutoff**; **resonance** is a peak at the cutoff; the dotted curve is where the **filter envelope** opens it to.
+- **OSC:** wave 1 (two cycles) with wave 2 over it at its tuning; the one the **mix** favours is drawn brighter.
+- **ENV:** the envelope's shape: **attack** up, **decay** down to the **sustain** level, held, **release** down.
+- **LFO:** its wave, more cycles the faster the **rate**, taller the deeper the **depth**, with its **target** named.
+- **Drums:** a tab per drum; the chart is the hit dying away (**decay**), as tall as its **level**, its wiggle as fast as its **pitch**.
 
 | Page | KNOB1 | KNOB2 | KNOB3 | KNOB4 |
 |---|---|---|---|---|
-| **INSTR** | Type: LEAD / PAD / BASS | Group | Sound in the group (e.g. 3/8) | USER slot to save to (U1–U8) |
+| **INSTRUMENT** (EDIT once) | Type: LEAD / PAD / BASS | Group | Sound (on into the next group) | USER slot to save to (U1–U8) |
 | **MAIN** | Glide | Cutoff | Resonance | Filter envelope |
 | **OSC** | Wave 1 | Wave 2 | Wave 2 tuning (−24 to +24) | Mix / FM amount |
 | **ENV** | Attack | Decay | Sustain | Release |
@@ -137,7 +142,7 @@ The drum kits are synthesised, except the **LM-1**, which plays samples of a rea
 
 **Glide** (MAIN, KNOB1) slides each note's pitch from the last one: off at 0, up to about half a second. Tempo is on KNOB1 of the home screen.
 
-OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose width the LFO can move: set the LFO target to **PWM**) and **sync** (wave 2 only: a saw restarted by wave 1, hard sync; the filter envelope sweeps it). For drums the first page is **KIT** (KNOB2 group, KNOB3 kit, KNOB4 USER slot, REC twice saves the kit), then a tab per drum (BD SD HH OH CP PC): **ALGORITHM** chooses the page, **KNOB1–3** the drum's pitch, decay and level.
+OSC waveforms: sine, triangle, saw, square, noise, FM, **pulse** (a square whose width the LFO can move: set the LFO target to **PWM**) and **sync** (wave 2 only: a saw restarted by wave 1, hard sync; the filter envelope sweeps it). For drums, EDIT once is the **kit** screen (KNOB2 group, KNOB3 or ALGORITHM the kit, KNOB4 USER slot, REC twice saves the kit); EDIT again, a tab per drum (BD SD HH OH CP PC): **ALGORITHM** chooses the drum, **KNOB1–3** its pitch, decay and level.
 
 **The signal chain (EDIT twice).** The track's four pedals as cards, in the order the sound flows through them (FX, SEL, then ENV, LFO), a pedalboard: each card is the pedal itself, a window of its art behind its lettered name, its LED and three small knobs with their values; one that is off goes dark, its LED out, and the chosen one is framed white. **ALGORITHM** moves between them and **KNOB2–4** turn the chosen pedal's knobs (named on the bottom line); **KNOB1** switches it on or off; **PRESETS** swaps it for another pedal from the whole library, category by category (one already in another slot is skipped, and a pedal that would overload the chip stays off: **CPU FULL**).
 
