@@ -76,13 +76,13 @@ static const struct { uint8_t ty, id; sndx_t x; } SNDX_LIB[] = {
     SXL(T_BASS,  67,   0,  75,  90,  40,   0,   0,  60,   0,   0,   0,   0,   0,   0,   0), /* DIRT */
     /* PAD */
     SXL(T_PAD,   0,  95, 100, 110,  90,  40,   0,  60,  20,   0,   0,  40,   0,   0,   0),  /* STRINGS: opening slowly, the vibrato after */
-    SXL(T_PAD,  34,  90, 100, 127,  98,  30,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* SOLINA */
-    SXL(T_PAD,  43,  40, 100, 120,  76,  40,   0,  60,   0,   0,   0,   0,   0,   0,   0),  /* TREMOLO */
+    SXL(T_PAD,  34, 105, 100, 127,  98,  30,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* SOLINA */
+    SXL(T_PAD,  43,  20,  96,  50,  76,  40,   0,  60,   0,   0,   0,   0,   0,   0,   0),  /* TREMOLO */
     SXL(T_PAD,  45,  20,  96, 110,  74,  30,   0,  50,   0,   0,   0,   0,   0,   0,   0),  /* TAPE */
-    SXL(T_PAD,   1,  88, 100, 120,  92,   0,   0,  40,   0,   0,   0,  40,   0,   0,   0),  /* CHOIR */
+    SXL(T_PAD,   1, 104, 100, 127,  92,   0,   0,  40,   0,   0,   0,  40,   0,   0,   0),  /* CHOIR */
     SXL(T_PAD,  44,  66, 100, 120,  84,   0,   0,  40,   0,   0,   0,   0,   0,   0,   0),  /* TAPE CHOIR */
     SXL(T_PAD,  40,   0,  76,   0,  90,  50,  90,  80,   0,   0,   0,   0,   0,   0,   0),  /* HARP */
-    SXL(T_PAD,  39,  86, 100, 120,  95,   0,   0,   0,   0,   0,   0,  30,   0,   0,   0),  /* DIGITAL */
+    SXL(T_PAD,  39, 102, 100, 127,  95,   0,   0,   0,   0,   0,   0,  30,   0,   0,   0),  /* DIGITAL */
     SXL(T_PAD,   3,   2,  60, 127,  40,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* ORGAN */
     SXL(T_PAD,   5,   2,  90,   0, 100,  40,  80,  80,   0,   0,   0,   0,   0,   0,   0),  /* HANDPAN */
     SXL(T_PAD,  41,   0, 100,   0,  98,  30,  80,  60,   0,   0,   0,   0,   0,   0,   0),  /* VIBES */
@@ -93,12 +93,12 @@ static const struct { uint8_t ty, id; sndx_t x; } SNDX_LIB[] = {
     SXL(T_PAD,  38, 100, 100, 100, 100,  30,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* WARM: opening slowly */
     SXL(T_PAD,   6, 104, 100, 110,  95,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* WARM SYNTH: opening slowly */
     SXL(T_PAD,  46, 100, 100, 100,  88,   0,   0,  40,   0,   0,   0,   0,   0,   0,   0),  /* DETUNED */
-    SXL(T_PAD,   8, 100, 100, 127, 110,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* DRONE */
-    SXL(T_PAD,  64, 100, 100, 127, 110,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* FROZEN */
+    SXL(T_PAD,   8, 118, 100, 127, 110,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* DRONE */
+    SXL(T_PAD,  64, 112, 100, 127, 110,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* FROZEN */
     SXL(T_PAD,  67, 110, 110, 127, 115,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* CHURCH */
-    SXL(T_PAD,   9,  80, 100, 120,  95,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* SWEEP */
+    SXL(T_PAD,   9, 100, 112,  40, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* SWEEP */
     SXL(T_PAD,   7,  85, 100, 110,  95,   0,   0,   0,   0,   0,   0,  20,   0,   0,   0),  /* GLASS */
-    SXL(T_PAD,  65,  90, 100, 120, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* TIDAL */
+    SXL(T_PAD,  65, 106, 100, 127, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0),  /* TIDAL */
 };
 /* the sounds with unison by default (sndx_t uni: how far apart its copies; ~65 is 12 cents). On a pad both oscillators
  * get two copies, on a lead osc 1 only. Saved sounds and USER sounds keep what they had */

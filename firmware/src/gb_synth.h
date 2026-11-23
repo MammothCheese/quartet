@@ -239,27 +239,27 @@ static const sdef_t SND_BASS[] = {
 static const sdef_t SND_PAD[] = {
     /* ORIGINAL */
     SD("STRINGS", 0, 0, 70, 0, 24, W_SAW, W_SAW, 36, 40, 85, 100, 120, 90, 92, 12, L_PITCH, LW_TRI),    /* brighter, a little vibrato */
-    SD("CHOIR", 1, 0, 72, 80, 0, W_SAW, W_NOISE, 24, 12, 88, 100, 120, 92, 92, 14, L_PITCH, LW_TRI),   /* a saw through an "aah" resonance, a breath of air */
+    SD("CHOIR", 1, 0, 48, 80, 30, W_SAW, W_NOISE, 24, 12, 88, 100, 120, 92, 92, 14, L_PITCH, LW_TRI),   /* a saw through an "aah" resonance, a breath of air; the filter opening as it is held */
     SD("AC GUITAR", 2, 0, 88, 15, 40, W_SAW, W_TRI, 36, 40, 0, 96, 0, 84, 60, 0, L_PITCH, LW_TRI),     /* strummed steel strings */
     SD("ORGAN", 3, 0, 100, 0, 0, W_TRI, W_SIN, 36, 55, 2, 60, 127, 40, 96, 18, L_AMP, LW_TRI),         /* two drawbars, a slight wobble */
     SD("ELEC PIANO", 4, 0, 100, 0, 50, W_FM, W_SIN, 36, 30, 0, 100, 40, 85, 85, 20, L_AMP, LW_TRI),    /* a bell-like FM tine, tremolo */
     SD("HANDPAN", 5, 0, 90, 0, 40, W_FM, W_SIN, 43, 15, 2, 100, 0, 100, 60, 0, L_PITCH, LW_TRI),       /* a warm metal note, ringing long */
     SD("WARM SYNTH", 6, 0, 42, 10, 30, W_SAW, W_SAW, 24, 64, 92, 100, 115, 95, 60, 0, L_PITCH, LW_TRI),/* soft saws, slow in and out */
     SD("GLASS", 7, 0, 100, 10, 20, W_FM, W_SIN, 48, 20, 85, 100, 110, 95, 70, 10, L_AMP, LW_TRI),  /* a soft, glassy FM shimmer */
-    SD("DRONE", 8, 0, 40, 50, 0, W_SAW, W_SAW, 12, 50, 100, 100, 127, 110, 40, 40, L_FILT, LW_TRI),    /* dark saws, the filter breathing */
-    SD("SWEEP", 9, 0, 50, 70, 0, W_SAW, W_SAW, 24, 50, 80, 100, 120, 95, 50, 80, L_FILT, LW_TRI),      /* a slow LFO sweeps the resonant filter */
+    SD("DRONE", 8, 0, 12, 50, 36, W_SAW, W_SAW, 12, 50, 100, 100, 127, 110, 40, 40, L_FILT, LW_TRI),    /* dark saws, the filter breathing; the filter opening as it is held */
+    SD("SWEEP", 9, 0, 40, 70, 44, W_SAW, W_SAW, 24, 50, 80, 100, 120, 95, 50, 80, L_FILT, LW_TRI),      /* a slow LFO sweeps the resonant filter; the envelope sweeps it up, then slowly back */
     /* CLASSIC */
     SD("J STRINGS", 32, 0, 58, 10, 36, W_SAW, W_PULSE, 24, 55, 82, 100, 120, 95, 66, 40, L_PWM, LW_TRI),   /* saw + a swaying pulse (add CHORUS) */
     SD("PROPHET", 33, 0, 44, 28, 82, W_SAW, W_PULSE, 24, 50, 62, 90, 100, 82, 95, 5, L_PITCH, LW_TRI),  /* poly brass, the filter swelling open */
-    SD("SOLINA", 34, 0, 86, 0, 0, W_SAW, W_SAW, 36, 50, 90, 100, 127, 98, 100, 22, L_PITCH, LW_TRI),   /* string machine: a saw and its octave, ensemble shimmer */
+    SD("SOLINA", 34, 0, 62, 0, 30, W_SAW, W_SAW, 36, 50, 90, 100, 127, 98, 100, 22, L_PITCH, LW_TRI),   /* string machine: a saw and its octave, ensemble shimmer; the filter opening as it is held */
     SD("POLY", 35, 0, 74, 30, 48, W_SAW, W_SQR, 24, 40, 10, 90, 90, 80, 95, 0, L_PITCH, LW_TRI), /* bright chords that bloom and settle */
     SD("PWM PAD", 36, 0, 62, 10, 30, W_PULSE, W_PULSE, 24, 40, 86, 100, 120, 96, 58, 92, L_PWM, LW_TRI),/* two pulses, their widths slowly swirling */
     SD("DX PIANO", 37, 0, 122, 0, 100, W_FM, W_SIN, 48, 25, 0, 96, 30, 82, 80, 16, L_AMP, LW_TRI),     /* FM 4:1: a bright, chiming electric piano */
     SD("WARM", 38, 0, 46, 20, 22, W_SAW, W_TRI, 12, 50, 72, 100, 115, 100, 40, 8, L_FILT, LW_TRI),     /* a saw over a triangle an octave down, slow */
-    SD("DIGITAL", 39, 0, 80, 72, 0, W_PULSE, W_NOISE, 24, 25, 86, 100, 120, 95, 92, 12, L_PITCH, LW_TRI),/* a pulse and breath, a vowel's ring */
+    SD("DIGITAL", 39, 0, 58, 72, 28, W_PULSE, W_NOISE, 24, 25, 86, 100, 120, 95, 92, 12, L_PITCH, LW_TRI),/* a pulse and breath, a vowel's ring; the filter opening as it is held */
     /* EXPERIMENTAL */
-    SD("FROZEN", 64, 0, 100, 10, 0, W_FM, W_SIN, 48, 15, 100, 100, 127, 110, 30, 30, L_AMP, LW_RND),   /* glassy FM that flickers, slow as ice */
-    SD("TIDAL", 65, 0, 70, 40, 0, W_SAW, W_SYNC, 36, 80, 90, 100, 120, 100, 20, 50, L_FILT, LW_TRI),     /* synced saws under a filter like a tide */
+    SD("FROZEN", 64, 0, 100, 10, 26, W_FM, W_SIN, 48, 0, 100, 100, 127, 110, 30, 30, L_AMP, LW_RND),   /* glassy FM that flickers, slow as ice; the bell blooming as it is held */
+    SD("TIDAL", 65, 0, 46, 40, 30, W_SAW, W_SYNC, 36, 80, 90, 100, 120, 100, 20, 50, L_FILT, LW_TRI),     /* synced saws under a filter like a tide; the filter opening as it is held */
     SD("DUST", 66, 0, 60, 116, 0, W_NOISE, W_SIN, 24, 40, 90, 100, 120, 100, 30, 40, L_FILT, LW_TRI),  /* air through a singing resonance */
     SD("CHURCH", 67, 0, 55, 10, 0, W_TRI, W_SAW, 12, 40, 110, 110, 127, 115, 50, 6, L_PITCH, LW_TRI),      /* huge and slow, an octave below */
     SD("PULSAR", 68, 0, 80, 30, 0, W_PULSE, W_PULSE, 31, 40, 20, 90, 110, 80, 105, 80, L_PWM, LW_SQR), /* the pulse's width flicking on the beat */
@@ -268,7 +268,7 @@ static const sdef_t SND_PAD[] = {
     SD("HARP", 40, 0, 104, 0, 25, W_TRI, W_SIN, 36, 30, 0, 98, 0, 96, 95, 0, L_PITCH, LW_TRI),       /* plucked strings that ring on */
     SD("VIBES", 41, 0, 127, 0, 0, W_SIN, W_SIN, 48, 25, 0, 100, 0, 98, 92, 30, L_AMP, LW_TRI),       /* soft mallets, the motor's tremolo */
     SD("MARIMBA", 42, 0, 110, 0, 10, W_SIN, W_TRI, 43, 20, 0, 80, 0, 64, 95, 0, L_PITCH, LW_TRI),     /* wooden bars, a short warm knock */
-    SD("TREMOLO", 43, 0, 84, 6, 0, W_SAW, W_SAW, 36, 40, 40, 100, 120, 76, 112, 70, L_AMP, LW_RND),   /* fast, lightly uneven bow
+    SD("TREMOLO", 43, 0, 72, 6, 30, W_SAW, W_SAW, 36, 40, 40, 100, 120, 76, 112, 70, L_AMP, LW_RND),   /* fast, lightly uneven bow; the bows bite, then settle
                                                    strokes on a held chord: nervous, the pitch clear, little reverb */
     SD("TAPE CHOIR", 44, 0, 64, 76, 0, W_SAW, W_NOISE, 24, 25, 66, 100, 120, 84, 30, 8, L_PITCH, LW_RND),   /* a grainy "ah", the top rolled
                                                    off, a firmer entrance, a gentle tape drift */
@@ -336,9 +336,9 @@ static const struct { uint8_t ty, id; uint32_t g; } SND_TRIM[] = {   /* g: Q15 (
     {T_PAD, 36, 16051}, /* PWM PAD -6 dB (unison: by its level, not its peaks) */
     {T_PAD, 38, 50625}, /* WARM +4 dB (unison: by its level, not its peaks) */
     {T_PAD, 6, 49487},  /* WARM SYNTH +4 dB (unison: by its level, not its peaks) */
-    {T_PAD, 8, 127785},     /* DRONE +12 dB */
+    {T_PAD, 8, 91153},      /* DRONE +9 dB */
     {T_PAD, 67, 77495},     /* CHURCH +7 dB */
-    {T_PAD, 65, 78640},     /* TIDAL +8 dB */
+    {T_PAD, 65, 57836},     /* TIDAL +5 dB */
     {T_BASS, 38, 30373},    /* RUBBER -1 dB */
     {T_BASS, 4, 20985},     /* FUZZ -4 dB */
     {T_LEAD, 40, 21701},    /* TINE KEYS -4 dB */
